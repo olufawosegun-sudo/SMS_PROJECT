@@ -16,39 +16,89 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     /**
-     * Show the admin dashboard.
+     * Show the role-based dashboard.
      */
     public function index()
     {
         $user = Auth::user();
         $school = $user->school;
+        $role = $user->role->name ?? 'Owner';
 
-        // Fetch counts from database for current school
-        $totalStudents = Student::where('school_id', $school->id)->count();
-        $totalTeachers = Teacher::where('school_id', $school->id)->count();
-        $totalClasses = SchoolClass::where('school_id', $school->id)->count();
+        // Route to appropriate dashboard based on role
+        switch ($role) {
+            case 'Owner':
+            case 'Principal':
+                return $this->ownerDashboard($user, $school);
+            case 'Teacher':
+                return $this->teacherDashboard($user, $school);
+            case 'Guardian':
+                return $this->guardianDashboard($user, $school);
+            case 'Student':
+                return $this->studentDashboard($user, $school);
+            default:
+                return $this->ownerDashboard($user, $school);
+        }
+    }
+
+    /**
+     * Owner/Principal Dashboard - Full Access
+     */
+    private function ownerDashboard($user, $school)
+    {
+        // Comprehensive statistics for owner dashboard
+        $stats = [
+            'total_students' => Student::where('school_id', $school->id)->where('status', 'active')->count(),
+            'total_teachers' => Teacher::where('school_id', $school->id)->where('status', 'active')->count(),
+            'total_guardians' => \App\Models\Guardian::where('school_id', $school->id)->where('status', 'active')->count(),
+            'total_classes' => SchoolClass::where('school_id', $school->id)->count(),
+            'total_subjects' => \App\Models\Subject::where('school_id', $school->id)->count(),
+            'total_departments' => \App\Models\Department::where('school_id', $school->id)->count(),
+        ];
+
+        // Today's attendance
+        $todayAttendance = StudentAttendance::where('school_id', $school->id)
+            ->whereDate('attendance_date', today())
+            ->selectRaw('COUNT(*) as total, 
+                        SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as present,
+                        SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as absent,
+                        SUM(CASE WHEN status = "late" THEN 1 ELSE 0 END) as late')
+            ->first();
+
+        $stats['today_attendance'] = [
+            'total' => $todayAttendance->total ?? 0,
+            'present' => $todayAttendance->present ?? 0,
+            'absent' => $todayAttendance->absent ?? 0,
+            'late' => $todayAttendance->late ?? 0,
+            'rate' => $todayAttendance->total > 0 
+                ? round((($todayAttendance->present + ($todayAttendance->late * 0.5)) / $todayAttendance->total) * 100) 
+                : 0
+        ];
+
+        // Financial statistics (mock data for now - will be real when finance tables are ready)
+        $stats['total_revenue'] = 0; // Sum of all payments
+        $stats['outstanding_fees'] = 0; // Pending invoices
+        $stats['total_expenses'] = 0; // Sum of expenses
 
         // Academic session and term
         $currentSession = AcademicSession::where('school_id', $school->id)->where('is_current', true)->first();
         $currentTerm = AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first();
 
-        // Calculate attendance rate (mocking a collection rate or getting from DB)
-        // Let's get the overall attendance rate for the last 7 days of attendance
+        // Weekly attendance trend (last 7 days)
         $attendanceStats = StudentAttendance::where('school_id', $school->id)
             ->selectRaw('attendance_date, 
                         COUNT(*) as total, 
                         SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as present,
                         SUM(CASE WHEN status = "late" THEN 1 ELSE 0 END) as late')
+            ->where('attendance_date', '>=', now()->subDays(7))
             ->groupBy('attendance_date')
             ->orderBy('attendance_date', 'asc')
-            ->limit(7)
             ->get();
 
         $attendanceData = [];
         $attendanceLabels = [];
 
         if ($attendanceStats->isEmpty()) {
-            // Fallback mock data if empty
+            // Fallback mock data
             $attendanceData = [92, 88, 95, 90, 87, 93, 91];
             $attendanceLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
         } else {
@@ -59,14 +109,40 @@ class DashboardController extends Controller
             }
         }
 
-        // Calculate average attendance rate
-        $averageAttendance = count($attendanceData) > 0 ? round(array_sum($attendanceData) / count($attendanceData)) : 95;
+        // Student enrollment trend (last 6 months)
+        $enrollmentTrend = Student::where('school_id', $school->id)
+            ->selectRaw('DATE_FORMAT(admission_date, "%Y-%m") as month, COUNT(*) as count')
+            ->where('admission_date', '>=', now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('month', 'asc')
+            ->get();
 
-        // Mock invoice statistics for the collection card (or pull from DB when tables exist)
-        $feeCollectionRate = 87; // fallback or mock representation
+        $enrollmentData = [];
+        $enrollmentLabels = [];
+        foreach ($enrollmentTrend as $item) {
+            $enrollmentData[] = $item->count;
+            $enrollmentLabels[] = date('M', strtotime($item->month . '-01'));
+        }
+
+        // Gender distribution
+        $genderStats = Student::where('students.school_id', $school->id)
+            ->selectRaw('
+                SUM(CASE WHEN users.gender = "male" THEN 1 ELSE 0 END) as male,
+                SUM(CASE WHEN users.gender = "female" THEN 1 ELSE 0 END) as female
+            ')
+            ->join('users', 'students.user_id', '=', 'users.id')
+            ->first();
+
+        // Students by class
+        $studentsByClass = Student::where('students.school_id', $school->id)
+            ->join('classes', 'students.class_id', '=', 'classes.id')
+            ->selectRaw('classes.name as class_name, COUNT(*) as count')
+            ->groupBy('classes.id', 'classes.name')
+            ->orderBy('classes.name')
+            ->get();
 
         // Get notifications
-        $notifications = Notification::where('user_id', $user->id)
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
             ->where('is_read', false)
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -79,64 +155,88 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Fetch recent student activities dynamically
-        // Let's get the 5 most recently created students
+        // Recent activities - combination of different events
+        $recentActivities = [];
+
+        // Recent students
         $recentStudents = Student::where('school_id', $school->id)
             ->with(['user', 'schoolClass'])
             ->orderBy('created_at', 'desc')
-            ->limit(5)
+            ->limit(3)
             ->get();
 
-        $recentActivities = [];
         foreach ($recentStudents as $student) {
             $recentActivities[] = [
-                'student' => $student->user->name,
-                'action' => 'Enrolled in ' . ($student->schoolClass ? $student->schoolClass->name : 'N/A'),
-                'date' => $student->created_at->format('Y-m-d'),
-                'status' => 'completed',
+                'icon' => 'user-add',
+                'title' => 'New Student Enrolled',
+                'description' => $student->user->name . ' joined ' . ($student->schoolClass->name ?? 'N/A'),
+                'time' => $student->created_at->diffForHumans(),
+                'color' => 'success',
             ];
         }
 
-        // Add some mock financial activities if recentActivities is empty to keep dashboard lively
-        if (empty($recentActivities)) {
-            $recentActivities = [
-                [
-                    'student' => 'Adebayo Oluwaseun',
-                    'action' => 'Enrolled in JSS 1A',
-                    'date' => '2026-07-13',
-                    'status' => 'completed',
-                ],
-                [
-                    'student' => 'Amina Kwame',
-                    'action' => 'Fee payment — ₦45,000',
-                    'date' => '2026-07-12',
-                    'status' => 'completed',
-                ],
-                [
-                    'student' => 'Chidinma Okafor',
-                    'action' => 'Report card generated',
-                    'date' => '2026-07-12',
-                    'status' => 'pending',
-                ],
+        // Recent announcements
+        foreach ($announcements->take(2) as $announcement) {
+            $recentActivities[] = [
+                'icon' => 'megaphone',
+                'title' => 'Announcement Published',
+                'description' => $announcement->title,
+                'time' => $announcement->announced_at->diffForHumans(),
+                'color' => 'info',
             ];
         }
 
-        return view('dashboard', [
-            'school' => $school,
-            'currentSession' => $currentSession,
-            'currentTerm' => $currentTerm,
-            'stats' => [
-                'total_students' => $totalStudents,
-                'total_teachers' => $totalTeachers,
-                'total_classes' => $totalClasses,
-                'attendance_rate' => $averageAttendance,
-                'fee_collection' => $feeCollectionRate,
-            ],
-            'recentActivities' => $recentActivities,
-            'attendanceData' => $attendanceData,
-            'attendanceLabels' => $attendanceLabels,
-            'notifications' => $notifications,
-            'announcements' => $announcements,
-        ]);
+        // Quick action stats
+        $quickStats = [
+            'pending_admissions' => \App\Models\AdmissionApplication::where('school_id', $school->id)->where('status', 'pending')->count(),
+            'leave_requests' => 0, // When leave table is ready
+            'pending_results' => 0, // When results table is ready
+            'upcoming_events' => \App\Models\Event::where('school_id', $school->id)->where('event_date', '>=', now())->count(),
+        ];
+
+        return view('dashboard.owner', compact(
+            'user',
+            'school',
+            'stats',
+            'currentSession',
+            'currentTerm',
+            'attendanceData',
+            'attendanceLabels',
+            'enrollmentData',
+            'enrollmentLabels',
+            'genderStats',
+            'studentsByClass',
+            'notifications',
+            'announcements',
+            'recentActivities',
+            'quickStats'
+        ));
+    }
+
+    /**
+     * Teacher Dashboard - Limited to assigned classes and subjects
+     */
+    private function teacherDashboard($user, $school)
+    {
+        // Teacher-specific dashboard logic
+        return view('dashboard.teacher', compact('user', 'school'));
+    }
+
+    /**
+     * Guardian Dashboard - Only their children's data
+     */
+    private function guardianDashboard($user, $school)
+    {
+        // Guardian-specific dashboard logic
+        return view('dashboard.guardian', compact('user', 'school'));
+    }
+
+    /**
+     * Student Dashboard - Personal data only
+     */
+    private function studentDashboard($user, $school)
+    {
+        // Student-specific dashboard logic
+        return view('dashboard.student', compact('user', 'school'));
     }
 }

@@ -8,6 +8,9 @@ use App\Models\Role;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
 use App\Models\LoginSession;
+use App\Models\Teacher;
+use App\Models\Guardian;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -68,6 +71,7 @@ class AuthController extends Controller
 
     /**
      * Show the registration form (Get Started).
+     * Allows multiple schools to register independently.
      */
     public function showRegister()
     {
@@ -75,48 +79,95 @@ class AuthController extends Controller
             return redirect()->route('dashboard');
         }
 
-        // Check if any users exist in the database
-        if (User::count() > 0) {
-            return redirect()->route('login')->with('info', 'School setup is already complete. Please login to continue.');
-        }
-
         return view('auth.register');
     }
 
     /**
      * Handle registration request (Multi-step).
+     * Creates school with Owner, Principal, Teacher, Parent, and Student accounts.
      */
     public function register(Request $request)
     {
-        // Validate school and administrator data together
+        // Validate school and all user accounts
         $validated = $request->validate([
             // School Details
             'school_name' => ['required', 'string', 'max:255'],
             'school_code' => ['required', 'string', 'max:50', 'unique:schools,school_code'],
             'school_email' => ['nullable', 'email', 'max:255'],
             'school_phone' => ['nullable', 'string', 'max:50'],
+            'school_website' => ['nullable', 'url', 'max:255'],
+            'school_address' => ['nullable', 'string', 'max:500'],
+            'school_city' => ['nullable', 'string', 'max:100'],
+            'school_state' => ['nullable', 'string', 'max:100'],
             'school_country' => ['required', 'string', 'max:100'],
             'school_motto' => ['nullable', 'string', 'max:255'],
+            'school_logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif', 'max:2048'], // 2MB max
 
-            // Admin Details
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            // Owner Details
+            'owner_first_name' => ['required', 'string', 'max:255'],
+            'owner_last_name' => ['required', 'string', 'max:255'],
+            'owner_email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'owner_phone' => ['nullable', 'string', 'max:50'],
+            'owner_gender' => ['nullable', 'in:male,female'],
+            'owner_dob' => ['nullable', 'date', 'before:today'],
+            'owner_profile_photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif', 'max:2048'],
+            'owner_password' => ['required', 'confirmed', Password::defaults()],
+
+            // Principal Details (Optional)
+            'principal_first_name' => ['nullable', 'string', 'max:255'],
+            'principal_last_name' => ['nullable', 'string', 'max:255'],
+            'principal_email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
+            'principal_phone' => ['nullable', 'string', 'max:50'],
+
+            // Teacher Details (Optional)
+            'teacher_first_name' => ['nullable', 'string', 'max:255'],
+            'teacher_last_name' => ['nullable', 'string', 'max:255'],
+            'teacher_email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
+            'teacher_qualification' => ['nullable', 'string', 'max:255'],
+
+            // Parent/Guardian Details (Optional)
+            'parent_first_name' => ['nullable', 'string', 'max:255'],
+            'parent_last_name' => ['nullable', 'string', 'max:255'],
+            'parent_email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
+            'parent_phone' => ['nullable', 'string', 'max:50'],
+            'parent_occupation' => ['nullable', 'string', 'max:255'],
+
+            // Student Details (Optional)
+            'student_first_name' => ['nullable', 'string', 'max:255'],
+            'student_last_name' => ['nullable', 'string', 'max:255'],
+            'student_email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
+            'student_admission_no' => ['nullable', 'string', 'max:50'],
         ]);
 
         try {
             DB::beginTransaction();
 
-            // 1. Create School
+            // 1. Handle logo upload if provided
+            $logoPath = null;
+            if ($request->hasFile('school_logo')) {
+                $logoPath = $request->file('school_logo')->store('school-logos', 'public');
+            }
+
+            // Handle owner profile photo upload if provided
+            $ownerPhotoPath = null;
+            if ($request->hasFile('owner_profile_photo')) {
+                $ownerPhotoPath = $request->file('owner_profile_photo')->store('profile-photos', 'public');
+            }
+
+            // 2. Create School
             $school = School::create([
                 'uuid' => (string) Str::uuid(),
                 'name' => $validated['school_name'],
                 'school_code' => strtoupper($validated['school_code']),
                 'email' => $validated['school_email'],
                 'phone' => $validated['school_phone'],
+                'website' => $validated['school_website'] ?? null,
+                'address' => $validated['school_address'] ?? null,
+                'city' => $validated['school_city'] ?? null,
+                'state' => $validated['school_state'] ?? null,
                 'country' => $validated['school_country'],
                 'motto' => $validated['school_motto'],
+                'logo' => $logoPath,
             ]);
 
             // 2. Create Default Roles for the school
@@ -141,19 +192,110 @@ class AuthController extends Controller
                 ]);
             }
 
-            // 3. Create Admin User (Owner)
-            $user = User::create([
+            // 3. Create Owner User (Main Administrator)
+            $ownerUser = User::create([
                 'uuid' => (string) Str::uuid(),
                 'school_id' => $school->id,
                 'role_id' => $roles['Owner']->id,
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
-                'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
+                'first_name' => $validated['owner_first_name'],
+                'last_name' => $validated['owner_last_name'],
+                'email' => $validated['owner_email'],
+                'phone' => $validated['owner_phone'] ?? null,
+                'gender' => $validated['owner_gender'] ?? null,
+                'dob' => $validated['owner_dob'] ?? null,
+                'profile_photo' => $ownerPhotoPath,
+                'password' => Hash::make($validated['owner_password']),
                 'status' => 'active',
             ]);
 
-            // 4. Create Default Academic Session & Term
+            // 4. Create Principal User (if provided)
+            if (!empty($validated['principal_first_name']) && !empty($validated['principal_email'])) {
+                $principalUser = User::create([
+                    'uuid' => (string) Str::uuid(),
+                    'school_id' => $school->id,
+                    'role_id' => $roles['Principal']->id,
+                    'first_name' => $validated['principal_first_name'],
+                    'last_name' => $validated['principal_last_name'],
+                    'email' => $validated['principal_email'],
+                    'phone' => $validated['principal_phone'] ?? null,
+                    'password' => Hash::make('password123'), // Default password
+                    'status' => 'active',
+                ]);
+            }
+
+            // 5. Create Teacher User (if provided)
+            if (!empty($validated['teacher_first_name']) && !empty($validated['teacher_email'])) {
+                $teacherUser = User::create([
+                    'uuid' => (string) Str::uuid(),
+                    'school_id' => $school->id,
+                    'role_id' => $roles['Teacher']->id,
+                    'first_name' => $validated['teacher_first_name'],
+                    'last_name' => $validated['teacher_last_name'],
+                    'email' => $validated['teacher_email'],
+                    'password' => Hash::make('password123'), // Default password
+                    'status' => 'active',
+                ]);
+
+                // Create Teacher profile
+                Teacher::create([
+                    'school_id' => $school->id,
+                    'user_id' => $teacherUser->id,
+                    'qualification' => $validated['teacher_qualification'] ?? null,
+                    'employment_date' => now(),
+                    'status' => 'active',
+                ]);
+            }
+
+            // 6. Create Parent/Guardian User (if provided)
+            $guardianUser = null;
+            if (!empty($validated['parent_first_name']) && !empty($validated['parent_email'])) {
+                $guardianUser = User::create([
+                    'uuid' => (string) Str::uuid(),
+                    'school_id' => $school->id,
+                    'role_id' => $roles['Guardian']->id,
+                    'first_name' => $validated['parent_first_name'],
+                    'last_name' => $validated['parent_last_name'],
+                    'email' => $validated['parent_email'],
+                    'phone' => $validated['parent_phone'] ?? null,
+                    'password' => Hash::make('password123'), // Default password
+                    'status' => 'active',
+                ]);
+
+                // Create Guardian profile
+                Guardian::create([
+                    'school_id' => $school->id,
+                    'user_id' => $guardianUser->id,
+                    'occupation' => $validated['parent_occupation'] ?? null,
+                    'relationship' => 'Parent',
+                    'status' => 'active',
+                ]);
+            }
+
+            // 7. Create Student User (if provided)
+            if (!empty($validated['student_first_name']) && !empty($validated['student_email'])) {
+                $studentUser = User::create([
+                    'uuid' => (string) Str::uuid(),
+                    'school_id' => $school->id,
+                    'role_id' => $roles['Student']->id,
+                    'first_name' => $validated['student_first_name'],
+                    'last_name' => $validated['student_last_name'],
+                    'email' => $validated['student_email'],
+                    'password' => Hash::make('password123'), // Default password
+                    'status' => 'active',
+                ]);
+
+                // Create Student profile
+                Student::create([
+                    'uuid' => (string) Str::uuid(),
+                    'school_id' => $school->id,
+                    'user_id' => $studentUser->id,
+                    'admission_no' => $validated['student_admission_no'] ?? 'STU' . str_pad($school->id, 5, '0', STR_PAD_LEFT) . '001',
+                    'admission_date' => now(),
+                    'status' => 'active',
+                ]);
+            }
+
+            // 8. Create Default Academic Session & Term
             $session = AcademicSession::create([
                 'school_id' => $school->id,
                 'name' => date('Y') . '/' . (date('Y') + 1),
@@ -173,12 +315,12 @@ class AuthController extends Controller
 
             DB::commit();
 
-            // Log User In
-            Auth::login($user);
+            // Log Owner User In
+            Auth::login($ownerUser);
 
             // Track login session
             LoginSession::create([
-                'user_id' => $user->id,
+                'user_id' => $ownerUser->id,
                 'session_id' => $request->session()->getId(),
                 'device' => $request->header('User-Agent') ? $this->getDevice($request->header('User-Agent')) : 'Unknown',
                 'browser' => $request->header('User-Agent') ? $this->getBrowser($request->header('User-Agent')) : 'Unknown',
@@ -188,7 +330,7 @@ class AuthController extends Controller
                 'status' => 'active',
             ]);
 
-            return redirect()->route('dashboard');
+            return redirect()->route('dashboard')->with('success', 'School registered successfully! Additional accounts have been created with default password: password123');
 
         } catch (\Exception $e) {
             DB::rollBack();
