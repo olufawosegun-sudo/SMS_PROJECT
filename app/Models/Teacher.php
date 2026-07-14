@@ -24,4 +24,14 @@ class Teacher extends Model {
     public function department() {
         return $this->belongsTo(Department::class);
     }
+
+    public function teacherSubjects() {
+        return $this->hasMany(TeacherSubject::class);
+    }
+
+    public function subjects() {
+        return $this->belongsToMany(Subject::class, 'teacher_subjects')
+            ->withPivot('class_id', 'session_id', 'term_id')
+            ->withTimestamps();
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\User;
 use App\Models\SchoolClass;
 use App\Models\StudentAttendance;
 use App\Models\Announcement;
@@ -53,6 +54,10 @@ class DashboardController extends Controller
             'total_classes' => SchoolClass::where('school_id', $school->id)->count(),
             'total_subjects' => \App\Models\Subject::where('school_id', $school->id)->count(),
             'total_departments' => \App\Models\Department::where('school_id', $school->id)->count(),
+            'total_principals' => User::where('school_id', $school->id)
+                ->whereHas('role', function($q) {
+                    $q->whereIn('name', ['Principal', 'Vice Principal']);
+                })->count(),
         ];
 
         // Today's attendance
@@ -158,11 +163,11 @@ class DashboardController extends Controller
         // Recent activities - combination of different events
         $recentActivities = [];
 
-        // Recent students
+        // Recent students (last 5)
         $recentStudents = Student::where('school_id', $school->id)
             ->with(['user', 'schoolClass'])
             ->orderBy('created_at', 'desc')
-            ->limit(3)
+            ->limit(5)
             ->get();
 
         foreach ($recentStudents as $student) {
@@ -172,6 +177,43 @@ class DashboardController extends Controller
                 'description' => $student->user->name . ' joined ' . ($student->schoolClass->name ?? 'N/A'),
                 'time' => $student->created_at->diffForHumans(),
                 'color' => 'success',
+                'type' => 'student',
+            ];
+        }
+
+        // Recent teachers (last 3)
+        $recentTeachers = Teacher::where('school_id', $school->id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
+
+        foreach ($recentTeachers as $teacher) {
+            $recentActivities[] = [
+                'icon' => 'briefcase',
+                'title' => 'New Teacher Added',
+                'description' => $teacher->user->name . ' joined as ' . ($teacher->department->name ?? 'teaching') . ' staff',
+                'time' => $teacher->created_at->diffForHumans(),
+                'color' => 'info',
+                'type' => 'teacher',
+            ];
+        }
+
+        // Recent guardians (last 3)
+        $recentGuardians = \App\Models\Guardian::where('school_id', $school->id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
+
+        foreach ($recentGuardians as $guardian) {
+            $recentActivities[] = [
+                'icon' => 'users',
+                'title' => 'New Parent Registered',
+                'description' => $guardian->user->name . ' registered as parent/guardian',
+                'time' => $guardian->created_at->diffForHumans(),
+                'color' => 'warning',
+                'type' => 'guardian',
             ];
         }
 
@@ -182,9 +224,53 @@ class DashboardController extends Controller
                 'title' => 'Announcement Published',
                 'description' => $announcement->title,
                 'time' => $announcement->announced_at->diffForHumans(),
-                'color' => 'info',
+                'color' => 'primary',
+                'type' => 'announcement',
             ];
         }
+
+        // Sort all activities by time
+        usort($recentActivities, function($a, $b) {
+            return strtotime($a['time']) <=> strtotime($b['time']);
+        });
+
+        // Take top 15 recent activities
+        $recentActivities = array_slice($recentActivities, 0, 15);
+
+        // User activity breakdown
+        $userActivityBreakdown = [
+            'teachers' => [
+                'total' => $stats['total_teachers'],
+                'active_today' => Teacher::where('school_id', $school->id)
+                    ->whereHas('user', function($q) {
+                        $q->where('last_login', '>=', now()->startOfDay());
+                    })->count(),
+                'recent_activity' => 'Marked attendance, uploaded lessons',
+            ],
+            'students' => [
+                'total' => $stats['total_students'],
+                'present_today' => $stats['today_attendance']['present'] ?? 0,
+                'recent_activity' => 'Submitted assignments, took attendance',
+            ],
+            'guardians' => [
+                'total' => $stats['total_guardians'],
+                'active_this_week' => \App\Models\Guardian::where('school_id', $school->id)
+                    ->whereHas('user', function($q) {
+                        $q->where('last_login', '>=', now()->subDays(7));
+                    })->count(),
+                'recent_activity' => 'Viewed reports, made payments',
+            ],
+            'principals' => [
+                'total' => $stats['total_principals'],
+                'active_today' => User::where('school_id', $school->id)
+                    ->whereHas('role', function($q) {
+                        $q->whereIn('name', ['Principal', 'Vice Principal']);
+                    })
+                    ->where('last_login', '>=', now()->startOfDay())
+                    ->count(),
+                'recent_activity' => 'Approved results, created announcements',
+            ],
+        ];
 
         // Quick action stats
         $quickStats = [
@@ -209,7 +295,8 @@ class DashboardController extends Controller
             'notifications',
             'announcements',
             'recentActivities',
-            'quickStats'
+            'quickStats',
+            'userActivityBreakdown'
         ));
     }
 

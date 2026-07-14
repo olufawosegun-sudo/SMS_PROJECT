@@ -52,21 +52,21 @@
             {{-- Quick Action Buttons --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
                 @foreach([
-                    ['label' => 'Add Student', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'color' => 'primary', 'route' => '#'],
-                    ['label' => 'Add Teacher', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'color' => 'info', 'route' => '#'],
+                    ['label' => 'Add Student', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'color' => 'primary', 'route' => 'students.create'],
+                    ['label' => 'Add Teacher', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'color' => 'info', 'route' => 'teachers.create'],
+                    ['label' => 'Add Parent', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'color' => 'warning', 'route' => 'guardians.create'],
+                    ['label' => 'Add Principal', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'color' => 'accent', 'route' => 'principals.create'],
                     ['label' => 'Create Invoice', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'color' => 'success', 'route' => '#'],
-                    ['label' => 'Announcement', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'color' => 'accent', 'route' => '#'],
-                    ['label' => 'Generate Results', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'color' => 'warning', 'route' => '#'],
-                    ['label' => 'Record Payment', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'color' => 'success', 'route' => '#'],
+                    ['label' => 'Announcement', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'color' => 'info', 'route' => '#'],
                 ] as $action)
-                <button class="bg-white rounded-xl p-4 border border-gray-100 hover:border-{{ $action['color'] }}/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group text-center">
+                <a href="{{ $action['route'] !== '#' ? route($action['route']) : '#' }}" class="bg-white rounded-xl p-4 border border-gray-100 hover:border-{{ $action['color'] }}/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group text-center block">
                     <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-{{ $action['color'] }}/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <svg class="w-6 h-6 text-{{ $action['color'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $action['icon'] }}"/>
                         </svg>
                     </div>
                     <p class="text-sm font-semibold text-gray-700 group-hover:text-{{ $action['color'] }} transition-colors">{{ $action['label'] }}</p>
-                </button>
+                </a>
                 @endforeach
             </div>
 
@@ -245,35 +245,37 @@
             </div>
 
             {{-- Recent Activities and Announcements --}}
-            <div class="grid lg:grid-cols-3 gap-8">
-                {{-- Recent Activities --}}
+            <div class="grid lg:grid-cols-3 gap-8 mb-8">
+                {{-- User Activity Monitoring --}}
                 <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100">
                     <div class="flex items-center justify-between mb-6">
                         <div class="text-left">
-                            <h3 class="text-lg font-bold text-dark">Recent Activities</h3>
-                            <p class="text-sm text-gray-400">Latest events across your school</p>
+                            <h3 class="text-lg font-bold text-dark">User Activity Monitoring</h3>
+                            <p class="text-sm text-gray-400">Real-time activity across all user roles</p>
                         </div>
-                        <button class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors">View All</button>
                     </div>
-                    <div class="space-y-4">
-                        @forelse($recentActivities as $activity)
-                        <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-{{ $activity['color'] }}/30 hover:shadow-md transition-all">
-                            <div class="w-10 h-10 rounded-lg bg-{{ $activity['color'] }}/10 flex items-center justify-center flex-shrink-0">
-                                <svg class="w-5 h-5 text-{{ $activity['color'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                </svg>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        @foreach([
+                            ['label' => 'Teachers', 'count' => $userActivityBreakdown['teachers']['active_today'], 'total' => $userActivityBreakdown['teachers']['total'], 'activity' => $userActivityBreakdown['teachers']['recent_activity'], 'color' => 'info', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
+                            ['label' => 'Students', 'count' => $userActivityBreakdown['students']['present_today'], 'total' => $userActivityBreakdown['students']['total'], 'activity' => $userActivityBreakdown['students']['recent_activity'], 'color' => 'success', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'],
+                            ['label' => 'Parents', 'count' => $userActivityBreakdown['guardians']['active_this_week'], 'total' => $userActivityBreakdown['guardians']['total'], 'activity' => $userActivityBreakdown['guardians']['recent_activity'], 'color' => 'warning', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'],
+                            ['label' => 'Principals', 'count' => $userActivityBreakdown['principals']['active_today'], 'total' => $userActivityBreakdown['principals']['total'], 'activity' => $userActivityBreakdown['principals']['recent_activity'], 'color' => 'primary', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'],
+                        ] as $userType)
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-{{ $userType['color'] }}/30 hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-{{ $userType['color'] }}/10 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-{{ $userType['color'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $userType['icon'] }}"/>
+                                        </svg>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-700">{{ $userType['label'] }}</span>
+                                </div>
+                                <span class="text-xs font-bold text-{{ $userType['color'] }} bg-{{ $userType['color'] }}/10 px-2 py-1 rounded-full">{{ $userType['count'] }}/{{ $userType['total'] }}</span>
                             </div>
-                            <div class="flex-1 text-left">
-                                <h4 class="text-sm font-bold text-dark mb-1">{{ $activity['title'] }}</h4>
-                                <p class="text-sm text-gray-600 mb-2">{{ $activity['description'] }}</p>
-                                <p class="text-xs text-gray-400">{{ $activity['time'] }}</p>
-                            </div>
+                            <p class="text-xs text-gray-500 leading-relaxed">{{ $userType['activity'] }}</p>
                         </div>
-                        @empty
-                        <div class="text-center py-10 text-gray-400">
-                            <p class="text-sm">No recent activities</p>
-                        </div>
-                        @endforelse
+                        @endforeach
                     </div>
                 </div>
 
@@ -314,6 +316,43 @@
                             </div>
                             @endforelse
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Recent Activities List --}}
+            <div class="grid lg:grid-cols-1 gap-8">
+                {{-- Recent Activities --}}
+                <div class="bg-white rounded-2xl p-6 border border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="text-left">
+                            <h3 class="text-lg font-bold text-dark">All Recent Activities</h3>
+                            <p class="text-sm text-gray-400">Latest events across your school</p>
+                        </div>
+                        <button class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors">View All</button>
+                    </div>
+                    <div class="space-y-4">
+                        @forelse($recentActivities as $activity)
+                        <div class="flex items-start gap-4 p-4 rounded-xl bg-gray-50 border border-gray-100 hover:border-{{ $activity['color'] }}/30 hover:shadow-md transition-all">
+                            <div class="w-10 h-10 rounded-lg bg-{{ $activity['color'] }}/10 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-{{ $activity['color'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="text-sm font-bold text-dark">{{ $activity['title'] }}</h4>
+                                    <span class="text-xs px-2 py-1 rounded-full bg-{{ $activity['color'] }}/10 text-{{ $activity['color'] }} font-semibold">{{ ucfirst($activity['type']) }}</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2">{{ $activity['description'] }}</p>
+                                <p class="text-xs text-gray-400">{{ $activity['time'] }}</p>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="text-center py-10 text-gray-400">
+                            <p class="text-sm">No recent activities</p>
+                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

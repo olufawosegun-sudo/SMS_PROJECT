@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\PrincipalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,4 +31,10 @@ Route::controller(AuthController::class)->group(function () {
 // Protected Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // User Management Routes
+    Route::resource('teachers', TeacherController::class);
+    Route::resource('students', StudentController::class);
+    Route::resource('guardians', GuardianController::class);
+    Route::resource('principals', PrincipalController::class);
 });
