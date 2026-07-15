@@ -7,6 +7,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('student_medical_records', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->string('blood_group')->nullable();
             $table->string('genotype')->nullable();
@@ -14,7 +15,6 @@ return new class extends Migration {
             $table->text('medical_condition')->nullable();
             $table->string('doctor_name')->nullable();
             $table->string('hospital')->nullable();
-            $table->string('emergency_contact')->nullable();
             $table->timestamps();
         });
     }

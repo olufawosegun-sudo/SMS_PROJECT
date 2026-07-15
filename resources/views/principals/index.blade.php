@@ -6,10 +6,10 @@
 <div class="flex min-h-screen bg-surface">
     @include('partials.sidebar', ['role' => 'owner'])
 
-    <main class="flex-1 ml-64">
+    <main class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
         @include('partials.topbar')
 
-        <div class="p-8">
+        <div class="p-4 md:p-6 lg:p-8">
             {{-- Page Header --}}
             <div class="flex items-center justify-between mb-8">
                 <div>
@@ -93,48 +93,48 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center mr-3">
-                                            @if($principal->profile_photo)
-                                            <img src="{{ asset('storage/' . $principal->profile_photo) }}" class="w-10 h-10 rounded-full object-cover">
+                                            @if($principal->user->profile_photo)
+                                            <img src="{{ asset('storage/' . $principal->user->profile_photo) }}" class="w-10 h-10 rounded-full object-cover">
                                             @else
-                                            <span class="text-sm font-bold text-accent">{{ substr($principal->first_name, 0, 1) }}{{ substr($principal->last_name, 0, 1) }}</span>
+                                            <span class="text-sm font-bold text-accent">{{ substr($principal->user->first_name, 0, 1) }}{{ substr($principal->user->last_name, 0, 1) }}</span>
                                             @endif
                                         </div>
                                         <div>
-                                            <p class="text-sm font-bold text-dark">{{ $principal->first_name }} {{ $principal->last_name }}</p>
-                                            <p class="text-xs text-gray-500">{{ $principal->email }}</p>
+                                            <p class="text-sm font-bold text-dark">{{ $principal->user->first_name }} {{ $principal->user->last_name }}</p>
+                                            <p class="text-xs text-gray-500">{{ $principal->user->email }}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
-                                        $roleColor = str_contains($principal->role, 'Vice') ? 'info' : 'primary';
+                                        $roleColor = str_contains($principal->staff_type, 'Vice') ? 'info' : 'primary';
                                     @endphp
                                     <span class="px-3 py-1 text-xs font-bold bg-{{ $roleColor }}/10 text-{{ $roleColor }} rounded-full">
-                                        {{ $principal->role }}
+                                        {{ $principal->staff_type }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm text-gray-700">{{ $principal->phone ?? 'N/A' }}</span>
+                                    <span class="text-sm text-gray-700">{{ $principal->user->phone ?? 'N/A' }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm text-gray-700 capitalize">{{ $principal->gender }}</span>
+                                    <span class="text-sm text-gray-700 capitalize">{{ $principal->user->gender ?? 'N/A' }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('principals.show', $principal) }}" 
+                                        <a href="{{ route('principals.show', $principal->id) }}" 
                                            class="p-2 text-info hover:bg-info/10 rounded-lg transition-colors" title="View">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                             </svg>
                                         </a>
-                                        <a href="{{ route('principals.edit', $principal) }}" 
+                                        <a href="{{ route('principals.edit', $principal->id) }}" 
                                            class="p-2 text-warning hover:bg-warning/10 rounded-lg transition-colors" title="Edit">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                         </a>
-                                        <form action="{{ route('principals.destroy', $principal) }}" method="POST" class="inline-block"
+                                        <form action="{{ route('principals.destroy', $principal->id) }}" method="POST" class="inline-block"
                                               onsubmit="return confirm('Are you sure you want to delete this principal?');">
                                             @csrf
                                             @method('DELETE')

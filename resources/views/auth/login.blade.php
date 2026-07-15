@@ -4,17 +4,38 @@
 
 @section('body')
 <div class="min-h-screen flex">
-    {{-- Left Panel: Branding --}}
-    <div class="hidden lg:flex lg:w-1/2 gradient-hero hero-pattern relative items-center justify-center p-12 overflow-hidden">
-        {{-- Decorative elements --}}
-        <div class="absolute top-20 left-10 w-64 h-64 bg-accent/10 rounded-full blur-3xl animate-float"></div>
-        <div class="absolute bottom-20 right-10 w-80 h-80 bg-primary-light/10 rounded-full blur-3xl animate-float-delayed"></div>
+    {{-- Left Panel: Luxury Branding --}}
+    <div class="hidden lg:flex lg:w-1/2 gradient-hero-luxury relative items-center justify-center p-12 overflow-hidden">
+        {{-- Layered background effects --}}
+        <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-[140px] opacity-[0.08]" style="background: radial-gradient(circle, #D4A843, transparent 70%);"></div>
+        <div class="absolute -bottom-20 -left-20 w-[500px] h-[400px] rounded-full blur-[120px] opacity-[0.1] animate-float" style="background: radial-gradient(ellipse, #1B6B3E, transparent 70%);"></div>
+        <div class="absolute top-1/3 -right-10 w-[400px] h-[400px] rounded-full blur-[130px] opacity-[0.06] animate-float-delayed" style="background: radial-gradient(ellipse, #D4A843, transparent 70%);"></div>
+
+        {{-- Diamond sparkle particles --}}
+        @for($i = 0; $i < 12; $i++)
+        <div class="absolute w-1 h-1 bg-accent/50 rotate-45" style="left: {{ rand(5, 95) }}%; top: {{ rand(5, 95) }}%; animation: diamond-sparkle {{ rand(25, 45) / 10 }}s ease-in-out infinite {{ rand(0, 30) / 10 }}s;"></div>
+        @endfor
+
+        {{-- Aurora wave bands --}}
+        <div class="absolute top-[30%] left-0 w-full h-[1px] opacity-[0.05]" style="background: linear-gradient(90deg, transparent, #D4A843 30%, #1B6B3E 70%, transparent); filter: blur(2px);"></div>
+        <div class="absolute top-[65%] left-0 w-full h-[1px] opacity-[0.04]" style="background: linear-gradient(90deg, transparent, #1B6B3E 40%, #D4A843 60%, transparent); filter: blur(2px);"></div>
+
+        {{-- Noise texture --}}
+        <div class="absolute inset-0 pointer-events-none opacity-[0.012] mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E'); background-size: 256px 256px;"></div>
+
+        {{-- Gold edge accents --}}
+        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-accent/15 to-transparent"></div>
+        <div class="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-accent/10 to-transparent"></div>
+
+        {{-- Vignette --}}
+        <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(5,5,16,0.4) 100%);"></div>
 
         <div class="relative z-10 max-w-md text-center">
             {{-- Logo --}}
             <div class="flex items-center justify-center gap-3 mb-10">
-                <div class="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-2xl">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl" style="background: linear-gradient(135deg, #D4A843, #B8912E);">
+                    <svg class="w-8 h-8 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                     </svg>
                 </div>
@@ -25,9 +46,9 @@
             </div>
 
             <h1 class="text-3xl font-extrabold text-white mb-4 leading-tight">
-                Welcome Back to Your <span class="text-gradient">School Dashboard</span>
+                Welcome Back to Your <span class="text-gradient-gold">School Dashboard</span>
             </h1>
-            <p class="text-white/60 leading-relaxed mb-10">
+            <p class="text-white/50 leading-relaxed mb-10">
                 Access student records, manage attendance, view grades, and keep your school running efficiently — all from one place.
             </p>
 
@@ -38,9 +59,9 @@
                     ['500K+', 'Students'],
                     ['15+', 'Countries'],
                 ] as $stat)
-                <div class="glass rounded-xl p-4 text-center">
-                    <p class="text-xl font-bold text-white">{{ $stat[0] }}</p>
-                    <p class="text-xs text-white/50">{{ $stat[1] }}</p>
+                <div class="glass-luxury rounded-xl p-4 text-center">
+                    <p class="text-xl font-bold text-gradient-gold">{{ $stat[0] }}</p>
+                    <p class="text-xs text-white/40">{{ $stat[1] }}</p>
                 </div>
                 @endforeach
             </div>
@@ -100,7 +121,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label for="password" class="block text-sm font-semibold text-gray-700">Password</label>
-                        <a href="#" class="text-xs font-medium text-primary hover:text-primary-dark transition-colors">Forgot password?</a>
+                        <a href="{{ route('password.request') }}" class="text-xs font-medium text-primary hover:text-primary-dark transition-colors">Forgot password?</a>
                     </div>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

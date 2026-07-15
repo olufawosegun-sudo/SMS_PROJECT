@@ -1,12 +1,13 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Authenticatable {
+class User extends Authenticatable implements MustVerifyEmail {
     use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
@@ -42,6 +43,14 @@ class User extends Authenticatable {
 
     public function teacher() {
         return $this->hasOne(Teacher::class);
+    }
+
+    public function principal() {
+        return $this->hasOne(Principal::class);
+    }
+
+    public function staff() {
+        return $this->hasOne(Staff::class);
     }
 
     public function student() {

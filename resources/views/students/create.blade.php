@@ -6,10 +6,10 @@
 <div class="flex min-h-screen bg-surface">
     @include('partials.sidebar', ['role' => 'owner'])
 
-    <main class="flex-1 ml-64">
+    <main class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
         @include('partials.topbar')
 
-        <div class="p-8">
+        <div class="p-4 md:p-6 lg:p-8">
             {{-- Page Header --}}
             <div class="mb-8">
                 <div class="flex items-center gap-3 mb-2">

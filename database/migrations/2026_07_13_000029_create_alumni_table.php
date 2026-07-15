@@ -7,7 +7,8 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('alumni', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
+            $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
+            $table->foreignId('student_id')->nullable()->constrained('students')->onDelete('set null');
             $table->integer('graduation_year');
             $table->string('current_occupation')->nullable();
             $table->string('organization')->nullable();

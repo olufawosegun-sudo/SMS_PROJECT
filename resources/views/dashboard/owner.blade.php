@@ -8,20 +8,20 @@
     @include('partials.sidebar', ['role' => 'owner'])
 
     {{-- ======================================== MAIN CONTENT ======================================== --}}
-    <main class="flex-1 ml-64">
+    <main class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
         {{-- Top Bar --}}
         @include('partials.topbar')
 
         {{-- Page Content --}}
-        <div class="p-8">
+        <div class="p-4 md:p-6 lg:p-8">
             {{-- Welcome Banner --}}
-            <div class="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-8 mb-8 relative overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-5 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4"></div>
                 <div class="absolute bottom-0 right-20 w-32 h-32 bg-accent/10 rounded-full translate-y-1/2"></div>
                 <div class="relative z-10 text-left">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h1 class="text-3xl font-bold text-white mb-2">Welcome back, {{ $user->first_name }}!</h1>
+                            <h1 class="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2">Welcome back, {{ $user->first_name }}!</h1>
                             <p class="text-white/80 text-lg mb-1">{{ $school->name ?? 'West African Excellence Academy' }}</p>
                             <p class="text-white/60 italic text-sm">"{{ $school->motto ?? 'Knowledge, Character, and Excellence' }}"</p>
                         </div>
@@ -50,7 +50,7 @@
             </div>
 
             {{-- Quick Action Buttons --}}
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
                 @foreach([
                     ['label' => 'Add Student', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'color' => 'primary', 'route' => 'students.create'],
                     ['label' => 'Add Teacher', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'color' => 'info', 'route' => 'teachers.create'],
@@ -71,7 +71,7 @@
             </div>
 
             {{-- Main Statistics Cards --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6 mb-6 md:mb-8">
                 @foreach([
                     ['label' => 'Total Students', 'value' => $stats['total_students'], 'change' => 'Enrolled', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'color' => 'primary'],
                     ['label' => 'Total Teachers', 'value' => $stats['total_teachers'], 'change' => 'Instructors', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'color' => 'info'],
@@ -96,11 +96,11 @@
             </div>
 
             {{-- Today's Attendance Card --}}
-            <div class="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-6 mb-8 text-white">
-                <div class="flex items-center justify-between">
+            <div class="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-4 md:p-6 mb-6 md:mb-8 text-white">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                         <h3 class="text-lg font-bold mb-2">Today's Attendance</h3>
-                        <div class="flex items-center gap-6">
+                        <div class="flex flex-wrap items-center gap-4 md:gap-6">
                             <div>
                                 <p class="text-3xl font-extrabold">{{ $stats['today_attendance']['rate'] }}%</p>
                                 <p class="text-sm text-white/70">Attendance Rate</p>
@@ -131,7 +131,7 @@
             </div>
 
             {{-- Charts and Analytics Section --}}
-            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-6 md:mb-8">
                 {{-- Weekly Attendance Chart --}}
                 <div class="bg-white rounded-2xl p-6 border border-gray-100">
                     <div class="flex items-center justify-between mb-6">
@@ -192,7 +192,7 @@
             </div>
 
             {{-- Distribution Cards --}}
-            <div class="grid lg:grid-cols-3 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-8">
                 {{-- Gender Distribution --}}
                 <div class="bg-white rounded-2xl p-6 border border-gray-100">
                     <h3 class="text-lg font-bold text-dark mb-6 text-left">Gender Distribution</h3>
@@ -245,7 +245,7 @@
             </div>
 
             {{-- Recent Activities and Announcements --}}
-            <div class="grid lg:grid-cols-3 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 mb-6 md:mb-8">
                 {{-- User Activity Monitoring --}}
                 <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100">
                     <div class="flex items-center justify-between mb-6">
@@ -254,7 +254,7 @@
                             <p class="text-sm text-gray-400">Real-time activity across all user roles</p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         @foreach([
                             ['label' => 'Teachers', 'count' => $userActivityBreakdown['teachers']['active_today'], 'total' => $userActivityBreakdown['teachers']['total'], 'activity' => $userActivityBreakdown['teachers']['recent_activity'], 'color' => 'info', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z'],
                             ['label' => 'Students', 'count' => $userActivityBreakdown['students']['present_today'], 'total' => $userActivityBreakdown['students']['total'], 'activity' => $userActivityBreakdown['students']['recent_activity'], 'color' => 'success', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'],
@@ -321,7 +321,7 @@
             </div>
 
             {{-- Recent Activities List --}}
-            <div class="grid lg:grid-cols-1 gap-8">
+            <div class="grid grid-cols-1 gap-4 md:gap-8">
                 {{-- Recent Activities --}}
                 <div class="bg-white rounded-2xl p-6 border border-gray-100">
                     <div class="flex items-center justify-between mb-6">

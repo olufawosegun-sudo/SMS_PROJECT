@@ -7,8 +7,9 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('student_houses', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
-            $table->unsignedBigInteger('house_id'); // Will link to houses table later
+            $table->foreignId('house_id')->constrained('school_houses')->onDelete('cascade');
             $table->timestamp('joined_at')->nullable();
             $table->timestamps();
         });

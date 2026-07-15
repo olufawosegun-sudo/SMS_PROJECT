@@ -6,10 +6,13 @@ use App\Models\Guardian;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Student;
+use App\Mail\GuardianWelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class GuardianController extends Controller
 {
@@ -51,22 +54,24 @@ class GuardianController extends Controller
      */
     public function store(Request $request)
     {
+        $school = Auth::user()->school;
+        
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:50'],
             'gender' => ['nullable', 'in:male,female'],
-            'dob' => ['nullable', 'date', 'before:today'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
             'profile_photo' => ['nullable', 'image', 'max:2048'],
             'occupation' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:500'],
             'relationship' => ['required', 'string', 'max:50'],
             'student_ids' => ['nullable', 'array'],
-            'student_ids.*' => ['exists:students,id'],
+            'student_ids.*' => [
+                Rule::exists('students', 'id')->where('school_id', $school->id)
+            ],
         ]);
-
-        $school = Auth::user()->school;
         $guardianRole = Role::where('school_id', $school->id)
             ->where('name', 'Guardian')
             ->first();
@@ -87,7 +92,7 @@ class GuardianController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'gender' => $validated['gender'] ?? null,
-            'dob' => $validated['dob'] ?? null,
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
             'profile_photo' => $photoPath,
             'password' => Hash::make('password123'), // Default password
             'status' => 'active',
@@ -108,8 +113,16 @@ class GuardianController extends Controller
             $guardian->students()->attach($validated['student_ids']);
         }
 
+        // Send welcome email with default password
+        try {
+            Mail::to($user->email)->send(new GuardianWelcomeMail($guardian, 'password123'));
+        } catch (\Exception $e) {
+            // Log error but don't fail the creation
+            \Log::error('Failed to send guardian welcome email: ' . $e->getMessage());
+        }
+
         return redirect()->route('guardians.index')
-            ->with('success', 'Parent/Guardian added successfully! Default password: password123');
+            ->with('success', 'Parent/Guardian added successfully! Welcome email sent with default password: password123');
     }
 
     /**
@@ -163,13 +176,15 @@ class GuardianController extends Controller
             'email' => ['required', 'email', 'unique:users,email,' . $guardian->user_id],
             'phone' => ['required', 'string', 'max:50'],
             'gender' => ['nullable', 'in:male,female'],
-            'dob' => ['nullable', 'date', 'before:today'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
             'profile_photo' => ['nullable', 'image', 'max:2048'],
             'occupation' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:500'],
             'relationship' => ['required', 'string', 'max:50'],
             'student_ids' => ['nullable', 'array'],
-            'student_ids.*' => ['exists:students,id'],
+            'student_ids.*' => [
+                Rule::exists('students', 'id')->where('school_id', $school->id)
+            ],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
@@ -186,7 +201,7 @@ class GuardianController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'gender' => $validated['gender'] ?? null,
-            'dob' => $validated['dob'] ?? null,
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
             'status' => $validated['status'],
         ]);
 

@@ -9,7 +9,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->string('name');
-            $table->string('level')->nullable();
+            $table->enum('level', ['JSS1', 'JSS2', 'JSS3', 'SS1', 'SS2', 'SS3'])->nullable();
             $table->text('description')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();

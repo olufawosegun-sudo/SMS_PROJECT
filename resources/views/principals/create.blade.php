@@ -6,10 +6,10 @@
 <div class="flex min-h-screen bg-surface">
     @include('partials.sidebar', ['role' => 'owner'])
 
-    <main class="flex-1 ml-64">
+    <main class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
         @include('partials.topbar')
 
-        <div class="p-8">
+        <div class="p-4 md:p-6 lg:p-8">
             {{-- Page Header --}}
             <div class="mb-8">
                 <div class="flex items-center gap-3 mb-2">
@@ -111,8 +111,115 @@
                                         <option value="">Select Role</option>
                                         <option value="Principal" {{ old('role_type') == 'Principal' ? 'selected' : '' }}>Principal</option>
                                         <option value="Vice Principal" {{ old('role_type') == 'Vice Principal' ? 'selected' : '' }}>Vice Principal</option>
+                                        <option value="Assistant Principal" {{ old('role_type') == 'Assistant Principal' ? 'selected' : '' }}>Assistant Principal</option>
                                     </select>
                                     @error('role_type')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Professional Information --}}
+                        <div class="bg-white rounded-2xl p-6 border border-gray-100">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-dark">Professional Details</h3>
+                                    <p class="text-sm text-gray-500">Educational & employment information</p>
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Qualification</label>
+                                    <input type="text" name="qualification" value="{{ old('qualification') }}"
+                                           placeholder="e.g., PhD in Education, M.Ed"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('qualification')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Specialization</label>
+                                    <input type="text" name="specialization" value="{{ old('specialization') }}"
+                                           placeholder="e.g., Educational Leadership"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('specialization')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Employment Date</label>
+                                    <input type="date" name="employment_date" value="{{ old('employment_date') }}"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('employment_date')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Years of Experience</label>
+                                    <input type="number" name="years_of_experience" value="{{ old('years_of_experience') }}" min="0"
+                                           placeholder="Total years"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('years_of_experience')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Office Location</label>
+                                    <input type="text" name="office_location" value="{{ old('office_location') }}"
+                                           placeholder="e.g., Admin Block, Room 101"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('office_location')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Salary (Optional)</label>
+                                    <input type="number" name="salary" value="{{ old('salary') }}" min="0" step="0.01"
+                                           placeholder="Monthly salary"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('salary')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Previous School</label>
+                                    <input type="text" name="previous_school" value="{{ old('previous_school') }}"
+                                           placeholder="Name of previous school (if any)"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('previous_school')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact</label>
+                                    <input type="text" name="emergency_contact" value="{{ old('emergency_contact') }}"
+                                           placeholder="Emergency phone number"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('emergency_contact')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Emergency Contact Relationship</label>
+                                    <input type="text" name="emergency_contact_relationship" value="{{ old('emergency_contact_relationship') }}"
+                                           placeholder="e.g., Spouse, Sibling"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @error('emergency_contact_relationship')
                                     <p class="text-xs text-danger mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>

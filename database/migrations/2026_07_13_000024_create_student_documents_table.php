@@ -7,10 +7,11 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('student_documents', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->string('document_name');
             $table->string('file');
-            $table->unsignedBigInteger('uploaded_by')->nullable();
+            $table->foreignId('uploaded_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

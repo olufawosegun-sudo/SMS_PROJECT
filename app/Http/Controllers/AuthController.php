@@ -8,13 +8,18 @@ use App\Models\Role;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
 use App\Models\LoginSession;
-use App\Models\Teacher;
+use App\Models\Staff;
 use App\Models\Guardian;
 use App\Models\Student;
+use App\Mail\PrincipalWelcomeMail;
+use App\Mail\TeacherWelcomeMail;
+use App\Mail\GuardianWelcomeMail;
+use App\Mail\StudentWelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
@@ -221,6 +226,25 @@ class AuthController extends Controller
                     'password' => Hash::make('password123'), // Default password
                     'status' => 'active',
                 ]);
+
+                // Create Staff profile for Principal
+                $principalStaff = Staff::create([
+                    'school_id' => $school->id,
+                    'user_id' => $principalUser->id,
+                    'staff_no' => 'PRI' . str_pad($principalUser->id, 5, '0', STR_PAD_LEFT),
+                    'staff_type' => 'Principal',
+                    'employment_date' => now(),
+                    'contract_type' => 'permanent',
+                    'status' => 'active',
+                ]);
+
+                // Send welcome email to principal
+                try {
+                    Mail::to($principalUser->email)->send(new PrincipalWelcomeMail($principalStaff, 'password123'));
+                } catch (\Exception $mailException) {
+                    // Log email error but don't fail registration
+                    \Log::error('Failed to send principal welcome email: ' . $mailException->getMessage());
+                }
             }
 
             // 5. Create Teacher User (if provided)
@@ -236,14 +260,25 @@ class AuthController extends Controller
                     'status' => 'active',
                 ]);
 
-                // Create Teacher profile
-                Teacher::create([
+                // Create Staff profile for Teacher
+                $teacherStaff = Staff::create([
                     'school_id' => $school->id,
                     'user_id' => $teacherUser->id,
+                    'staff_no' => 'TCH' . str_pad($teacherUser->id, 5, '0', STR_PAD_LEFT),
+                    'staff_type' => 'Teacher',
                     'qualification' => $validated['teacher_qualification'] ?? null,
                     'employment_date' => now(),
+                    'contract_type' => 'permanent',
                     'status' => 'active',
                 ]);
+
+                // Send welcome email to teacher
+                try {
+                    Mail::to($teacherUser->email)->send(new TeacherWelcomeMail($teacherStaff, 'password123'));
+                } catch (\Exception $mailException) {
+                    // Log email error but don't fail registration
+                    \Log::error('Failed to send teacher welcome email: ' . $mailException->getMessage());
+                }
             }
 
             // 6. Create Parent/Guardian User (if provided)
@@ -262,13 +297,21 @@ class AuthController extends Controller
                 ]);
 
                 // Create Guardian profile
-                Guardian::create([
+                $guardian = Guardian::create([
                     'school_id' => $school->id,
                     'user_id' => $guardianUser->id,
                     'occupation' => $validated['parent_occupation'] ?? null,
                     'relationship' => 'Parent',
                     'status' => 'active',
                 ]);
+
+                // Send welcome email to guardian
+                try {
+                    Mail::to($guardianUser->email)->send(new GuardianWelcomeMail($guardian, 'password123'));
+                } catch (\Exception $mailException) {
+                    // Log email error but don't fail registration
+                    \Log::error('Failed to send guardian welcome email: ' . $mailException->getMessage());
+                }
             }
 
             // 7. Create Student User (if provided)
@@ -285,7 +328,7 @@ class AuthController extends Controller
                 ]);
 
                 // Create Student profile
-                Student::create([
+                $student = Student::create([
                     'uuid' => (string) Str::uuid(),
                     'school_id' => $school->id,
                     'user_id' => $studentUser->id,
@@ -293,6 +336,14 @@ class AuthController extends Controller
                     'admission_date' => now(),
                     'status' => 'active',
                 ]);
+
+                // Send welcome email to student
+                try {
+                    Mail::to($studentUser->email)->send(new StudentWelcomeMail($student, 'password123'));
+                } catch (\Exception $mailException) {
+                    // Log email error but don't fail registration
+                    \Log::error('Failed to send student welcome email: ' . $mailException->getMessage());
+                }
             }
 
             // 8. Create Default Academic Session & Term

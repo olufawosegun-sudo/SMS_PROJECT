@@ -1,21 +1,31 @@
-{{-- ======================================== TOP BAR ======================================== --}}
+{{-- ======================================== TOP BAR (Responsive) ======================================== --}}
 <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-gray-100">
-    <div class="flex items-center justify-between px-8 py-4">
-        {{-- Search --}}
-        <div class="relative flex-1 max-w-md">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    <div class="flex items-center justify-between px-4 md:px-8 py-4">
+        {{-- Mobile Hamburger + Search --}}
+        <div class="flex items-center gap-3 flex-1">
+            {{-- Hamburger Menu (Mobile Only) --}}
+            <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0" aria-label="Toggle Sidebar">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
+            </button>
+
+            {{-- Search --}}
+            <div class="relative flex-1 max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <input type="text" placeholder="Search students, teachers, classes..."
+                       class="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
             </div>
-            <input type="text" placeholder="Search students, teachers, classes..."
-                   class="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
         </div>
 
         {{-- Right Actions --}}
-        <div class="flex items-center gap-4 ml-6">
+        <div class="flex items-center gap-2 md:gap-4 ml-3 md:ml-6">
             {{-- Quick Actions Dropdown --}}
-            <div class="relative">
+            <div class="relative hidden sm:block">
                 <button class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center hover:bg-primary/20 transition-colors" title="Quick Actions">
                     <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -34,15 +44,15 @@
             </button>
 
             {{-- User Profile --}}
-            <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
+            <div class="flex items-center gap-3 pl-3 md:pl-4 border-l border-gray-200">
                 <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
                     {{ strtoupper(substr(Auth::user()->first_name, 0, 1) . substr(Auth::user()->last_name, 0, 1)) }}
                 </div>
-                <div class="hidden sm:block text-left">
+                <div class="hidden md:block text-left">
                     <p class="text-sm font-semibold text-dark">{{ Auth::user()->name }}</p>
                     <p class="text-xs text-gray-400">{{ Auth::user()->role->name ?? 'Owner' }}</p>
                 </div>
-                <button class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors">
+                <button class="hidden sm:flex w-8 h-8 rounded-lg hover:bg-gray-100 items-center justify-center transition-colors">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>

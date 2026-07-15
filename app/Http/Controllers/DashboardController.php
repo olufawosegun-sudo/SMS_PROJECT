@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
-use App\Models\Teacher;
+use App\Models\Staff;
 use App\Models\User;
 use App\Models\SchoolClass;
 use App\Models\StudentAttendance;
@@ -28,8 +28,11 @@ class DashboardController extends Controller
         // Route to appropriate dashboard based on role
         switch ($role) {
             case 'Owner':
-            case 'Principal':
                 return $this->ownerDashboard($user, $school);
+            case 'Principal':
+            case 'Vice Principal':
+            case 'Assistant Principal':
+                return $this->principalDashboard($user, $school);
             case 'Teacher':
                 return $this->teacherDashboard($user, $school);
             case 'Guardian':
@@ -49,15 +52,15 @@ class DashboardController extends Controller
         // Comprehensive statistics for owner dashboard
         $stats = [
             'total_students' => Student::where('school_id', $school->id)->where('status', 'active')->count(),
-            'total_teachers' => Teacher::where('school_id', $school->id)->where('status', 'active')->count(),
+            'total_teachers' => Staff::where('school_id', $school->id)->where('staff_type', 'Teacher')->where('status', 'active')->count(),
             'total_guardians' => \App\Models\Guardian::where('school_id', $school->id)->where('status', 'active')->count(),
             'total_classes' => SchoolClass::where('school_id', $school->id)->count(),
             'total_subjects' => \App\Models\Subject::where('school_id', $school->id)->count(),
             'total_departments' => \App\Models\Department::where('school_id', $school->id)->count(),
-            'total_principals' => User::where('school_id', $school->id)
-                ->whereHas('role', function($q) {
-                    $q->whereIn('name', ['Principal', 'Vice Principal']);
-                })->count(),
+            'total_principals' => Staff::where('school_id', $school->id)
+                ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
+                ->where('status', 'active')
+                ->count(),
         ];
 
         // Today's attendance
@@ -182,8 +185,9 @@ class DashboardController extends Controller
         }
 
         // Recent teachers (last 3)
-        $recentTeachers = Teacher::where('school_id', $school->id)
-            ->with('user')
+        $recentTeachers = Staff::where('school_id', $school->id)
+            ->where('staff_type', 'Teacher')
+            ->with(['user', 'department'])
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get();
@@ -241,7 +245,8 @@ class DashboardController extends Controller
         $userActivityBreakdown = [
             'teachers' => [
                 'total' => $stats['total_teachers'],
-                'active_today' => Teacher::where('school_id', $school->id)
+                'active_today' => Staff::where('school_id', $school->id)
+                    ->where('staff_type', 'Teacher')
                     ->whereHas('user', function($q) {
                         $q->where('last_login', '>=', now()->startOfDay());
                     })->count(),
@@ -262,12 +267,11 @@ class DashboardController extends Controller
             ],
             'principals' => [
                 'total' => $stats['total_principals'],
-                'active_today' => User::where('school_id', $school->id)
-                    ->whereHas('role', function($q) {
-                        $q->whereIn('name', ['Principal', 'Vice Principal']);
-                    })
-                    ->where('last_login', '>=', now()->startOfDay())
-                    ->count(),
+                'active_today' => Staff::where('school_id', $school->id)
+                    ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
+                    ->whereHas('user', function($q) {
+                        $q->where('last_login', '>=', now()->startOfDay());
+                    })->count(),
                 'recent_activity' => 'Approved results, created announcements',
             ],
         ];
@@ -307,6 +311,187 @@ class DashboardController extends Controller
     {
         // Teacher-specific dashboard logic
         return view('dashboard.teacher', compact('user', 'school'));
+    }
+
+    /**
+     * Principal Dashboard - Academic Management (No Financial Access)
+     */
+    private function principalDashboard($user, $school)
+    {
+        // Academic-focused statistics (NO financial data)
+        $stats = [
+            'total_students' => Student::where('school_id', $school->id)->where('status', 'active')->count(),
+            'total_teachers' => Staff::where('school_id', $school->id)->where('staff_type', 'Teacher')->where('status', 'active')->count(),
+            'total_classes' => SchoolClass::where('school_id', $school->id)->count(),
+            'total_subjects' => \App\Models\Subject::where('school_id', $school->id)->count(),
+        ];
+
+        // Today's attendance
+        $todayAttendance = StudentAttendance::where('school_id', $school->id)
+            ->whereDate('attendance_date', today())
+            ->selectRaw('COUNT(*) as total, 
+                        SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as present,
+                        SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as absent,
+                        SUM(CASE WHEN status = "late" THEN 1 ELSE 0 END) as late')
+            ->first();
+
+        $stats['today_attendance'] = [
+            'total' => $todayAttendance->total ?? 0,
+            'present' => $todayAttendance->present ?? 0,
+            'absent' => $todayAttendance->absent ?? 0,
+            'late' => $todayAttendance->late ?? 0,
+            'rate' => $todayAttendance->total > 0 
+                ? round((($todayAttendance->present + ($todayAttendance->late * 0.5)) / $todayAttendance->total) * 100) 
+                : 0
+        ];
+
+        // Academic session and term
+        $currentSession = AcademicSession::where('school_id', $school->id)->where('is_current', true)->first();
+        $currentTerm = AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first();
+
+        // Weekly attendance trend (last 7 days)
+        $attendanceStats = StudentAttendance::where('school_id', $school->id)
+            ->selectRaw('attendance_date, 
+                        COUNT(*) as total, 
+                        SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as present,
+                        SUM(CASE WHEN status = "late" THEN 1 ELSE 0 END) as late')
+            ->where('attendance_date', '>=', now()->subDays(7))
+            ->groupBy('attendance_date')
+            ->orderBy('attendance_date', 'asc')
+            ->get();
+
+        $attendanceData = [];
+        $attendanceLabels = [];
+
+        if ($attendanceStats->isEmpty()) {
+            // Fallback mock data
+            $attendanceData = [92, 88, 95, 90, 87, 93, 91];
+            $attendanceLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        } else {
+            foreach ($attendanceStats as $stat) {
+                $rate = $stat->total > 0 ? round((($stat->present + ($stat->late * 0.5)) / $stat->total) * 100) : 0;
+                $attendanceData[] = $rate;
+                $attendanceLabels[] = date('D', strtotime($stat->attendance_date));
+            }
+        }
+
+        // Gender distribution
+        $genderStats = Student::where('students.school_id', $school->id)
+            ->selectRaw('
+                SUM(CASE WHEN users.gender = "male" THEN 1 ELSE 0 END) as male,
+                SUM(CASE WHEN users.gender = "female" THEN 1 ELSE 0 END) as female
+            ')
+            ->join('users', 'students.user_id', '=', 'users.id')
+            ->first();
+
+        // Students by class
+        $studentsByClass = Student::where('students.school_id', $school->id)
+            ->join('classes', 'students.class_id', '=', 'classes.id')
+            ->selectRaw('classes.name as class_name, COUNT(*) as count')
+            ->groupBy('classes.id', 'classes.name')
+            ->orderBy('classes.name')
+            ->get();
+
+        // Get notifications
+        $notifications = \App\Models\Notification::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Get announcements
+        $announcements = Announcement::where('school_id', $school->id)
+            ->where('status', 'active')
+            ->orderBy('announced_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Recent academic activities
+        $recentActivities = [];
+
+        // Recent students (last 5)
+        $recentStudents = Student::where('school_id', $school->id)
+            ->with(['user', 'schoolClass'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        foreach ($recentStudents as $student) {
+            $recentActivities[] = [
+                'icon' => 'user-add',
+                'title' => 'New Student Enrolled',
+                'description' => $student->user->name . ' joined ' . ($student->schoolClass->name ?? 'N/A'),
+                'time' => $student->created_at->diffForHumans(),
+                'color' => 'success',
+                'type' => 'student',
+            ];
+        }
+
+        // Recent teachers (last 3)
+        $recentTeachers = Staff::where('school_id', $school->id)
+            ->where('staff_type', 'Teacher')
+            ->with(['user', 'department'])
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
+
+        foreach ($recentTeachers as $teacher) {
+            $recentActivities[] = [
+                'icon' => 'briefcase',
+                'title' => 'New Teacher Added',
+                'description' => $teacher->user->name . ' joined as ' . ($teacher->department->name ?? 'teaching') . ' staff',
+                'time' => $teacher->created_at->diffForHumans(),
+                'color' => 'info',
+                'type' => 'teacher',
+            ];
+        }
+
+        // Recent announcements
+        foreach ($announcements->take(3) as $announcement) {
+            $recentActivities[] = [
+                'icon' => 'megaphone',
+                'title' => 'Announcement Published',
+                'description' => $announcement->title,
+                'time' => $announcement->announced_at->diffForHumans(),
+                'color' => 'primary',
+                'type' => 'announcement',
+            ];
+        }
+
+        // Sort all activities by time
+        usort($recentActivities, function($a, $b) {
+            return strtotime($a['time']) <=> strtotime($b['time']);
+        });
+
+        // Take top 10 recent activities
+        $recentActivities = array_slice($recentActivities, 0, 10);
+
+        // Academic quick stats
+        $quickStats = [
+            'pending_admissions' => \App\Models\AdmissionApplication::where('school_id', $school->id)->where('status', 'pending')->count(),
+            'upcoming_events' => \App\Models\Event::where('school_id', $school->id)->where('event_date', '>=', now())->count(),
+            'active_teachers' => Staff::where('school_id', $school->id)
+                ->where('staff_type', 'Teacher')
+                ->whereHas('user', function($q) {
+                    $q->where('last_login', '>=', now()->startOfDay());
+                })->count(),
+        ];
+
+        return view('dashboard.principal', compact(
+            'user',
+            'school',
+            'stats',
+            'currentSession',
+            'currentTerm',
+            'attendanceData',
+            'attendanceLabels',
+            'genderStats',
+            'studentsByClass',
+            'notifications',
+            'announcements',
+            'recentActivities',
+            'quickStats'
+        ));
     }
 
     /**

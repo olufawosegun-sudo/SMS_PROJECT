@@ -5,15 +5,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class TeacherSubject extends Model {
     protected $fillable = [
-        'school_id', 'teacher_id', 'class_id', 'subject_id', 'session_id', 'term_id'
+        'school_id', 'staff_id', 'class_id', 'subject_id', 'session_id', 'term_id'
     ];
 
     public function school() {
         return $this->belongsTo(School::class);
     }
 
+    public function staff() {
+        return $this->belongsTo(Staff::class);
+    }
+
+    // Backwards compatibility alias
     public function teacher() {
-        return $this->belongsTo(Teacher::class);
+        return $this->staff();
     }
 
     public function schoolClass() {

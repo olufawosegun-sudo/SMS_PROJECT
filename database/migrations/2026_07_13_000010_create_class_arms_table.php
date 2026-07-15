@@ -9,7 +9,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
-            $table->unsignedBigInteger('teacher_id')->nullable(); // Set in teachers migration
             $table->string('name');
             $table->integer('capacity')->nullable();
             $table->string('status')->default('active');

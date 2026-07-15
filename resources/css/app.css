@@ -99,6 +99,55 @@
     100% { background-position: 0% 50%; }
 }
 
+@keyframes diamond-sparkle {
+    0%, 100% { opacity: 0; transform: scale(0) rotate(45deg); }
+    50% { opacity: 1; transform: scale(1) rotate(45deg); }
+}
+
+@keyframes gold-shimmer {
+    0% { background-position: -300% 0; }
+    100% { background-position: 300% 0; }
+}
+
+@keyframes luxury-glow {
+    0%, 100% { box-shadow: 0 0 30px rgba(212, 168, 67, 0.2), 0 0 60px rgba(212, 168, 67, 0.1); }
+    50% { box-shadow: 0 0 50px rgba(212, 168, 67, 0.4), 0 0 100px rgba(212, 168, 67, 0.2); }
+}
+
+@keyframes particle-drift {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100vh) translateX(50px) rotate(720deg); opacity: 0; }
+}
+
+@keyframes text-reveal {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0% 0 0); }
+}
+
+@keyframes badge-entrance {
+    0% { opacity: 0; transform: scale(0.5) translateY(20px); }
+    60% { transform: scale(1.1) translateY(-5px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes crown-bob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-8px) rotate(3deg); }
+}
+
+@keyframes ring-pulse {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0; }
+    100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+@keyframes line-sweep {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+}
+
 /* ========================================
    Utility Classes
    ======================================== */
@@ -175,6 +224,63 @@
         radial-gradient(circle at 20% 50%, rgba(212, 168, 67, 0.1) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(27, 107, 62, 0.15) 0%, transparent 50%),
         radial-gradient(circle at 40% 80%, rgba(45, 143, 84, 0.1) 0%, transparent 50%);
+}
+
+@utility animate-diamond-sparkle {
+    animation: diamond-sparkle 3s ease-in-out infinite;
+}
+
+@utility animate-gold-shimmer {
+    background: linear-gradient(90deg, #D4A843, #F5E6B8, #FFFFFF, #F5E6B8, #D4A843);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gold-shimmer 4s linear infinite;
+}
+
+@utility animate-luxury-glow {
+    animation: luxury-glow 3s ease-in-out infinite;
+}
+
+@utility animate-badge-entrance {
+    animation: badge-entrance 0.8s ease-out forwards;
+}
+
+@utility animate-crown-bob {
+    animation: crown-bob 4s ease-in-out infinite;
+}
+
+@utility gradient-hero-luxury {
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,67,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 0% 100%, rgba(27,107,62,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 50% at 100% 50%, rgba(212,168,67,0.04) 0%, transparent 50%),
+        linear-gradient(135deg, #050510 0%, #0a1a10 15%, #0F2B1C 28%, #1B6B3E 42%, #0F4D2A 58%, #0a1410 78%, #050510 100%);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 400% 400%;
+    animation: gradient-shift 16s ease infinite;
+}
+
+@utility text-gradient-gold {
+    background: linear-gradient(135deg, #D4A843, #F5E6B8, #D4A843, #B8912E);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+@utility diamond-border {
+    border: 1px solid transparent;
+    background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+                      linear-gradient(135deg, #D4A843 0%, transparent 30%, transparent 70%, #D4A843 100%);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+@utility glass-luxury {
+    background: rgba(212, 168, 67, 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(212, 168, 67, 0.2);
 }
 
 @utility sidebar-gradient {
