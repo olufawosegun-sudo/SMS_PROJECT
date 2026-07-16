@@ -10,4 +10,12 @@ class GradeScale extends Model {
         'min_score' => 'decimal:2',
         'max_score' => 'decimal:2'
     ];
+
+    public function results() {
+        return $this->hasMany(Result::class);
+    }
+
+    public function gradingSystem() {
+        return $this->belongsTo(GradingSystem::class);
+    }
 }

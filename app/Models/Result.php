@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Result extends Model {
     protected $fillable = [
         'school_id', 'student_id', 'class_id', 'subject_id', 'session_id',
-        'term_id', 'exam_id', 'ca_score', 'exam_score', 'total', 'grade',
+        'term_id', 'exam_id', 'ca_score', 'exam_score', 'total', 'grade_scale_id',
         'remark', 'position', 'published_at'
     ];
 
@@ -27,6 +27,10 @@ class Result extends Model {
 
     public function subject() {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function gradeScale() {
+        return $this->belongsTo(GradeScale::class);
     }
 
     public function term() {

@@ -5,8 +5,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model {
     protected $fillable = [
-        'uuid', 'school_id', 'student_id', 'session_id', 'term_id',
-        'invoice_number', 'total_amount', 'paid_amount', 'balance', 'status',
+        'uuid', 'school_id', 'student_id', 'class_id', 'session_id', 'term_id',
+        'invoice_number', 'currency', 'total_amount', 'paid_amount', 'balance', 'status',
         'due_date', 'issued_by'
     ];
 
@@ -19,6 +19,10 @@ class Invoice extends Model {
 
     public function student() {
         return $this->belongsTo(Student::class);
+    }
+
+    public function schoolClass() {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
     public function items() {

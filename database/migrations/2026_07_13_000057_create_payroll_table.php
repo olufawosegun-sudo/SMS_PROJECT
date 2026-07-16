@@ -5,9 +5,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
     public function up(): void {
-        Schema::create('teacher_payroll', function (Blueprint $table) {
+        Schema::create('payroll', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('teacher_id')->constrained('teachers')->onDelete('cascade');
+            $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
+            $table->foreignId('staff_id')->constrained('staffs')->onDelete('cascade');
             $table->string('month');
             $table->integer('year');
             $table->decimal('basic_salary', 15, 2);
@@ -20,6 +21,6 @@ return new class extends Migration {
         });
     }
     public function down(): void {
-        Schema::dropIfExists('teacher_payroll');
+        Schema::dropIfExists('payroll');
     }
 };

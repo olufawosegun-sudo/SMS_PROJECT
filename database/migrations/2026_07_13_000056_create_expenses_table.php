@@ -10,6 +10,7 @@ return new class extends Migration {
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('expense_category_id')->constrained('expense_categories')->onDelete('cascade');
             $table->string('title');
+            $table->string('currency', 3)->default('NGN');
             $table->decimal('amount', 15, 2);
             $table->string('paid_to')->nullable();
             $table->date('expense_date');

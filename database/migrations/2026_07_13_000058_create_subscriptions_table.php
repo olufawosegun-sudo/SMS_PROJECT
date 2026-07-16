@@ -9,6 +9,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->string('plan'); // Starter, Standard, Premium
+            $table->string('currency', 3)->default('NGN');
             $table->decimal('price', 15, 2);
             $table->string('billing_cycle')->default('monthly'); // monthly, yearly
             $table->timestamp('starts_at')->nullable();

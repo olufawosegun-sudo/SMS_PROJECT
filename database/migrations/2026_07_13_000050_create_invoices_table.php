@@ -10,9 +10,11 @@ return new class extends Migration {
             $table->uuid('uuid')->unique();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
+            $table->foreignId('class_id')->nullable()->constrained('classes')->onDelete('set null');
             $table->foreignId('session_id')->constrained('academic_sessions')->onDelete('cascade');
             $table->foreignId('term_id')->constrained('academic_terms')->onDelete('cascade');
             $table->string('invoice_number')->unique();
+            $table->string('currency', 3)->default('NGN'); // NGN, GHS, USD, etc.
             $table->decimal('total_amount', 15, 2);
             $table->decimal('paid_amount', 15, 2)->default(0);
             $table->decimal('balance', 15, 2);

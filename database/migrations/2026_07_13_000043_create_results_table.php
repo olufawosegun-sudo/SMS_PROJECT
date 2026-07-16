@@ -17,7 +17,7 @@ return new class extends Migration {
             $table->decimal('ca_score', 5, 2)->nullable();
             $table->decimal('exam_score', 5, 2)->nullable();
             $table->decimal('total', 5, 2)->nullable();
-            $table->string('grade')->nullable();
+            $table->foreignId('grade_scale_id')->nullable()->constrained('grade_scales')->onDelete('set null');
             $table->string('remark')->nullable();
             $table->integer('position')->nullable();
             $table->timestamp('published_at')->nullable();

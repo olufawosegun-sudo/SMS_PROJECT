@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('backup_path');
             $table->string('backup_size')->nullable();
             $table->string('status')->default('completed');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps(); // Adds both created_at and updated_at
         });
     }
     public function down(): void {
