@@ -10,9 +10,7 @@ return new class extends Migration {
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('occupation')->nullable();
-            $table->string('address_line_1')->nullable();
-            $table->string('address_line_2')->nullable();
-            $table->string('address_line_3')->nullable();
+            $table->text('address')->nullable();
             $table->string('relationship')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();

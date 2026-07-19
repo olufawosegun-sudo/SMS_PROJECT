@@ -29,6 +29,7 @@ class GuardianWelcomeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: new \Illuminate\Mail\Mailables\Address(config('mail.from.address'), $this->schoolName),
             subject: 'Welcome to ' . $this->schoolName . ' - Your Parent/Guardian Account',
         );
     }

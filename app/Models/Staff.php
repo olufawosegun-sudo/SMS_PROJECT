@@ -92,6 +92,14 @@ class Staff extends Model
     }
 
     /**
+     * Get the class arms assigned to this teacher.
+     */
+    public function classArms()
+    {
+        return $this->hasMany(ClassArm::class, 'teacher_id');
+    }
+
+    /**
      * Get the full name of the staff member.
      */
     public function getFullNameAttribute()

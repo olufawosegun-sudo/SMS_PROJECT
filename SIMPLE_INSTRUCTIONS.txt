@@ -1,0 +1,68 @@
+========================================
+HOW TO ADD CLASS ARMS - SUPER SIMPLE
+========================================
+
+STEP 1: Go to "Classes" in the menu
+
+STEP 2: Create a class on the left side
+   - Name: JSS1
+   - Level: JSS1
+   - Click "Save Class"
+
+STEP 3: Find the JSS1 card on the right
+
+STEP 4: Click the GREEN "+ Add Arm" button
+
+STEP 5: A popup appears! Fill it:
+   - Arm Name: A
+   - Capacity: 40
+   - Teacher: (pick one or leave blank)
+   - Click "Add Arm"
+
+STEP 6: DONE! You created JSS1-A
+
+REPEAT Step 4-5 to add more arms:
+   - Click "+ Add Arm"
+   - Name: B, Capacity: 40
+   - Click "+ Add Arm"  
+   - Name: C, Capacity: 35
+
+========================================
+NOW YOU HAVE:
+========================================
+JSS1
+├── A (40 students max)
+├── B (40 students max)
+└── C (35 students max)
+
+========================================
+WHAT YOU'LL SEE:
+========================================
+
+On the Classes page, each class shows:
+- An "+ Add Arm" button (GREEN)
+- List of existing arms below
+
+Click the button → Popup opens → Fill form → Done!
+
+========================================
+FULL SETUP EXAMPLE:
+========================================
+
+1. Create JSS1 → Add arms A, B, C
+2. Create JSS2 → Add arms A, B, C
+3. Create JSS3 → Add arms A, B
+4. Create SS1 → Add arms A, B, C
+5. Create SS2 → Add arms A, B
+6. Create SS3 → Add arms A, B
+
+========================================
+THEN TEST:
+========================================
+
+Go to Students → Add New Student
+- Select Class: JSS1
+- See Arm dropdown show: A, B, C only!
+- Select one and save
+
+THAT'S IT! 🎓

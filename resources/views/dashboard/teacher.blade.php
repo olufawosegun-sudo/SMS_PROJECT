@@ -216,6 +216,88 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Student Documents (View Only) --}}
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-bold text-dark">Student Documents</h3>
+                                    <p class="text-sm text-gray-500 mt-1">Documents from your class students</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Document Stats --}}
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold text-dark mb-1">{{ $documentStats['total_students'] ?? 0 }}</p>
+                                    <p class="text-xs text-gray-600">Your Students</p>
+                                </div>
+
+                                <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-200">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="w-8 h-8 bg-yellow-200 rounded-lg flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="text-2xl font-bold text-dark mb-1">{{ $documentStats['missing_documents'] ?? 0 }}</p>
+                                    <p class="text-xs text-gray-600">Missing Birth Cert</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Recent Documents List --}}
+                        <div class="p-6">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-4">Recent Documents</h4>
+                            <div class="space-y-3">
+                                @forelse($recentDocuments as $document)
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                                    <div class="flex items-center gap-3 flex-1">
+                                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+                                            {{ substr($document->student->user->first_name ?? 'S', 0, 1) }}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-semibold text-dark truncate">{{ $document->student->user->first_name ?? 'N/A' }} {{ $document->student->user->last_name ?? '' }}</p>
+                                            <p class="text-xs text-gray-500 truncate">{{ $document->getDocumentTypeLabel() }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                                        <a href="{{ route('student-documents.view', $document->id) }}" class="p-1.5 text-info hover:bg-info/10 rounded transition" title="View">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ route('student-documents.download', $document->id) }}" class="p-1.5 text-primary hover:bg-primary/10 rounded transition" title="Download">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="text-center py-8">
+                                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <p class="text-sm text-gray-500">No documents yet</p>
+                                    <p class="text-xs text-gray-400 mt-1">Documents will appear when your students enroll</p>
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Right Column --}}

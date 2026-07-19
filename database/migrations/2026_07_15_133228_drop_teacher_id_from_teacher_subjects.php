@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('teacher_subjects', function (Blueprint $table) {
-            // Just drop the column (foreign key already removed)
-            $table->dropColumn('teacher_id');
-        });
+        if (Schema::hasColumn('teacher_subjects', 'teacher_id')) {
+            Schema::table('teacher_subjects', function (Blueprint $table) {
+                // Just drop the column (foreign key already removed)
+                $table->dropColumn('teacher_id');
+            });
+        }
     }
 
     /**
@@ -22,12 +24,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('teacher_subjects', function (Blueprint $table) {
-            // Restore teacher_id column
-            $table->foreignId('teacher_id')
-                ->after('staff_id')
-                ->constrained('teachers')
-                ->cascadeOnDelete();
-        });
+        if (!Schema::hasColumn('teacher_subjects', 'teacher_id')) {
+            Schema::table('teacher_subjects', function (Blueprint $table) {
+                // Restore teacher_id column
+                $table->foreignId('teacher_id')
+                    ->after('staff_id')
+                    ->constrained('teachers')
+                    ->cascadeOnDelete();
+            });
+        }
     }
 };

@@ -2,6 +2,10 @@
 
 @section('title', 'Add New Student')
 
+@push('scripts')
+<script src="{{ asset('js/dependent-dropdowns.js') }}"></script>
+@endpush
+
 @section('body')
 <div class="flex min-h-screen bg-surface">
     @include('partials.sidebar', ['role' => 'owner'])
@@ -123,7 +127,7 @@
                             <div class="grid md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Class *</label>
-                                    <select name="class_id" required
+                                    <select name="class_id" id="class_id" required
                                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
                                         <option value="">Select Class</option>
                                         @foreach($classes as $class)
@@ -139,11 +143,11 @@
 
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Class Arm</label>
-                                    <select name="arm_id"
+                                    <select name="arm_id" id="arm_id" data-selected="{{ old('arm_id') }}"
                                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
                                         <option value="">Select Arm</option>
                                         @foreach($arms as $arm)
-                                        <option value="{{ $arm->id }}" {{ old('arm_id') == $arm->id ? 'selected' : '' }}>
+                                        <option value="{{ $arm->id }}" data-class-id="{{ $arm->class_id }}" {{ old('arm_id') == $arm->id ? 'selected' : '' }}>
                                             {{ $arm->name }}
                                         </option>
                                         @endforeach
@@ -243,4 +247,11 @@ document.getElementById('profilePhotoInput').addEventListener('change', function
     }
 });
 </script>
+
+@push('scripts')
+<script>
+// Initialize dependent dropdowns for Class -> Arm
+initializeClassArmDropdown('class_id', 'arm_id');
+</script>
+@endpush
 @endsection

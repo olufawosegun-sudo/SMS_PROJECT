@@ -14,4 +14,36 @@ class StudentAttendance extends Model {
     protected $casts = [
         'attendance_date' => 'date'
     ];
+
+    /**
+     * Get the student for this attendance record.
+     */
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
+
+    /**
+     * Get the school for this attendance record.
+     */
+    public function school()
+    {
+        return $this->belongsTo(School::class);
+    }
+
+    /**
+     * Get the class for this attendance record.
+     */
+    public function schoolClass()
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    /**
+     * Get the user who recorded this attendance.
+     */
+    public function recorder()
+    {
+        return $this->belongsTo(User::class, 'recorded_by');
+    }
 }

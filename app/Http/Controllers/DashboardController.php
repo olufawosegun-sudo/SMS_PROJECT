@@ -11,6 +11,8 @@ use App\Models\Announcement;
 use App\Models\Notification;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
+use App\Models\TeacherSubject;
+use App\Models\StudentDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -141,12 +143,13 @@ class DashboardController extends Controller
             ->join('users', 'students.user_id', '=', 'users.id')
             ->first();
 
-        // Students by class
-        $studentsByClass = Student::where('students.school_id', $school->id)
-            ->join('classes', 'students.class_id', '=', 'classes.id')
-            ->selectRaw('classes.name as class_name, COUNT(*) as count')
-            ->groupBy('classes.id', 'classes.name')
-            ->orderBy('classes.name')
+        // Classes and Class Arms data
+        $classesWithArms = SchoolClass::where('school_id', $school->id)
+            ->with(['arms' => function($q) {
+                $q->withCount('students');
+            }])
+            ->withCount('students')
+            ->orderBy('name')
             ->get();
 
         // Get notifications
@@ -284,6 +287,35 @@ class DashboardController extends Controller
             'upcoming_events' => \App\Models\Event::where('school_id', $school->id)->where('event_date', '>=', now())->count(),
         ];
 
+        // Student Documents Statistics
+        $documentStats = [
+            'total_documents' => StudentDocument::where('school_id', $school->id)->count(),
+            'missing_documents' => Student::where('school_id', $school->id)
+                ->where('status', 'active')
+                ->whereDoesntHave('documents', function($q) {
+                    $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
+                })
+                ->count(),
+            'expiring_soon' => StudentDocument::where('school_id', $school->id)
+                ->where('status', 'active')
+                ->whereNotNull('expiry_date')
+                ->where('expiry_date', '<=', now()->addDays(30))
+                ->where('expiry_date', '>', now())
+                ->count(),
+            'expired' => StudentDocument::where('school_id', $school->id)
+                ->where('status', 'active')
+                ->whereNotNull('expiry_date')
+                ->where('expiry_date', '<', now())
+                ->count(),
+        ];
+
+        // Recent documents (last 10)
+        $recentDocuments = StudentDocument::where('school_id', $school->id)
+            ->with(['student.user', 'uploader'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
         return view('dashboard.owner', compact(
             'user',
             'school',
@@ -295,12 +327,14 @@ class DashboardController extends Controller
             'enrollmentData',
             'enrollmentLabels',
             'genderStats',
-            'studentsByClass',
+            'classesWithArms',
             'notifications',
             'announcements',
             'recentActivities',
             'quickStats',
-            'userActivityBreakdown'
+            'userActivityBreakdown',
+            'documentStats',
+            'recentDocuments'
         ));
     }
 
@@ -309,8 +343,72 @@ class DashboardController extends Controller
      */
     private function teacherDashboard($user, $school)
     {
-        // Teacher-specific dashboard logic
-        return view('dashboard.teacher', compact('user', 'school'));
+        // Get teacher's assigned classes and subjects
+        $teacherSubjects = TeacherSubject::where('school_id', $school->id)
+            ->where('staff_id', $user->teacher->id ?? 0)
+            ->with(['schoolClass', 'subject'])
+            ->get();
+
+        // Teacher-specific statistics
+        $stats = [
+            'total_classes' => $teacherSubjects->unique('class_id')->count(),
+            'total_subjects' => $teacherSubjects->unique('subject_id')->count(),
+            'total_students' => 0, // Will be calculated when student-class relationships are ready
+            'attendance_rate' => 85, // Mock data for now
+        ];
+
+        // Get current session and term
+        $currentSession = AcademicSession::where('school_id', $school->id)
+            ->where('is_current', true)
+            ->first();
+        
+        $currentTerm = AcademicTerm::where('school_id', $school->id)
+            ->where('is_current', true)
+            ->first();
+
+        // Today's schedule (mock data - will be real when timetable is integrated)
+        $todaySchedule = [];
+
+        // Get teacher's staff record to access assigned students
+        $staff = $user->teacher ?? $user->staff;
+        $teacherClassIds = $teacherSubjects->pluck('class_id')->unique();
+
+        // Student Documents for teacher's classes (view only)
+        $documentStats = [
+            'total_students' => Student::where('school_id', $school->id)
+                ->whereIn('class_id', $teacherClassIds)
+                ->where('status', 'active')
+                ->count(),
+            'missing_documents' => Student::where('school_id', $school->id)
+                ->whereIn('class_id', $teacherClassIds)
+                ->where('status', 'active')
+                ->whereDoesntHave('documents', function($q) {
+                    $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
+                })
+                ->count(),
+        ];
+
+        // Recent documents from teacher's students
+        $recentDocuments = StudentDocument::where('school_id', $school->id)
+            ->whereHas('student', function($q) use ($teacherClassIds) {
+                $q->whereIn('class_id', $teacherClassIds);
+            })
+            ->with(['student.user', 'uploader'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        return view('dashboard.teacher', compact(
+            'user', 
+            'school', 
+            'stats', 
+            'teacherSubjects', 
+            'currentSession', 
+            'currentTerm', 
+            'todaySchedule',
+            'documentStats',
+            'recentDocuments'
+        ));
     }
 
     /**
@@ -384,12 +482,13 @@ class DashboardController extends Controller
             ->join('users', 'students.user_id', '=', 'users.id')
             ->first();
 
-        // Students by class
-        $studentsByClass = Student::where('students.school_id', $school->id)
-            ->join('classes', 'students.class_id', '=', 'classes.id')
-            ->selectRaw('classes.name as class_name, COUNT(*) as count')
-            ->groupBy('classes.id', 'classes.name')
-            ->orderBy('classes.name')
+        // Classes and Class Arms data
+        $classesWithArms = SchoolClass::where('school_id', $school->id)
+            ->with(['arms' => function($q) {
+                $q->withCount('students');
+            }])
+            ->withCount('students')
+            ->orderBy('name')
             ->get();
 
         // Get notifications
@@ -477,6 +576,30 @@ class DashboardController extends Controller
                 })->count(),
         ];
 
+        // Student Documents for principal (view only, their school)
+        $documentStats = [
+            'total_documents' => StudentDocument::where('school_id', $school->id)->count(),
+            'missing_documents' => Student::where('school_id', $school->id)
+                ->where('status', 'active')
+                ->whereDoesntHave('documents', function($q) {
+                    $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
+                })
+                ->count(),
+            'expiring_soon' => StudentDocument::where('school_id', $school->id)
+                ->where('status', 'active')
+                ->whereNotNull('expiry_date')
+                ->where('expiry_date', '<=', now()->addDays(30))
+                ->where('expiry_date', '>', now())
+                ->count(),
+        ];
+
+        // Recent documents (last 8)
+        $recentDocuments = StudentDocument::where('school_id', $school->id)
+            ->with(['student.user', 'uploader'])
+            ->orderBy('created_at', 'desc')
+            ->limit(8)
+            ->get();
+
         return view('dashboard.principal', compact(
             'user',
             'school',
@@ -486,11 +609,13 @@ class DashboardController extends Controller
             'attendanceData',
             'attendanceLabels',
             'genderStats',
-            'studentsByClass',
+            'classesWithArms',
             'notifications',
             'announcements',
             'recentActivities',
-            'quickStats'
+            'quickStats',
+            'documentStats',
+            'recentDocuments'
         ));
     }
 

@@ -18,6 +18,6 @@ class Timetable extends Model {
     }
 
     public function teacher() {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsTo(Staff::class, 'teacher_id');
     }
 }

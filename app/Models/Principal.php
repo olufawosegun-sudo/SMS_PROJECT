@@ -10,6 +10,21 @@ class Principal extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'staffs';
+
+    protected static function booted()
+    {
+        static::addGlobalScope('principal', function ($builder) {
+            $builder->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal']);
+        });
+
+        static::creating(function ($principal) {
+            if (empty($principal->staff_type)) {
+                $principal->staff_type = 'Principal';
+            }
+        });
+    }
+
     protected $fillable = [
         'school_id',
         'user_id',

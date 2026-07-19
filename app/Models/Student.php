@@ -31,4 +31,8 @@ class Student extends Model {
     public function guardians() {
         return $this->belongsToMany(Guardian::class, 'guardian_students');
     }
+
+    public function documents() {
+        return $this->hasMany(StudentDocument::class);
+    }
 }

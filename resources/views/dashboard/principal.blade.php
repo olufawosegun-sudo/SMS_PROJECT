@@ -162,19 +162,164 @@
                     <canvas id="attendanceChart" height="200"></canvas>
                 </div>
 
-                {{-- Students by Class --}}
+                {{-- Classes & Class Arms --}}
                 <div class="bg-white rounded-2xl p-6 border border-gray-100">
-                    <h3 class="text-lg font-bold text-dark mb-4">Students by Class</h3>
-                    <div class="space-y-3">
-                        @forelse($studentsByClass as $class)
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-700 font-medium">{{ $class->class_name }}</span>
-                            <span class="px-3 py-1 bg-primary/10 text-primary rounded-lg font-bold">{{ $class->count }}</span>
+                    <h3 class="text-lg font-bold text-dark mb-4">Classes & Class Arms</h3>
+                    <div class="space-y-4">
+                        @forelse($classesWithArms as $class)
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-150 flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-2">
+                                <div>
+                                    <span class="text-[9px] font-bold text-accent-dark bg-accent-light/50 px-2 py-0.5 rounded-md uppercase tracking-wider">{{ $class->level }}</span>
+                                    <h4 class="text-sm font-bold text-dark mt-1">{{ $class->name }}</h4>
+                                </div>
+                                <span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg">{{ $class->students_count }} Students</span>
+                            </div>
+                            
+                            @if($class->arms->count() > 0)
+                            <div class="border-t border-gray-200/50 pt-2.5 space-y-1 text-left">
+                                @foreach($class->arms as $arm)
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-400">{{ $arm->name }}</span>
+                                    <span class="font-bold text-gray-600">{{ $arm->students_count }} / {{ $arm->capacity }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                            @else
+                            <p class="text-xs text-gray-400 italic text-left pt-2 border-t border-gray-200/50">No arms defined</p>
+                            @endif
                         </div>
                         @empty
                         <p class="text-gray-500 text-center py-4">No class data available</p>
                         @endforelse
                     </div>
+                </div>
+            </div>
+
+            {{-- Student Documents Section (View Only) --}}
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 mb-6 md:mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="text-left">
+                        <h3 class="text-lg font-bold text-dark">Student Documents</h3>
+                        <p class="text-sm text-gray-400">Monitor student documentation across the school</p>
+                    </div>
+                    <a href="{{ route('students.index') }}" class="text-sm font-semibold text-primary hover:text-primary-dark transition-colors">View All Students</a>
+                </div>
+
+                {{-- Document Statistics Cards --}}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-info/10 to-info/5 rounded-xl p-4 border border-info/20">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-info/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-info bg-info/20 px-2 py-1 rounded-full">Total</span>
+                        </div>
+                        <p class="text-2xl font-extrabold text-dark mb-1">{{ $documentStats['total_documents'] }}</p>
+                        <p class="text-xs text-gray-500">Documents on File</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-warning/10 to-warning/5 rounded-xl p-4 border border-warning/20">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-warning/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-warning bg-warning/20 px-2 py-1 rounded-full">Missing</span>
+                        </div>
+                        <p class="text-2xl font-extrabold text-dark mb-1">{{ $documentStats['missing_documents'] }}</p>
+                        <p class="text-xs text-gray-500">Missing Birth Certificates</p>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl p-4 border border-accent/20">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-bold text-accent bg-accent/20 px-2 py-1 rounded-full">Alert</span>
+                        </div>
+                        <p class="text-2xl font-extrabold text-dark mb-1">{{ $documentStats['expiring_soon'] }}</p>
+                        <p class="text-xs text-gray-500">Expiring in 30 Days</p>
+                    </div>
+                </div>
+
+                {{-- Recent Documents Table --}}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Student</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Document Type</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Uploaded</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @forelse($recentDocuments as $document)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                                            {{ substr($document->student->user->first_name ?? 'S', 0, 1) }}
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="text-sm font-semibold text-dark">{{ $document->student->user->first_name ?? 'N/A' }} {{ $document->student->user->last_name ?? '' }}</p>
+                                            <p class="text-xs text-gray-400">{{ $document->student->admission_no ?? 'N/A' }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="text-sm font-medium text-gray-700">{{ $document->getDocumentTypeLabel() }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="text-xs text-gray-500">{{ $document->created_at->diffForHumans() }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if($document->isExpired())
+                                        <span class="text-xs font-bold text-danger bg-danger/10 px-2 py-1 rounded-full">Expired</span>
+                                    @elseif($document->isExpiringSoon())
+                                        <span class="text-xs font-bold text-warning bg-warning/10 px-2 py-1 rounded-full">Expiring Soon</span>
+                                    @else
+                                        <span class="text-xs font-bold text-success bg-success/10 px-2 py-1 rounded-full">Active</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('student-documents.view', $document->id) }}" class="text-info hover:text-info-dark transition-colors" title="View">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ route('student-documents.download', $document->id) }}" class="text-primary hover:text-primary-dark transition-colors" title="Download">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center">
+                                    <div class="text-gray-400">
+                                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <p class="text-sm font-medium">No documents uploaded yet</p>
+                                        <p class="text-xs mt-1">Documents will appear here when students are enrolled</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

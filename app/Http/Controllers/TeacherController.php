@@ -204,7 +204,7 @@ class TeacherController extends Controller
         $teacher = Staff::where('school_id', $school->id)
             ->where('staff_type', 'Teacher')
             ->where('id', $id)
-            ->with(['user', 'department'])
+            ->with(['user', 'department', 'teacherSubjects.schoolClass', 'teacherSubjects.subject'])
             ->firstOrFail();
 
         return view('teachers.show', compact('teacher'));
@@ -221,12 +221,23 @@ class TeacherController extends Controller
         $teacher = Staff::where('school_id', $school->id)
             ->where('staff_type', 'Teacher')
             ->where('id', $id)
-            ->with('user')
+            ->with('user', 'teacherSubjects.schoolClass', 'teacherSubjects.subject')
             ->firstOrFail();
 
         $departments = Department::where('school_id', $school->id)->get();
+        $classes = SchoolClass::where('school_id', $school->id)->get();
+        $subjects = Subject::where('school_id', $school->id)->get();
+        
+        // Get current session and term
+        $currentSession = AcademicSession::where('school_id', $school->id)
+            ->where('is_current', true)
+            ->first();
+        
+        $currentTerm = AcademicTerm::where('school_id', $school->id)
+            ->where('is_current', true)
+            ->first();
 
-        return view('teachers.edit', compact('teacher', 'departments', 'school'));
+        return view('teachers.edit', compact('teacher', 'departments', 'school', 'classes', 'subjects', 'currentSession', 'currentTerm'));
     }
 
     /**

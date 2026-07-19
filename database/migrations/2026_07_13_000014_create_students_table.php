@@ -11,6 +11,8 @@ return new class extends Migration {
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('admission_no')->unique();
+            $table->unsignedBigInteger('class_id')->nullable();
+            $table->unsignedBigInteger('arm_id')->nullable();
             $table->date('admission_date')->nullable();
             $table->string('photo')->nullable();
             $table->string('status')->default('active');

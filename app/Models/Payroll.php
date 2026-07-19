@@ -3,11 +3,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TeacherPayroll extends Model {
-    protected $table = 'teacher_payroll';
+class Payroll extends Model {
+    protected $table = 'payroll';
 
     protected $fillable = [
-        'teacher_id', 'month', 'year', 'basic_salary', 'allowance',
+        'school_id', 'staff_id', 'month', 'year', 'basic_salary', 'allowance',
         'deduction', 'net_salary', 'payment_status', 'paid_at'
     ];
 
@@ -19,7 +19,11 @@ class TeacherPayroll extends Model {
         'paid_at' => 'datetime'
     ];
 
-    public function teacher() {
-        return $this->belongsTo(Teacher::class);
+    public function staff() {
+        return $this->belongsTo(Staff::class, 'staff_id');
+    }
+
+    public function school() {
+        return $this->belongsTo(School::class, 'school_id');
     }
 }

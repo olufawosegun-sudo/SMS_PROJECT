@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('staff_id')
                 ->nullable()
                 ->after('school_id')
-                ->constrained('staff')
+                ->constrained('staffs')
                 ->cascadeOnDelete();
         });
         
@@ -28,7 +28,7 @@ return new class extends Migration
         DB::statement('
             UPDATE teacher_subjects ts
             INNER JOIN teachers t ON ts.teacher_id = t.id
-            INNER JOIN staff s ON t.user_id = s.user_id
+            INNER JOIN staffs s ON t.user_id = s.user_id
             SET ts.staff_id = s.id
         ');
         
@@ -36,9 +36,29 @@ return new class extends Migration
             // Now make staff_id required
             $table->foreignId('staff_id')->nullable(false)->change();
             
-            // Drop the old foreign key and column
+            // Drop all foreign keys first to release unique index
+            $table->dropForeign(['school_id']);
             $table->dropForeign(['teacher_id']);
+            $table->dropForeign(['class_id']);
+            $table->dropForeign(['subject_id']);
+            $table->dropForeign(['session_id']);
+            $table->dropForeign(['term_id']);
+            
+            // Drop the old unique key
+            $table->dropUnique('teacher_subject_school_unique');
+            
+            // Drop the old column
             $table->dropColumn('teacher_id');
+
+            // Create the new unique key using staff_id
+            $table->unique(['school_id', 'staff_id', 'class_id', 'subject_id', 'session_id', 'term_id'], 'teacher_subject_school_unique');
+
+            // Recreate other foreign keys
+            $table->foreign('school_id')->references('id')->on('schools')->onDelete('cascade');
+            $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
+            $table->foreign('session_id')->references('id')->on('academic_sessions')->onDelete('set null');
+            $table->foreign('term_id')->references('id')->on('academic_terms')->onDelete('set null');
         });
     }
 
@@ -48,15 +68,41 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('teacher_subjects', function (Blueprint $table) {
-            // Drop the new foreign key and column
+            // Drop the new unique key first
+            $table->dropUnique('teacher_subject_school_unique');
+
+            // Drop foreign keys
+            $table->dropForeign(['school_id']);
             $table->dropForeign(['staff_id']);
-            $table->dropColumn('staff_id');
+            $table->dropForeign(['class_id']);
+            $table->dropForeign(['subject_id']);
+            $table->dropForeign(['session_id']);
+            $table->dropForeign(['term_id']);
             
-            // Restore the old teacher_id column
-            $table->foreignId('teacher_id')
-                ->after('school_id')
-                ->constrained('teachers')
-                ->cascadeOnDelete();
+            // Drop staff_id column
+            $table->dropColumn('staff_id');
+        });
+
+        if (!Schema::hasColumn('teacher_subjects', 'teacher_id')) {
+            Schema::table('teacher_subjects', function (Blueprint $table) {
+                // Restore teacher_id column
+                $table->foreignId('teacher_id')
+                    ->after('school_id')
+                    ->constrained('teachers')
+                    ->cascadeOnDelete();
+            });
+        }
+
+        Schema::table('teacher_subjects', function (Blueprint $table) {
+            // Restore the old unique key
+            $table->unique(['school_id', 'teacher_id', 'class_id', 'subject_id', 'session_id', 'term_id'], 'teacher_subject_school_unique');
+
+            // Recreate other foreign keys
+            $table->foreign('school_id')->references('id')->on('schools')->onDelete('cascade');
+            $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
+            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
+            $table->foreign('session_id')->references('id')->on('academic_sessions')->onDelete('set null');
+            $table->foreign('term_id')->references('id')->on('academic_terms')->onDelete('set null');
         });
     }
 };

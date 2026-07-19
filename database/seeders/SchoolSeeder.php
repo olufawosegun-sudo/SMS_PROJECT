@@ -12,7 +12,7 @@ use App\Models\Department;
 use App\Models\SchoolClass;
 use App\Models\ClassArm;
 use App\Models\Subject;
-use App\Models\Teacher;
+use App\Models\Staff;
 use App\Models\Student;
 use App\Models\Guardian;
 use App\Models\StudentAttendance;
@@ -117,7 +117,7 @@ class SchoolSeeder extends Seeder
             $classes[$name] = SchoolClass::create([
                 'school_id' => $school->id,
                 'name' => $name,
-                'level' => str_starts_with($name, 'JSS') ? 'Junior' : 'Senior',
+                'level' => $name,
                 'description' => $name . ' Class Level',
                 'status' => 'active',
             ]);
@@ -167,11 +167,12 @@ class SchoolSeeder extends Seeder
                 'status' => 'active',
             ]);
 
-            $teachers[] = Teacher::create([
+            $teachers[] = Staff::create([
                 'school_id' => $school->id,
                 'user_id' => $user->id,
                 'department_id' => $departments[$t['dept']]->id,
                 'staff_no' => $t['no'],
+                'staff_type' => 'Teacher',
                 'qualification' => 'B.Sc. Ed / B.Ed',
                 'employment_date' => '2022-01-10',
                 'salary' => 150000.00,
@@ -200,6 +201,7 @@ class SchoolSeeder extends Seeder
                 'capacity' => 40,
                 'status' => 'active',
             ]);
+// Note: teacher_id here refers to the staff ID from the staffs table
         }
 
         // 10. Create Guardians & Students
@@ -267,7 +269,7 @@ class SchoolSeeder extends Seeder
 
             // Link parent Mensahs to parent Kofi
             if (str_contains($s['email'], 'mensah')) {
-                $guardian->students()->attach($student->id, ['relationship' => 'Father', 'is_primary' => true]);
+                $guardian->students()->attach($student->id, ['school_id' => $school->id, 'relationship' => 'Father', 'is_primary' => true]);
             }
         }
 
