@@ -22,3 +22,37 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Backup files
+/storage/app/backups/*.sql
+/storage/app/backups/*.zip
+
+# Uploaded files
+/storage/app/public/student_documents/**
+/storage/app/public/admission_documents/**
+/storage/app/public/photos/**
+
+# Cache files
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+
+# Log files
+/storage/logs/*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+.*.sw[a-p]
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+/.vscode
+/.idea
+*.sublime-project
+*.sublime-workspace

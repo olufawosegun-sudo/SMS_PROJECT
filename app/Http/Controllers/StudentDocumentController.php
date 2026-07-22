@@ -16,8 +16,8 @@ class StudentDocumentController extends Controller
      */
     public function all(Request $request)
     {
-        // Only Owner can access this
-        if (Auth::user()->role->name !== 'Owner') {
+        // Only Owner and Principal can access this
+        if (!in_array(Auth::user()->role->name, ['Owner', 'Principal'])) {
             abort(403, 'Unauthorized access');
         }
 

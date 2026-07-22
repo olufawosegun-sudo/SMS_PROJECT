@@ -9,7 +9,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->foreignId('teacher_id')->constrained('teachers')->onDelete('cascade');
-            $table->string('leave_type');
+            $table->enum('leave_type', ['casual', 'sick', 'maternity', 'paternity', 'annual', 'unpaid', 'other'])->default('casual');
             $table->date('start_date');
             $table->date('end_date');
             $table->text('reason')->nullable();

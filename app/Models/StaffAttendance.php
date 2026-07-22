@@ -3,7 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Attendance extends Model {
+class StaffAttendance extends Model {
     protected $table = 'staff_attendance';
 
     protected $fillable = [

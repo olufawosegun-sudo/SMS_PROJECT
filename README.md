@@ -1,59 +1,360 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🎓 EduWest Africa - School Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A comprehensive School Management System built with Laravel 11, designed specifically for West African secondary schools.
 
-## About Laravel
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Laravel](https://img.shields.io/badge/Laravel-11.x-red.svg)
+![PHP](https://img.shields.io/badge/PHP-8.2+-purple.svg)
+![License](https://img.shields.io/badge/license-Proprietary-green.svg)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📋 Table of Contents
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- [Overview](#overview)
+- [Features](#features)
+- [System Requirements](#system-requirements)
+- [Installation](#installation)
+- [User Roles](#user-roles)
+- [Key Modules](#key-modules)
+- [Documentation](#documentation)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [Support](#support)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🌟 Overview
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+EduWest Africa is a fully-featured, multi-tenant School Management System designed to streamline administrative, academic, and financial operations for West African secondary schools. The system supports multiple user roles with granular permissions and provides comprehensive tools for student management, staff management, academics, finance, and communication.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## ✨ Features
 
-### Premium Partners
+### 👥 **User Management**
+- Multi-role access control (Owner, Principal, Teacher, Guardian, Student)
+- Role-based dashboards with customized views
+- Secure authentication and authorization
+- User activity tracking and audit logs
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 🎓 **Student Management**
+- Complete student lifecycle management (admission to alumni)
+- Student documents management with expiry tracking
+- Student attendance tracking with reporting
+- Student promotions and transfers
+- Academic performance monitoring
+- Student medical records and emergency contacts
 
-## Contributing
+### 👨‍🏫 **Staff Management**
+- Teacher, Principal, and Administrative staff management
+- Staff attendance and leave management
+- Staff payroll processing
+- Department and subject assignments
+- Performance tracking
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 📚 **Academic Management**
+- Academic sessions and terms management
+- Class and class arms organization
+- Subject management with teacher assignments
+- Timetable scheduling
+- Continuous assessments and CBT exams
+- Results processing and report cards
+- Grading systems with customizable scales
 
-## Code of Conduct
+### 💰 **Financial Management** (Owner Only)
+- Fee categories and structures
+- Invoice generation and management
+- Payment tracking and receipts
+- Expense management
+- Financial reports and analytics
+- Staff payroll integration
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 📨 **Communication**
+- Announcements system
+- Internal messaging
+- SMS notifications
+- Email notifications
+- Welcome emails for new users
 
-## Security Vulnerabilities
+### 🔐 **Admissions**
+- Public admission application portal
+- Document upload during application
+- Application review and processing
+- Admission offer letters
+- Automatic student enrollment
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 🎯 **Additional Features**
+- Database backup and restore
+- Real-time notifications
+- Attendance analytics
+- Multi-school support (multi-tenant)
+- Responsive design (mobile-friendly)
+- Dark mode support
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 💻 System Requirements
+
+- **PHP:** >= 8.2
+- **MySQL:** >= 8.0
+- **Composer:** Latest version
+- **Node.js:** >= 18.x (for frontend assets)
+- **NPM:** Latest version
+- **Web Server:** Apache/Nginx
+
+---
+
+## 🚀 Installation
+
+### 1. Clone the Repository
+```bash
+cd C:\xampp\htdocs
+git clone <repository-url> SMS_Project
+cd SMS_Project
+```
+
+### 2. Install PHP Dependencies
+```bash
+composer install
+```
+
+### 3. Install JavaScript Dependencies
+```bash
+npm install
+```
+
+### 4. Environment Setup
+```bash
+# Copy environment file
+copy .env.example .env
+
+# Generate application key
+php artisan key:generate
+```
+
+### 5. Database Configuration
+Edit `.env` file with your database credentials:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=sms_project
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 6. Run Migrations
+```bash
+php artisan migrate
+```
+
+### 7. Seed Database (Optional)
+```bash
+php artisan db:seed
+```
+
+### 8. Create Storage Link
+```bash
+php artisan storage:link
+```
+
+### 9. Build Frontend Assets
+```bash
+npm run build
+# Or for development
+npm run dev
+```
+
+### 10. Start Development Server
+```bash
+php artisan serve
+```
+
+Visit: `http://localhost:8000`
+
+---
+
+## 👤 User Roles
+
+| Role | Description | Key Permissions |
+|------|-------------|-----------------|
+| **Owner** | School owner/administrator | Full system access including financial management |
+| **Principal** | School principal/head | Academic management, staff oversight (no financial access) |
+| **Teacher** | Teaching staff | Class management, student grades, attendance |
+| **Guardian** | Parent/guardian | View their child's information, payments, reports |
+| **Student** | Enrolled students | View personal information, results, timetable |
+
+---
+
+## 📦 Key Modules
+
+### 1. **Student Management**
+- Student registration and profile management
+- Document management (birth certificates, medical records, etc.)
+- Attendance tracking with reports
+- Promotion and transfer handling
+- Alumni management
+
+### 2. **Staff Management**
+- Teacher and principal management
+- Staff attendance tracking
+- Payroll processing
+- Department assignments
+
+### 3. **Academic Management**
+- Session and term management
+- Class and subject configuration
+- Timetable scheduling
+- Assessment and examination
+- Results and report cards
+
+### 4. **Financial Management**
+- Fee structure setup
+- Invoice generation
+- Payment processing
+- Expense tracking
+- Financial reports
+
+### 5. **Admissions**
+- Public application portal at `/apply`
+- Document upload support
+- Application review workflow
+- Admission offer generation
+
+### 6. **Communication**
+- Announcements
+- Messaging system
+- SMS integration
+- Email notifications
+
+---
+
+## 📚 Documentation
+
+All documentation is organized in the `/docs` folder:
+
+### Technical Documentation (`/docs/technical`)
+- Database ERD and relationships
+- Database normalization guide
+- Table structure documentation
+
+### Implementation Guides (`/docs/guides`)
+- Admission system guide
+- Dashboard implementation
+- Feature-specific guides
+- Migration guides
+
+### Setup Instructions (`/docs/setup`)
+- Installation instructions
+- Testing guidelines
+- Configuration guides
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+- **Framework:** Laravel 11
+- **Language:** PHP 8.2+
+- **Database:** MySQL 8.0+
+- **Authentication:** Laravel Sanctum/Session
+
+### Frontend
+- **CSS Framework:** Tailwind CSS 3.x
+- **JavaScript:** Vanilla JS + Alpine.js
+- **Build Tool:** Vite
+- **Icons:** Heroicons
+
+### Additional Tools
+- **Mail:** Laravel Mail (SMTP support)
+- **Queue:** Database/Redis (configurable)
+- **Cache:** File/Redis (configurable)
+- **File Storage:** Local/Cloud storage
+
+---
+
+## 📁 Project Structure
+
+```
+SMS_Project/
+├── app/                    # Application code
+│   ├── Http/
+│   │   └── Controllers/   # All controllers
+│   ├── Models/            # Eloquent models
+│   ├── Mail/              # Mailable classes
+│   └── Providers/         # Service providers
+├── bootstrap/             # Framework bootstrap
+├── config/                # Configuration files
+├── database/              # Migrations, seeders, factories
+│   └── migrations/        # Database migrations
+├── docs/                  # Project documentation
+│   ├── technical/         # Technical docs
+│   ├── guides/            # Implementation guides
+│   └── setup/             # Setup instructions
+├── public/                # Public assets
+│   ├── css/              # Compiled CSS
+│   ├── js/               # Compiled JavaScript
+│   └── images/           # Static images
+├── resources/             # Views and raw assets
+│   ├── views/            # Blade templates
+│   ├── css/              # Source CSS
+│   └── js/               # Source JavaScript
+├── routes/                # Route definitions
+│   ├── web.php           # Web routes
+│   └── api.php           # API routes
+├── storage/               # Application storage
+│   ├── app/              # Application files
+│   ├── framework/        # Framework files
+│   └── logs/             # Application logs
+├── tests/                 # Automated tests
+└── vendor/                # Composer dependencies
+```
+
+---
+
+## 🤝 Contributing
+
+This is a proprietary project. For contribution guidelines, please contact the development team.
+
+---
+
+## 📞 Support
+
+For technical support or inquiries:
+- **Email:** support@eduwestafrica.com
+- **Documentation:** See `/docs` folder
+- **Issues:** Contact development team
+
+---
+
+## 📄 License
+
+This software is proprietary and confidential. Unauthorized copying, distribution, or modification is strictly prohibited.
+
+---
+
+## 🎯 Version History
+
+### Version 1.0.0 (Current)
+- ✅ Complete student management system
+- ✅ Staff management with payroll
+- ✅ Academic management with results
+- ✅ Financial management (Owner only)
+- ✅ Admission portal with document upload
+- ✅ Multi-role dashboards
+- ✅ Communication system
+- ✅ Database backup and restore
+
+---
+
+## 🙏 Acknowledgments
+
+Built with ❤️ for West African schools.
+
+**EduWest Africa** - Empowering Education Through Technology
+
+---
+
+**Last Updated:** 2026-07-19

@@ -8,7 +8,8 @@ return new class extends Migration {
         Schema::create('transport_drivers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('staff_id')->nullable()->constrained('staffs')->onDelete('cascade');
             $table->string('license_number')->unique();
             $table->string('phone')->nullable();
             $table->string('address')->nullable();

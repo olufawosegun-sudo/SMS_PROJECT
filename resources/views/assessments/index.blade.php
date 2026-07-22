@@ -2,7 +2,11 @@
 @section('title', 'Assessments')
 @section('body')
 <div class="flex min-h-screen bg-surface">
-    @include('partials.sidebar', ['role' => 'owner'])
+    @if(Auth::user()->role->name === 'Teacher')
+        @include('partials.teacher_sidebar')
+    @else
+        @include('partials.sidebar', ['role' => 'owner'])
+    @endif
     <main class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
         @include('partials.topbar')
         <div class="p-4 md:p-6 lg:p-8">

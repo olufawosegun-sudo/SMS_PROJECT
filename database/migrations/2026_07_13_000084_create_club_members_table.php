@@ -8,7 +8,8 @@ return new class extends Migration {
         Schema::create('club_members', function (Blueprint $table) {
             $table->id();
             $table->foreignId('club_id')->constrained('clubs')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
+            $table->foreignId('student_id')->nullable()->constrained('students')->onDelete('cascade');
+            $table->foreignId('staff_id')->nullable()->constrained('staffs')->onDelete('cascade');
             $table->timestamp('joined_at')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();

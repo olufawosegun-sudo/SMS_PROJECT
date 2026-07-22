@@ -21,7 +21,7 @@ class AssessmentController extends Controller
         $selectedClassId = $request->get('class_id');
 
         $assessmentsQuery = ContinuousAssessment::where('school_id', $school->id)
-            ->with(['schoolClass', 'subject', 'teacher.user']);
+            ->with(['schoolClass', 'subject', 'staff.user']);
 
         if ($selectedClassId) {
             $assessmentsQuery->where('class_id', $selectedClassId);
@@ -45,15 +45,26 @@ class AssessmentController extends Controller
 
         $school = Auth::user()->school;
 
+        // Resolve current session and term dynamically
+        $currentSession = \App\Models\AcademicSession::where('school_id', $school->id)->where('is_current', true)->first()
+            ?? \App\Models\AcademicSession::where('school_id', $school->id)->first();
+        $currentTerm = \App\Models\AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first()
+            ?? \App\Models\AcademicTerm::where('school_id', $school->id)->first();
+
+        $sessionId = $currentSession ? $currentSession->id : 1;
+        $termId = $currentTerm ? $currentTerm->id : 1;
+
         ContinuousAssessment::create([
             'school_id' => $school->id,
+            'session_id' => $sessionId,
+            'term_id' => $termId,
             'class_id' => $request->class_id,
             'subject_id' => $request->subject_id,
-            'teacher_id' => $request->teacher_id,
+            'staff_id' => $request->teacher_id,
             'title' => $request->title,
-            'max_score' => $request->max_score,
+            'total_marks' => $request->max_score, // Save total_marks which maps to max_score
             'weight' => $request->weight,
-            'status' => 'published',
+            'status' => 'active',
         ]);
 
         return redirect()->back()->with('success', 'Assessment added successfully!');

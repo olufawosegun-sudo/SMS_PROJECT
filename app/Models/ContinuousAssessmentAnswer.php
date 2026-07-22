@@ -21,6 +21,10 @@ class ContinuousAssessmentAnswer extends Model {
         return $this->belongsTo(ContinuousAssessmentQuestion::class, 'question_id');
     }
 
+    public function selectedOption() {
+        return $this->belongsTo(ContinuousAssessmentQuestionOption::class, 'selected_option_id');
+    }
+
     public function student() {
         return $this->belongsTo(Student::class);
     }

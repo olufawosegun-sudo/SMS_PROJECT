@@ -1,3 +1,7 @@
+@if(Auth::check() && Auth::user()->role && Auth::user()->role->name === 'Teacher')
+    @include('partials.teacher_nav')
+    @php return; @endphp
+@endif
 {{-- ======================================== TOP BAR (Responsive) ======================================== --}}
 <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-gray-100">
     <div class="flex items-center justify-between px-4 md:px-8 py-4">

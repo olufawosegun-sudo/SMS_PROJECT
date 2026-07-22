@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 class ContinuousAssessment extends Model {
     protected $fillable = [
         'school_id', 'session_id', 'term_id', 'class_id',
-        'subject_id', 'teacher_id', 'title', 'description', 'total_marks',
-        'start_time', 'end_time', 'status'
+        'subject_id', 'staff_id', 'title', 'description', 'total_marks',
+        'weight', 'start_time', 'end_time', 'status'
     ];
 
     protected $casts = [
@@ -15,8 +15,18 @@ class ContinuousAssessment extends Model {
         'end_time' => 'datetime'
     ];
 
-    public function teacher() {
-        return $this->belongsTo(Teacher::class);
+    public function getMaxScoreAttribute()
+    {
+        return $this->total_marks;
+    }
+
+    public function setMaxScoreAttribute($value)
+    {
+        $this->attributes['total_marks'] = $value;
+    }
+
+    public function staff() {
+        return $this->belongsTo(Staff::class);
     }
 
     public function subject() {

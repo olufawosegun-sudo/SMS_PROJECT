@@ -9,7 +9,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('hostel_id')->constrained('hostels')->onDelete('cascade');
             $table->string('room_number');
-            $table->integer('capacity');
+            $table->integer('capacity')->default(4);
             $table->integer('occupied')->default(0);
             $table->string('status')->default('active');
             $table->timestamps();

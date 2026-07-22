@@ -349,12 +349,45 @@ class DashboardController extends Controller
             ->with(['schoolClass', 'subject'])
             ->get();
 
+        // Get ALL school classes for the teacher dashboard class listing
+        $allClasses = SchoolClass::where('school_id', $school->id)
+            ->with(['arms', 'students' => function($q) {
+                $q->where('status', 'active');
+            }])
+            ->orderBy('name')
+            ->get();
+
+        // Count total active students across the school
+        $totalActiveStudents = Student::where('school_id', $school->id)
+            ->where('status', 'active')
+            ->count();
+
+        // Today's date
+        $today = now()->toDateString();
+
+        // Get class IDs where student attendance has been recorded today
+        $markedClassIds = StudentAttendance::where('school_id', $school->id)
+            ->where('attendance_date', $today)
+            ->pluck('class_id')
+            ->unique()
+            ->toArray();
+
+        // Calculate actual attendance rate dynamically
+        $totalAttendanceCount = StudentAttendance::where('school_id', $school->id)->count();
+        $presentAttendanceCount = StudentAttendance::where('school_id', $school->id)
+            ->whereIn('status', ['present', 'late'])
+            ->count();
+
+        $attendanceRate = $totalAttendanceCount > 0 
+            ? round(($presentAttendanceCount / $totalAttendanceCount) * 100) 
+            : 100;
+
         // Teacher-specific statistics
         $stats = [
-            'total_classes' => $teacherSubjects->unique('class_id')->count(),
+            'total_classes' => $allClasses->count(),
             'total_subjects' => $teacherSubjects->unique('subject_id')->count(),
-            'total_students' => 0, // Will be calculated when student-class relationships are ready
-            'attendance_rate' => 85, // Mock data for now
+            'total_students' => $totalActiveStudents,
+            'attendance_rate' => $attendanceRate,
         ];
 
         // Get current session and term
@@ -371,16 +404,12 @@ class DashboardController extends Controller
 
         // Get teacher's staff record to access assigned students
         $staff = $user->teacher ?? $user->staff;
-        $teacherClassIds = $teacherSubjects->pluck('class_id')->unique();
+        $allClassIds = $allClasses->pluck('id');
 
-        // Student Documents for teacher's classes (view only)
+        // Student Documents for all classes (view only)
         $documentStats = [
-            'total_students' => Student::where('school_id', $school->id)
-                ->whereIn('class_id', $teacherClassIds)
-                ->where('status', 'active')
-                ->count(),
+            'total_students' => $totalActiveStudents,
             'missing_documents' => Student::where('school_id', $school->id)
-                ->whereIn('class_id', $teacherClassIds)
                 ->where('status', 'active')
                 ->whereDoesntHave('documents', function($q) {
                     $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
@@ -388,11 +417,8 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
-        // Recent documents from teacher's students
+        // Recent documents from students
         $recentDocuments = StudentDocument::where('school_id', $school->id)
-            ->whereHas('student', function($q) use ($teacherClassIds) {
-                $q->whereIn('class_id', $teacherClassIds);
-            })
             ->with(['student.user', 'uploader'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -402,7 +428,9 @@ class DashboardController extends Controller
             'user', 
             'school', 
             'stats', 
-            'teacherSubjects', 
+            'teacherSubjects',
+            'allClasses',
+            'markedClassIds',
             'currentSession', 
             'currentTerm', 
             'todaySchedule',

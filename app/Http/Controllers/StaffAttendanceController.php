@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Staff;
-use App\Models\Attendance;
+use App\Models\StaffAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,6 +11,11 @@ class StaffAttendanceController extends Controller
 {
     public function index(Request $request)
     {
+        $userRole = Auth::user()->role->name;
+        if (!in_array($userRole, ['Owner', 'Principal'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $school = Auth::user()->school;
         $selectedDate = $request->get('date', now()->toDateString());
 
@@ -23,7 +28,7 @@ class StaffAttendanceController extends Controller
             ->get();
 
         // Get attendance records for the date
-        $attendance = Attendance::where('school_id', $school->id)
+        $attendance = StaffAttendance::where('school_id', $school->id)
             ->where('attendance_date', $selectedDate)
             ->with(['staff.user', 'recorder', 'approver'])
             ->get();
@@ -41,6 +46,11 @@ class StaffAttendanceController extends Controller
 
     public function store(Request $request)
     {
+        $userRole = Auth::user()->role->name;
+        if (!in_array($userRole, ['Owner', 'Principal'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'attendance_date' => 'required|date',
             'staff' => 'required|array',
@@ -53,7 +63,7 @@ class StaffAttendanceController extends Controller
         $school = Auth::user()->school;
 
         foreach ($request->staff as $entry) {
-            Attendance::updateOrCreate(
+            StaffAttendance::updateOrCreate(
                 [
                     'school_id' => $school->id,
                     'staff_id' => $entry['staff_id'],
@@ -73,10 +83,11 @@ class StaffAttendanceController extends Controller
 
     public function destroy($id)
     {
-        $attendance = Attendance::findOrFail($id);
+        $attendance = StaffAttendance::findOrFail($id);
         
-        // Only allow deletion if user has permission (owner/admin)
-        if (Auth::user()->role->name !== 'Owner') {
+        // Only allow deletion if user has permission (owner/principal)
+        $userRole = Auth::user()->role->name;
+        if (!in_array($userRole, ['Owner', 'Principal'])) {
             return redirect()->back()->with('error', 'You do not have permission to delete attendance records.');
         }
 

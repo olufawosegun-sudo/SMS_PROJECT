@@ -214,14 +214,18 @@ class DatabaseBackupController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
-        // Check if file exists
-        if (!Storage::disk('local')->exists($backup->backup_path)) {
+        // Build full path to backup file
+        $fullPath = storage_path('app/' . $backup->backup_path);
+
+        // Check if file exists using full path
+        if (!file_exists($fullPath)) {
+            \Log::error('Backup file not found at: ' . $fullPath);
             return redirect()->route('database-backup.index')
-                ->withErrors(['error' => 'Backup file not found.']);
+                ->withErrors(['error' => 'Backup file not found. Path: ' . $backup->backup_path]);
         }
 
-        // Download the file
-        return Storage::disk('local')->download($backup->backup_path, $backup->backup_name);
+        // Download the file using response()->download()
+        return response()->download($fullPath, $backup->backup_name);
     }
 
     /**
@@ -242,9 +246,12 @@ class DatabaseBackupController extends Controller
             ->firstOrFail();
 
         try {
-            // Delete the physical file
-            if (Storage::disk('local')->exists($backup->backup_path)) {
-                Storage::disk('local')->delete($backup->backup_path);
+            // Build full path to backup file
+            $fullPath = storage_path('app/' . $backup->backup_path);
+
+            // Delete the physical file if it exists
+            if (file_exists($fullPath)) {
+                unlink($fullPath);
             }
 
             // Delete the database record

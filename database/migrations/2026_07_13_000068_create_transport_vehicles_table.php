@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
             $table->string('vehicle_name');
             $table->string('plate_number')->unique();
-            $table->string('vehicle_type')->nullable();
+            $table->enum('vehicle_type', ['bus', 'van', 'car', 'coaster', 'minibus', 'other'])->default('bus');
             $table->integer('capacity')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();

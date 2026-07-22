@@ -1,3 +1,6 @@
+@if(Auth::check() && Auth::user()->role && Auth::user()->role->name === 'Teacher')
+    @php return; @endphp
+@endif
 {{-- ========================================
      SIDEBAR - Owner Full Access (Responsive)
      ======================================== --}}
@@ -161,8 +164,37 @@
         {{-- EXAMINATION --}}
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Examination</p>
         <ul class="space-y-1 mb-6">
+            {{-- Assessments Dropdown --}}
+            <li>
+                <button onclick="toggleAssessmentSubmenu()" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span>Assessments</span>
+                    </div>
+                    <svg id="assessmentChevron" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <ul id="assessmentSubmenu" class="hidden mt-1 ml-8 space-y-1">
+                    @foreach([
+                        ['label' => 'Continuous Assessments', 'route' => 'continuous-assessments.index'],
+                        ['label' => 'Assessment Questions', 'route' => 'assessment-questions.index'],
+                        ['label' => 'Question Options', 'route' => 'assessment-options.index'],
+                        ['label' => 'Assessment Answers', 'route' => 'assessment-answers.index'],
+                    ] as $subItem)
+                    <li>
+                        <a href="{{ route($subItem['route']) }}" class="block px-3 py-2 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200">
+                            {{ $subItem['label'] }}
+                        </a>
+                    </li>
+                    @endforeach
+                </ul>
+            </li>
+
+            {{-- Other Examination Items --}}
             @foreach([
-                ['label' => 'Assessments', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'assessments.index'],
                 ['label' => 'CBT Exams', 'icon' => 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'route' => 'cbt-exams.index'],
                 ['label' => 'Results', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'results.index'],
                 ['label' => 'Report Cards', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'report-cards.index'],
@@ -282,5 +314,12 @@
         const overlay = document.getElementById('sidebarOverlay');
         sidebar.classList.toggle('-translate-x-full');
         overlay.classList.toggle('hidden');
+    }
+
+    function toggleAssessmentSubmenu() {
+        const submenu = document.getElementById('assessmentSubmenu');
+        const chevron = document.getElementById('assessmentChevron');
+        submenu.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-90');
     }
 </script>

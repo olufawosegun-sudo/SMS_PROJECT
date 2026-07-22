@@ -161,7 +161,42 @@ Route::middleware('auth')->group(function () {
 
     // Examination & Grading
     Route::resource('assessments', AssessmentController::class);
+    
+    // Assessment Sub-modules
+    Route::resource('continuous-assessments', AssessmentController::class)->names([
+        'index' => 'continuous-assessments.index',
+        'create' => 'continuous-assessments.create',
+        'store' => 'continuous-assessments.store',
+        'show' => 'continuous-assessments.show',
+        'edit' => 'continuous-assessments.edit',
+        'update' => 'continuous-assessments.update',
+        'destroy' => 'continuous-assessments.destroy',
+    ]);
+    
+    Route::prefix('assessment-questions')->name('assessment-questions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AssessmentQuestionController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\AssessmentQuestionController::class, 'store'])->name('store');
+        Route::delete('/{id}', [\App\Http\Controllers\AssessmentQuestionController::class, 'destroy'])->name('destroy');
+    });
+    
+    Route::prefix('assessment-options')->name('assessment-options.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AssessmentOptionController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\AssessmentOptionController::class, 'store'])->name('store');
+        Route::delete('/{id}', [\App\Http\Controllers\AssessmentOptionController::class, 'destroy'])->name('destroy');
+    });
+    
+    Route::prefix('assessment-answers')->name('assessment-answers.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\AssessmentAnswerController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\AssessmentAnswerController::class, 'store'])->name('store');
+        Route::delete('/{id}', [\App\Http\Controllers\AssessmentAnswerController::class, 'destroy'])->name('destroy');
+    });
+    
     Route::resource('cbt-exams', CbtExamController::class);
+    Route::post('cbt-exams/{id}/submit-for-approval', [CbtExamController::class, 'submitForApproval'])->name('cbt-exams.submit-for-approval');
+    Route::post('cbt-exams/{id}/approve', [CbtExamController::class, 'approve'])->name('cbt-exams.approve');
+    Route::post('cbt-exams/{id}/return-for-revision', [CbtExamController::class, 'returnForRevision'])->name('cbt-exams.return-for-revision');
+    Route::post('results/batch-approve', [ResultController::class, 'batchApprove'])->name('results.batch-approve');
+    Route::post('results/{id}/approve', [ResultController::class, 'approve'])->name('results.approve');
     Route::resource('results', ResultController::class);
     Route::resource('report-cards', ReportCardController::class);
 
@@ -205,3 +240,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', [DatabaseBackupController::class, 'destroy'])->name('destroy');
     });
 });
+
+// Debug routes
+if (config('app.debug')) {
+    require __DIR__.'/debug_reports.php';
+}
