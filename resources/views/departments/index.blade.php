@@ -41,9 +41,16 @@
                 <div class="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group">
                     <div>
                         <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 text-xs font-bold rounded-full {{ $dept->status === 'active' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500' }}">
-                                {{ ucfirst($dept->status) }}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-3 py-1 text-xs font-bold rounded-full {{ $dept->status === 'active' ? 'bg-success/10 text-success' : 'bg-gray-100 text-gray-500' }}">
+                                    {{ ucfirst($dept->status) }}
+                                </span>
+                                @if($dept->schoolBranch)
+                                <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-primary/10 text-primary">
+                                    {{ $dept->schoolBranch->name }}
+                                </span>
+                                @endif
+                            </div>
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('departments.edit', $dept) }}" class="p-1.5 text-warning hover:bg-warning/10 rounded-lg transition-colors" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

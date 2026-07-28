@@ -25,22 +25,29 @@
 
             @if ($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                    <ul class="list-disc list-inside">
+                    <ul class="list-disc list-inside text-sm">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
+                    @if ($errors->has('email') && str_contains(implode(' ', $errors->get('email')), 'token'))
+                        <div class="mt-3 text-center">
+                            <a href="{{ route('password.request') }}" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-md transition">
+                                Request a New Reset Link
+                            </a>
+                        </div>
+                    @endif
                 </div>
             @endif
 
             <form method="POST" action="{{ route('password.update') }}" class="space-y-6">
                 @csrf
                 <input type="hidden" name="token" value="{{ $token }}">
-                <input type="hidden" name="email" value="{{ request('email') }}">
+                <input type="hidden" name="email" value="{{ old('email', request('email')) }}">
 
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                    <input type="email" name="email" id="email" required autofocus value="{{ request('email') }}"
+                    <input type="email" name="email" id="email" required autofocus value="{{ old('email', request('email')) }}"
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
                 </div>
 

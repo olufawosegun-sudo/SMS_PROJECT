@@ -66,6 +66,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('/register', 'showRegister')->name('register');
     Route::post('/register', 'register');
     Route::post('/logout', 'logout')->name('logout')->middleware('auth');
+    Route::get('/logout', 'logout')->middleware('auth');
 });
 
 // Email Verification Routes
@@ -199,6 +200,7 @@ Route::middleware('auth')->group(function () {
     Route::post('results/{id}/approve', [ResultController::class, 'approve'])->name('results.approve');
     Route::resource('results', ResultController::class);
     Route::resource('report-cards', ReportCardController::class);
+    Route::post('report-cards/{id}/publish', [ReportCardController::class, 'publish'])->name('report-cards.publish');
 
     // Finance (Owner Only)
     Route::resource('fee-categories', FeeCategoryController::class);
@@ -238,6 +240,22 @@ Route::middleware('auth')->group(function () {
         Route::post('/create', [DatabaseBackupController::class, 'create'])->name('create');
         Route::get('/{id}/download', [DatabaseBackupController::class, 'download'])->name('download');
         Route::delete('/{id}', [DatabaseBackupController::class, 'destroy'])->name('destroy');
+    });
+
+    // Super Admin Master Portal Routes (Master System Controller)
+    Route::prefix('super-admin')->name('super-admin.')->controller(\App\Http\Controllers\SuperAdminController::class)->group(function () {
+        Route::get('/', 'dashboard')->name('dashboard');
+        Route::get('/schools', 'schools')->name('schools');
+        Route::post('/schools/{id}/toggle-status', 'toggleSchoolStatus')->name('schools.toggle-status');
+        Route::post('/schools/{id}/login-as', 'loginAsSchool')->name('schools.login-as');
+        Route::get('/stop-impersonation', 'stopImpersonation')->name('stop-impersonation');
+        Route::get('/subscriptions', 'subscriptions')->name('subscriptions');
+        Route::get('/subscriptions/{id}', 'subscriptionDetail')->name('subscriptions.show');
+        Route::put('/subscriptions/{id}', 'updateSubscription')->name('subscriptions.update');
+        Route::get('/payments', 'payments')->name('payments');
+        Route::get('/activities', 'activities')->name('activities');
+        Route::get('/users', 'users')->name('users');
+        Route::get('/settings', 'systemSettings')->name('settings');
     });
 });
 

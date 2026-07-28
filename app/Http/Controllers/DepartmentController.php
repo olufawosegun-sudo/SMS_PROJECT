@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\SchoolBranch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,11 +16,13 @@ class DepartmentController extends Controller
     {
         $school = Auth::user()->school;
         $departments = Department::where('school_id', $school->id)
+            ->with(['schoolBranch'])
             ->withCount('teachers')
             ->latest()
             ->paginate(15);
+        $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
 
-        return view('departments.index', compact('departments', 'school'));
+        return view('departments.index', compact('departments', 'branches', 'school'));
     }
 
     /**
@@ -28,7 +31,8 @@ class DepartmentController extends Controller
     public function create()
     {
         $school = Auth::user()->school;
-        return view('departments.create', compact('school'));
+        $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
+        return view('departments.create', compact('branches', 'school'));
     }
 
     /**
@@ -42,10 +46,12 @@ class DepartmentController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', 'in:active,inactive'],
+            'school_branch_id' => ['nullable', 'exists:school_branches,id'],
         ]);
 
         Department::create([
             'school_id' => $school->id,
+            'school_branch_id' => $validated['school_branch_id'] ?? null,
             'name' => $validated['name'],
             'description' => $validated['description'],
             'status' => $validated['status'],
@@ -65,7 +71,7 @@ class DepartmentController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $department->load(['teachers.user']);
+        $department->load(['teachers.user', 'schoolBranch']);
         return view('departments.show', compact('department', 'school'));
     }
 
@@ -78,8 +84,9 @@ class DepartmentController extends Controller
         if ($department->school_id !== $school->id) {
             abort(403, 'Unauthorized action.');
         }
+        $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
 
-        return view('departments.edit', compact('department', 'school'));
+        return view('departments.edit', compact('department', 'branches', 'school'));
     }
 
     /**
@@ -96,9 +103,11 @@ class DepartmentController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', 'in:active,inactive'],
+            'school_branch_id' => ['nullable', 'exists:school_branches,id'],
         ]);
 
         $department->update([
+            'school_branch_id' => $validated['school_branch_id'] ?? null,
             'name' => $validated['name'],
             'description' => $validated['description'],
             'status' => $validated['status'],

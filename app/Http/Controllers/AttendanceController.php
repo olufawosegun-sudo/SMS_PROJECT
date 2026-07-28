@@ -52,11 +52,71 @@ class AttendanceController extends Controller
             'late' => $attendance->where('status', 'late')->count(),
         ];
 
-        // Custom stats for Principal/Owner
+        // Custom stats for Principal/Owner, Student, and Guardian
         $classSummaries = collect();
         $absentStudents = collect();
+        $studentStats = null;
+        $studentAttendanceHistory = collect();
+        $wardsStats = collect(); // For guardians
 
-        if (in_array($userRole, ['Principal', 'Owner'])) {
+        if ($userRole === 'Guardian') {
+            // Get guardian profile
+            $guardian = \App\Models\Guardian::where('school_id', $school->id)
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if ($guardian) {
+                // Get all wards (children) linked to this guardian
+                $wards = $guardian->students()->with(['user', 'schoolClass', 'arm'])->get();
+
+                // Get attendance statistics for each ward
+                $wardsStats = $wards->map(function($ward) use ($school) {
+                    $attendanceHistory = StudentAttendance::where('school_id', $school->id)
+                        ->where('student_id', $ward->id)
+                        ->orderBy('attendance_date', 'desc')
+                        ->get();
+
+                    $total = $attendanceHistory->count();
+                    $present = $attendanceHistory->where('status', 'present')->count();
+                    $late = $attendanceHistory->where('status', 'late')->count();
+                    $absent = $attendanceHistory->where('status', 'absent')->count();
+                    $rate = $total > 0 ? round((($present + ($late * 0.5)) / $total) * 100, 1) : 0;
+
+                    return [
+                        'student' => $ward,
+                        'total' => $total,
+                        'present' => $present,
+                        'late' => $late,
+                        'absent' => $absent,
+                        'rate' => $rate,
+                        'recent_attendance' => $attendanceHistory->take(10), // Last 10 records
+                    ];
+                });
+            }
+        } elseif ($userRole === 'Student') {
+            $student = Student::where('school_id', $school->id)->where('user_id', Auth::id())->first();
+            if ($student) {
+                $studentAttendanceHistory = StudentAttendance::where('school_id', $school->id)
+                    ->where('student_id', $student->id)
+                    ->orderBy('attendance_date', 'desc')
+                    ->get();
+
+                $total = $studentAttendanceHistory->count();
+                $present = $studentAttendanceHistory->where('status', 'present')->count();
+                $late = $studentAttendanceHistory->where('status', 'late')->count();
+                $absent = $studentAttendanceHistory->where('status', 'absent')->count();
+                $rate = $total > 0 ? round((($present + ($late * 0.5)) / $total) * 100, 1) : 100.0;
+
+                $studentStats = [
+                    'total' => $total,
+                    'present' => $present,
+                    'late' => $late,
+                    'absent' => $absent,
+                    'rate' => $rate,
+                    'student' => $student,
+                ];
+            }
+        } elseif (in_array($userRole, ['Principal', 'Owner'])) {
             $classSummaries = SchoolClass::where('school_id', $school->id)
                 ->withCount(['students' => function($q) {
                     $q->where('status', 'active');
@@ -100,7 +160,8 @@ class AttendanceController extends Controller
 
         return view('attendance.index', compact(
             'classes', 'attendance', 'students', 'selectedDate', 'selectedClassId', 
-            'summary', 'school', 'userRole', 'classSummaries', 'absentStudents'
+            'summary', 'school', 'userRole', 'classSummaries', 'absentStudents',
+            'studentStats', 'studentAttendanceHistory', 'wardsStats'
         ));
     }
 

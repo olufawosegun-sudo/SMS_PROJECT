@@ -6,6 +6,7 @@ use App\Models\Staff;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Department;
+use App\Models\SchoolBranch;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\AcademicSession;
@@ -35,6 +36,8 @@ class TeacherController extends Controller
             ->with([
                 'user', 
                 'department', 
+                'schoolBranch',
+                'user.schoolBranch',
                 'teacherSubjects' => function($query) use ($school) {
                     $query->where('school_id', $school->id);
                 },
@@ -68,6 +71,7 @@ class TeacherController extends Controller
         $departments = Department::where('school_id', $school->id)->get();
         $classes = SchoolClass::where('school_id', $school->id)->get();
         $subjects = Subject::where('school_id', $school->id)->get();
+        $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
         
         // Get current session and term
         $currentSession = AcademicSession::where('school_id', $school->id)
@@ -77,7 +81,7 @@ class TeacherController extends Controller
             ->where('is_current', true)
             ->first();
 
-        return view('teachers.create', compact('departments', 'classes', 'subjects', 'currentSession', 'currentTerm', 'school'));
+        return view('teachers.create', compact('departments', 'classes', 'subjects', 'branches', 'currentSession', 'currentTerm', 'school'));
     }
 
     /**
@@ -102,6 +106,8 @@ class TeacherController extends Controller
             'qualification' => ['nullable', 'string', 'max:255'],
             'employment_date' => ['nullable', 'date'],
             'salary' => ['nullable', 'numeric', 'min:0'],
+            'school_branch_id' => ['nullable', 'exists:school_branches,id'],
+            'custom_branch' => ['nullable', 'string', 'max:150'],
             'subject_assignments' => ['nullable', 'array'],
             'subject_assignments.*.class_id' => [
                 'required_with:subject_assignments',
@@ -115,6 +121,16 @@ class TeacherController extends Controller
         $teacherRole = Role::where('school_id', $school->id)
             ->where('name', 'Teacher')
             ->first();
+
+        // Resolve branch ID if user typed a custom branch name
+        $branchId = $validated['school_branch_id'] ?? null;
+        if (!$branchId && !empty($validated['custom_branch'])) {
+            $branch = SchoolBranch::firstOrCreate([
+                'school_id' => $school->id,
+                'name' => trim($validated['custom_branch']),
+            ]);
+            $branchId = $branch->id;
+        }
 
         // Get current session and term
         $currentSession = AcademicSession::where('school_id', $school->id)
@@ -136,6 +152,7 @@ class TeacherController extends Controller
             $user = User::create([
                 'uuid' => (string) Str::uuid(),
                 'school_id' => $school->id,
+                'school_branch_id' => $branchId,
                 'role_id' => $teacherRole->id,
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
@@ -151,6 +168,7 @@ class TeacherController extends Controller
             // Create Staff profile (replaces Teacher)
             $staff = Staff::create([
                 'school_id' => $school->id,
+                'school_branch_id' => $branchId,
                 'user_id' => $user->id,
                 'department_id' => $validated['department_id'] ?? null,
                 'staff_no' => 'TCH' . str_pad($user->id, 5, '0', STR_PAD_LEFT),

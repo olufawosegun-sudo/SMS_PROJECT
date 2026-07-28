@@ -90,6 +90,7 @@
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Teacher</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Staff No</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Campus/Branch</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Department</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Subjects/Classes</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
@@ -116,6 +117,11 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm font-semibold text-gray-700">{{ $teacher->staff_no }}</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-xs font-semibold px-2 py-1 rounded bg-gray-100 text-gray-700">
+                                        {{ $teacher->schoolBranch->name ?? ($teacher->user->schoolBranch->name ?? 'Main Campus') }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="text-sm text-gray-700">{{ $teacher->department->name ?? 'N/A' }}</span>

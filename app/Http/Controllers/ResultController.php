@@ -14,6 +14,7 @@ class ResultController extends Controller
     public function index(Request $request)
     {
         $school = Auth::user()->school;
+        $userRole = Auth::user()->role->name;
         $classes = SchoolClass::where('school_id', $school->id)->orderBy('name')->get();
         $subjects = Subject::where('school_id', $school->id)->orderBy('name')->get();
         $selectedClassId = $request->get('class_id');
@@ -21,21 +22,30 @@ class ResultController extends Controller
         $resultsQuery = Result::where('school_id', $school->id)
             ->with(['student.user', 'schoolClass', 'subject', 'approvals']);
 
-        if ($selectedClassId) {
+        // Students can only see their own results
+        if ($userRole === 'Student') {
+            $student = Student::where('school_id', $school->id)
+                ->where('user_id', Auth::id())
+                ->first();
+            $resultsQuery->where('student_id', $student->id ?? 0);
+        } elseif ($selectedClassId) {
             $resultsQuery->where('class_id', $selectedClassId);
         }
 
         $results = $resultsQuery->orderBy('created_at', 'desc')->get();
 
-        // Get all students for the dropdown (will be filtered by JavaScript)
-        $students = Student::where('school_id', $school->id)
-            ->where('status', 'active')
-            ->with(['user', 'schoolClass'])
-            ->get()
-            ->sortBy(function($student) {
-                return $student->user->first_name ?? '';
-            })
-            ->values();
+        // Get all students for the dropdown (will be filtered by JavaScript) - not needed for students
+        $students = [];
+        if ($userRole !== 'Student') {
+            $students = Student::where('school_id', $school->id)
+                ->where('status', 'active')
+                ->with(['user', 'schoolClass'])
+                ->get()
+                ->sortBy(function($student) {
+                    return $student->user->first_name ?? '';
+                })
+                ->values();
+        }
 
         return view('results.index', compact('classes', 'subjects', 'results', 'selectedClassId', 'school', 'students'));
     }

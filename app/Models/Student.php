@@ -8,7 +8,7 @@ class Student extends Model {
     use SoftDeletes;
 
     protected $fillable = [
-        'uuid', 'school_id', 'user_id', 'admission_no', 'class_id',
+        'uuid', 'school_id', 'school_branch_id', 'user_id', 'admission_no', 'class_id',
         'arm_id', 'admission_date', 'photo', 'status'
     ];
 
@@ -20,6 +20,10 @@ class Student extends Model {
         return $this->belongsTo(User::class);
     }
 
+    public function schoolBranch() {
+        return $this->belongsTo(SchoolBranch::class, 'school_branch_id');
+    }
+
     public function schoolClass() {
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
@@ -29,7 +33,9 @@ class Student extends Model {
     }
 
     public function guardians() {
-        return $this->belongsToMany(Guardian::class, 'guardian_students');
+        return $this->belongsToMany(Guardian::class, 'guardian_students')
+            ->withPivot('relationship', 'is_primary', 'is_emergency_contact', 'school_id')
+            ->withTimestamps();
     }
 
     public function documents() {

@@ -1,16 +1,99 @@
 @extends('layouts.app')
 @section('title', 'Exam Results')
 @section('body')
+@php $userRole = Auth::user()->role->name; @endphp
 <div class="flex min-h-screen bg-surface">
-    @if(Auth::user()->role->name === 'Teacher')
-        @include('partials.teacher_sidebar')
-    @else
-        @include('partials.sidebar', ['role' => strtolower(Auth::user()->role->name)])
-    @endif
+    @include('partials.sidebar')
 
     <main class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
         @include('partials.topbar')
         <div class="p-4 md:p-6 lg:p-8">
+
+            @if($userRole === 'Student')
+            {{-- ===================== STUDENT VIEW ===================== --}}
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-dark mb-2">📊 My Results</h1>
+                <p class="text-gray-500">View your exam scores and grades</p>
+            </div>
+
+            @if(session('success'))
+            <div class="mb-6 p-4 bg-success/10 border border-success/20 rounded-xl flex items-center gap-3">
+                <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-success font-semibold">{{ session('success') }}</p>
+            </div>
+            @endif
+
+            @if($results->count() > 0)
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-dark">My Grades Sheet</h3>
+                    <span class="text-sm text-gray-500">{{ $results->count() }} {{ $results->count() === 1 ? 'Result' : 'Results' }}</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr>
+                                <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Subject</th>
+                                <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Class</th>
+                                <th class="text-center px-4 py-4 text-xs font-bold text-gray-500 uppercase">CA</th>
+                                <th class="text-center px-4 py-4 text-xs font-bold text-gray-500 uppercase">Exam</th>
+                                <th class="text-center px-4 py-4 text-xs font-bold text-gray-500 uppercase">Total</th>
+                                <th class="text-center px-4 py-4 text-xs font-bold text-gray-500 uppercase">Grade</th>
+                                <th class="text-center px-6 py-4 text-xs font-bold text-gray-500 uppercase">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @foreach($results as $r)
+                            @php
+                                $isApproved = $r->approvals->where('status', 'approved')->isNotEmpty();
+                            @endphp
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 text-sm font-semibold text-dark">{{ $r->subject->name ?? 'N/A' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $r->schoolClass->name ?? 'N/A' }}</td>
+                                <td class="text-center px-4 py-4 text-sm text-gray-500">{{ $r->ca_score }}</td>
+                                <td class="text-center px-4 py-4 text-sm text-gray-500">{{ $r->exam_score }}</td>
+                                <td class="text-center px-4 py-4 text-sm font-bold text-primary">{{ $r->total_score }}</td>
+                                <td class="text-center px-4 py-4">
+                                    @php
+                                        $gradeColor = match($r->grade) {
+                                            'A' => 'bg-green-50 text-green-700 border-green-200',
+                                            'B' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                            'C' => 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                                            'D' => 'bg-orange-50 text-orange-700 border-orange-200',
+                                            default => 'bg-red-50 text-red-700 border-red-200',
+                                        };
+                                    @endphp
+                                    <span class="px-3 py-1 text-xs font-bold rounded-full border {{ $gradeColor }}">{{ $r->grade }}</span>
+                                </td>
+                                <td class="text-center px-6 py-4">
+                                    @if($isApproved)
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-150">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Approved
+                                    </span>
+                                    @else
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-50 text-gray-500 border border-gray-200">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                        Pending
+                                    </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @else
+            <div class="bg-white rounded-2xl p-12 border border-gray-100 text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <p class="text-sm font-semibold text-gray-500 mb-1">No Results Found</p>
+                <p class="text-xs text-gray-400">Your exam results will appear here once your teachers have recorded them.</p>
+            </div>
+            @endif
+
+            @else
+            {{-- ===================== TEACHER / PRINCIPAL / OWNER VIEW ===================== --}}
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-dark mb-2">Student Results</h1>
@@ -236,6 +319,7 @@
                     </form>
                 </div>
             </div>
+            @endif
         </div>
     </main>
 </div>
@@ -252,11 +336,13 @@
 
 <script>
 // Filter student scripts
-const allStudents = @json($students);
+const allStudents = @json($students ?? []);
 
 function filterStudents() {
-    const classId = document.getElementById('class_select').value;
+    const classId = document.getElementById('class_select')?.value;
     const studentSelect = document.getElementById('student_select');
+    
+    if (!studentSelect) return;
     
     studentSelect.innerHTML = '<option value="">Select Student</option>';
     

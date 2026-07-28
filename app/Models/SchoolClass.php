@@ -9,7 +9,11 @@ class SchoolClass extends Model {
 
     protected $table = 'classes';
 
-    protected $fillable = ['school_id', 'name', 'level', 'description', 'status'];
+    protected $fillable = ['school_id', 'school_branch_id', 'name', 'level', 'description', 'status'];
+
+    public function schoolBranch() {
+        return $this->belongsTo(SchoolBranch::class, 'school_branch_id');
+    }
 
     public function arms() {
         return $this->hasMany(ClassArm::class, 'class_id');

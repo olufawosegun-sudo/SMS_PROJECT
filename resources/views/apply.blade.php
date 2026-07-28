@@ -203,6 +203,34 @@
                             </p>
                             @enderror
                         </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Preferred Campus / Branch <span class="text-xs text-gray-400 font-normal">(Select or fill in branch name)</span></label>
+                            @if(isset($branches) && $branches->count() > 0)
+                            <select name="school_branch_id" id="school_branch_id" class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10 text-sm transition-all @error('school_branch_id') border-danger @enderror">
+                                <option value="">Main Campus (Default)</option>
+                                @foreach($branches as $b)
+                                <option value="{{ $b->id }}" {{ old('school_branch_id') == $b->id ? 'selected' : '' }}>
+                                    {{ $b->name }} ({{ $b->city ?? $b->address ?? 'Branch Campus' }})
+                                </option>
+                                @endforeach
+                            </select>
+                            @else
+                            <input type="text" name="preferred_branch" value="{{ old('preferred_branch') }}" placeholder="e.g. Main Campus, Ikeja Branch, Victoria Island Campus" class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-white hover:border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/10 text-sm transition-all @error('preferred_branch') border-danger @enderror">
+                            @endif
+                            @error('school_branch_id')
+                            <p class="text-danger text-xs mt-2 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                {{ $message }}
+                            </p>
+                            @enderror
+                            @error('preferred_branch')
+                            <p class="text-danger text-xs mt-2 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                {{ $message }}
+                            </p>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 

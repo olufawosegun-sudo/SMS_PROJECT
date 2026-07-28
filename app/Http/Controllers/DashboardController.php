@@ -24,6 +24,11 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('super-admin.dashboard');
+        }
+
         $school = $user->school;
         $role = $user->role->name ?? 'Owner';
 
@@ -661,7 +666,20 @@ class DashboardController extends Controller
      */
     private function studentDashboard($user, $school)
     {
-        // Student-specific dashboard logic
-        return view('dashboard.student', compact('user', 'school'));
+        $student = Student::where('school_id', $school->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        $publishedReportCards = collect();
+        if ($student) {
+            $publishedReportCards = \App\Models\ReportCard::where('school_id', $school->id)
+                ->where('student_id', $student->id)
+                ->where('status', 'published')
+                ->with(['schoolClass', 'session', 'term', 'generatedBy'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('dashboard.student', compact('user', 'school', 'student', 'publishedReportCards'));
     }
 }

@@ -125,6 +125,23 @@
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-6">
+                                @if(isset($branches) && $branches->count() > 0)
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Campus / Branch</label>
+                                    <select name="school_branch_id" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                        <option value="">Main Campus / All Branches</option>
+                                        @foreach($branches as $branch)
+                                        <option value="{{ $branch->id }}" {{ old('school_branch_id') == $branch->id ? 'selected' : '' }}>
+                                            {{ $branch->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    @error('school_branch_id')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                @endif
+
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Class *</label>
                                     <select name="class_id" id="class_id" required

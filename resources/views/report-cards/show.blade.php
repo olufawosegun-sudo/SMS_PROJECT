@@ -32,10 +32,27 @@
 </style>
 @endpush
 
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('print') === '1') {
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+    });
+</script>
+@endpush
+
 @section('body')
 <div class="flex min-h-screen bg-gray-100">
-    @if(Auth::user()->role->name === 'Teacher')
+    @if(Auth::user()->role->name === 'Student')
+        @include('partials.student_sidebar')
+    @elseif(Auth::user()->role->name === 'Teacher')
         @include('partials.teacher_sidebar')
+    @elseif(Auth::user()->role->name === 'Guardian')
+        @include('partials.guardian_sidebar')
     @else
         @include('partials.sidebar', ['role' => strtolower(Auth::user()->role->name)])
     @endif
@@ -54,6 +71,7 @@
                 </a>
                 
                 <div class="flex gap-3">
+                    @if(!in_array(Auth::user()->role->name ?? '', ['Student', 'Guardian']))
                     <a href="{{ route('report-cards.edit', $reportCard->id) }}" 
                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold text-sm flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,6 +79,7 @@
                         </svg>
                         Edit
                     </a>
+                    @endif
                     <button onclick="window.print()" 
                         class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-sm flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -6,6 +6,7 @@ use App\Models\Staff;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Department;
+use App\Models\SchoolBranch;
 use App\Mail\PrincipalWelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -27,7 +28,7 @@ class PrincipalController extends Controller
         // Get all staff members who are principals
         $principals = Staff::where('school_id', $school->id)
             ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
-            ->with(['user', 'department'])
+            ->with(['user', 'department', 'schoolBranch', 'user.schoolBranch'])
             ->latest()
             ->paginate(20);
 
@@ -52,7 +53,8 @@ class PrincipalController extends Controller
     public function create()
     {
         $school = Auth::user()->school;
-        return view('principals.create', compact('school'));
+        $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
+        return view('principals.create', compact('branches', 'school'));
     }
 
     /**
@@ -80,6 +82,8 @@ class PrincipalController extends Controller
             'emergency_contact_relationship' => ['nullable', 'string', 'max:100'],
             'contract_type' => ['nullable', 'in:permanent,contract,temporary'],
             'salary' => ['nullable', 'numeric', 'min:0'],
+            'school_branch_id' => ['nullable', 'exists:school_branches,id'],
+            'custom_branch' => ['nullable', 'string', 'max:150'],
         ]);
 
         $school = Auth::user()->school;
@@ -94,6 +98,16 @@ class PrincipalController extends Controller
             ]);
         }
 
+        // Resolve branch ID if user typed a custom branch name
+        $branchId = $validated['school_branch_id'] ?? null;
+        if (!$branchId && !empty($validated['custom_branch'])) {
+            $branch = SchoolBranch::firstOrCreate([
+                'school_id' => $school->id,
+                'name' => trim($validated['custom_branch']),
+            ]);
+            $branchId = $branch->id;
+        }
+
         DB::beginTransaction();
         try {
             // Handle profile photo upload
@@ -106,6 +120,7 @@ class PrincipalController extends Controller
             $user = User::create([
                 'uuid' => (string) Str::uuid(),
                 'school_id' => $school->id,
+                'school_branch_id' => $branchId,
                 'role_id' => $principalRole->id,
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
@@ -121,6 +136,7 @@ class PrincipalController extends Controller
             // Create Staff profile (replaces Principal)
             $staff = Staff::create([
                 'school_id' => $school->id,
+                'school_branch_id' => $branchId,
                 'user_id' => $user->id,
                 'department_id' => $validated['department_id'] ?? null,
                 'staff_no' => 'PRI' . str_pad($user->id, 5, '0', STR_PAD_LEFT),

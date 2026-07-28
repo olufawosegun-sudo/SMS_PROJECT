@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SchoolClass;
 use App\Models\ClassArm;
 use App\Models\Staff;
+use App\Models\SchoolBranch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,15 +15,16 @@ class ClassController extends Controller
     {
         $school = Auth::user()->school;
         $classes = SchoolClass::where('school_id', $school->id)
-            ->with(['arms' => function($q) {
-                $q->withCount('students');
+            ->with(['schoolBranch', 'arms' => function($q) {
+                $q->withCount('students')->with('schoolBranch');
             }, 'arms.teacher.user'])
             ->withCount(['students', 'arms'])
             ->orderBy('name')
             ->get();
         $teachers = Staff::where('school_id', $school->id)->where('staff_type', 'Teacher')->where('status', 'active')->with('user')->get();
+        $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
 
-        return view('classes.index', compact('classes', 'teachers', 'school'));
+        return view('classes.index', compact('classes', 'teachers', 'school', 'branches'));
     }
 
     public function store(Request $request)
@@ -31,12 +33,14 @@ class ClassController extends Controller
             'name' => 'required|string|max:50',
             'level' => 'required|string',
             'description' => 'nullable|string|max:255',
+            'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);
 
         $school = Auth::user()->school;
 
         SchoolClass::create([
             'school_id' => $school->id,
+            'school_branch_id' => $request->school_branch_id,
             'name' => $request->name,
             'level' => $request->level,
             'description' => $request->description,
@@ -53,9 +57,10 @@ class ClassController extends Controller
             'name' => 'required|string|max:50',
             'level' => 'required|string',
             'description' => 'nullable|string|max:255',
+            'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);
 
-        $class->update($request->only('name', 'level', 'description'));
+        $class->update($request->only('name', 'level', 'description', 'school_branch_id'));
         return redirect()->back()->with('success', 'Class updated successfully!');
     }
 
@@ -100,6 +105,7 @@ class ClassController extends Controller
             'name' => 'required|string|max:10',
             'capacity' => 'required|integer|min:1|max:100',
             'teacher_id' => 'nullable|exists:staff,id',
+            'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);
 
         // Verify class belongs to school
@@ -109,6 +115,7 @@ class ClassController extends Controller
 
         ClassArm::create([
             'school_id' => $school->id,
+            'school_branch_id' => $request->school_branch_id ?? $class->school_branch_id,
             'class_id' => $request->class_id,
             'name' => $request->name,
             'capacity' => $request->capacity,
@@ -130,6 +137,7 @@ class ClassController extends Controller
             'name' => 'required|string|max:10',
             'capacity' => 'required|integer|min:1|max:100',
             'teacher_id' => 'nullable|exists:staff,id',
+            'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);
 
         $arm = ClassArm::where('id', $armId)
@@ -140,6 +148,7 @@ class ClassController extends Controller
             'name' => $request->name,
             'capacity' => $request->capacity,
             'teacher_id' => $request->teacher_id,
+            'school_branch_id' => $request->school_branch_id,
         ]);
 
         return redirect()->back()->with('success', 'Class arm updated successfully!');

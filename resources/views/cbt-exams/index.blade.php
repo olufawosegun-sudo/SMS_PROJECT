@@ -2,17 +2,90 @@
 @section('title', 'CBT Exams')
 
 @section('body')
+@php $userRole = Auth::user()->role->name; @endphp
 <div class="flex min-h-screen bg-surface">
-    @if(Auth::user()->role->name === 'Teacher')
-        @include('partials.teacher_sidebar')
-    @else
-        @include('partials.sidebar', ['role' => strtolower(Auth::user()->role->name)])
-    @endif
+    @include('partials.sidebar')
     
     <main class="flex-1 ml-0 lg:ml-64 transition-all duration-300">
         @include('partials.topbar')
         
         <div class="p-4 md:p-6 lg:p-8">
+            @if(in_array($userRole, ['Student', 'Guardian']))
+            {{-- ===================== STUDENT VIEW ===================== --}}
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-dark mb-2">💻 CBT Exams</h1>
+                <p class="text-gray-500">View and take available online computer-based tests</p>
+            </div>
+
+            @if(session('success'))
+            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ session('error') }}
+            </div>
+            @endif
+
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-lg">
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-5">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Available CBT Examinations
+                    </h3>
+                    <p class="text-sm text-emerald-100 mt-1">{{ $exams->count() }} exam(s) scheduled for your class</p>
+                </div>
+
+                @if($exams->count() > 0)
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($exams as $exam)
+                        <div class="bg-white border-2 border-emerald-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                        Approved & Active
+                                    </span>
+                                    <span class="text-xs font-semibold text-gray-500">⏱️ {{ $exam->duration }} mins</span>
+                                </div>
+                                <h4 class="font-bold text-lg text-gray-900 mb-2">{{ $exam->title }}</h4>
+                                <div class="space-y-1 text-xs text-gray-600 mb-4">
+                                    <p class="font-medium text-emerald-700">📚 Subject: {{ $exam->subject->name }}</p>
+                                    <p>🎯 Total Marks: {{ $exam->total_marks }}</p>
+                                    <p>🏫 Class: {{ $exam->schoolClass->name }}</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('cbt-exams.show', $exam->id) }}" 
+                                class="block w-full text-center px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl transition-colors font-bold text-sm shadow-md">
+                                Start Exam →
+                            </a>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @else
+                <div class="p-12 text-center text-gray-400">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="text-sm font-semibold mb-1">No Active Exams</p>
+                    <p class="text-xs text-gray-400">There are currently no approved CBT examinations scheduled for your class.</p>
+                </div>
+                @endif
+            </div>
+
+            @else
+            {{-- ===================== TEACHER / PRINCIPAL / OWNER VIEW ===================== --}}
             {{-- Header --}}
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-dark mb-2">💻 Computer-Based Testing (CBT)</h1>
@@ -47,7 +120,7 @@
             @endif
 
             {{-- Principal/Owner: Pending Approvals Banner --}}
-            @if(in_array($userRole, ['Principal', 'Owner']) && $statusCounts['pending_approval'] > 0)
+            @if(in_array($userRole, ['Principal', 'Owner']) && ($statusCounts['pending_approval'] ?? 0) > 0)
             <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white shadow-lg mb-8">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -99,38 +172,35 @@
                             class="flex-1 min-w-[140px] px-4 py-3 rounded-xl font-semibold transition-all {{ $statusFilter === 'draft' ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg scale-105' : 'bg-gray-50 text-gray-700 hover:bg-gray-100' }}">
                             <div class="text-center">
                                 <p class="text-sm">Draft</p>
-                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['draft'] }}</p>
+                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['draft'] ?? 0 }}</p>
                             </div>
                         </a>
                         <a href="{{ route('cbt-exams.index', ['status' => 'pending_approval']) }}" 
                             class="flex-1 min-w-[140px] px-4 py-3 rounded-xl font-semibold transition-all {{ $statusFilter === 'pending_approval' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg scale-105' : 'bg-amber-50 text-amber-700 hover:bg-amber-100' }}">
                             <div class="text-center">
                                 <p class="text-sm">Pending</p>
-                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['pending_approval'] }}</p>
+                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['pending_approval'] ?? 0 }}</p>
                             </div>
-                            @if($statusCounts['pending_approval'] > 0)
-                            <div class="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold animate-pulse">!</div>
-                            @endif
                         </a>
                         <a href="{{ route('cbt-exams.index', ['status' => 'approved']) }}" 
                             class="flex-1 min-w-[140px] px-4 py-3 rounded-xl font-semibold transition-all {{ $statusFilter === 'approved' ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg scale-105' : 'bg-green-50 text-green-700 hover:bg-green-100' }}">
                             <div class="text-center">
                                 <p class="text-sm">Approved</p>
-                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['approved'] }}</p>
+                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['approved'] ?? 0 }}</p>
                             </div>
                         </a>
                         <a href="{{ route('cbt-exams.index', ['status' => 'needs_revision']) }}" 
                             class="flex-1 min-w-[140px] px-4 py-3 rounded-xl font-semibold transition-all {{ $statusFilter === 'needs_revision' ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white shadow-lg scale-105' : 'bg-orange-50 text-orange-700 hover:bg-orange-100' }}">
                             <div class="text-center">
                                 <p class="text-sm">Revision</p>
-                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['needs_revision'] }}</p>
+                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['needs_revision'] ?? 0 }}</p>
                             </div>
                         </a>
                         <a href="{{ route('cbt-exams.index', ['status' => 'rejected']) }}" 
                             class="flex-1 min-w-[140px] px-4 py-3 rounded-xl font-semibold transition-all {{ $statusFilter === 'rejected' ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg scale-105' : 'bg-red-50 text-red-700 hover:bg-red-100' }}">
                             <div class="text-center">
                                 <p class="text-sm">Rejected</p>
-                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['rejected'] }}</p>
+                                <p class="text-2xl font-bold mt-1">{{ $statusCounts['rejected'] ?? 0 }}</p>
                             </div>
                         </a>
                     </div>
@@ -181,7 +251,6 @@
                                 <option value="{{ $assessment->id }}">{{ $assessment->title }} ({{ $assessment->schoolClass->name ?? 'N/A' }} - {{ $assessment->subject->name ?? 'N/A' }})</option>
                                 @endforeach
                             </select>
-                            <p class="text-[10px] text-gray-400 mt-1">Select the assessment containing the questions for this CBT exam.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-600 mb-2">Session</label>
@@ -246,11 +315,6 @@
                                         <span class="px-3 py-1 rounded-full text-xs font-bold {{ $exam->getStatusBadgeClass() }}">
                                             {{ $exam->getStatusLabel() }}
                                         </span>
-                                        @if($exam->status === 'needs_revision')
-                                        <span class="px-2 py-1 bg-orange-500 text-white rounded text-xs font-bold animate-pulse">
-                                            ACTION REQUIRED
-                                        </span>
-                                        @endif
                                     </div>
 
                                     {{-- Exam Title --}}
@@ -270,37 +334,7 @@
                                             </svg>
                                             {{ $exam->duration }} minutes • {{ $exam->total_marks }} marks
                                         </div>
-                                        <div class="flex items-center gap-2">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                            </svg>
-                                            Created by {{ $exam->createdBy->first_name ?? 'System' }}
-                                        </div>
-                                        @if($exam->assessment)
-                                        <div class="flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                            </svg>
-                                            <span class="text-indigo-600 font-semibold">📝 {{ $exam->assessment->title }}</span>
-                                        </div>
-                                        @endif
                                     </div>
-
-                                    {{-- Principal Comment (if exists) --}}
-                                    @if($exam->principal_comment && in_array($exam->status, ['needs_revision', 'rejected']))
-                                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
-                                        <p class="text-xs font-semibold text-orange-900 mb-1">💬 Principal's Comment:</p>
-                                        <p class="text-xs text-orange-800">{{ $exam->principal_comment }}</p>
-                                    </div>
-                                    @endif
-
-                                    {{-- Rejection Reason (if exists) --}}
-                                    @if($exam->rejection_reason && $exam->status === 'rejected')
-                                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                                        <p class="text-xs font-semibold text-red-900 mb-1">❌ Rejection Reason:</p>
-                                        <p class="text-xs text-red-800">{{ $exam->rejection_reason }}</p>
-                                    </div>
-                                    @endif
 
                                     {{-- Action Button --}}
                                     <a href="{{ route('cbt-exams.show', $exam->id) }}" 
@@ -313,22 +347,13 @@
                         </div>
                         @else
                         <div class="p-12 text-center text-gray-400">
-                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                            </svg>
                             <p class="text-sm font-semibold mb-1">No Exams Found</p>
-                            <p class="text-xs">
-                                @if($statusFilter)
-                                    No exams with "{{ ucwords(str_replace('_', ' ', $statusFilter)) }}" status.
-                                @else
-                                    Create your first CBT exam to get started.
-                                @endif
-                            </p>
                         </div>
                         @endif
                     </div>
                 </div>
             </div>
+            @endif
         </div>
     </main>
 </div>

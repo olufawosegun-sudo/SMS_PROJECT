@@ -1,5 +1,14 @@
-@if(Auth::check() && Auth::user()->role && Auth::user()->role->name === 'Teacher')
-    @php return; @endphp
+@if(Auth::check() && Auth::user()->role)
+    @if(Auth::user()->role->name === 'Teacher')
+        @include('partials.teacher_sidebar')
+        @php return; @endphp
+    @elseif(Auth::user()->role->name === 'Student')
+        @include('partials.student_sidebar')
+        @php return; @endphp
+    @elseif(Auth::user()->role->name === 'Guardian')
+        @include('partials.guardian_sidebar')
+        @php return; @endphp
+    @endif
 @endif
 {{-- ========================================
      SIDEBAR - Owner Full Access (Responsive)

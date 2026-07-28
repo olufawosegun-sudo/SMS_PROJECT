@@ -57,7 +57,30 @@ class ReportCardController extends Controller
             if ($selectedStatus) {
                 $reportCardsQuery->where('status', $selectedStatus);
             }
-            // Principal/Owner sees ALL reports across all classes/sessions/terms
+        } elseif ($userRole === 'Student') {
+            // Students can ONLY view their own published report cards
+            $student = Student::where('school_id', $school->id)
+                ->where('user_id', Auth::id())
+                ->first();
+            
+            $reportCardsQuery->where('student_id', $student->id ?? 0)
+                ->where('status', 'published');
+        } elseif ($userRole === 'Guardian') {
+            // Guardians can ONLY view their wards' published report cards
+            $guardian = \App\Models\Guardian::where('school_id', $school->id)
+                ->where('user_id', Auth::id())
+                ->first();
+            
+            if ($guardian) {
+                // Get all ward (student) IDs linked to this guardian
+                $wardIds = $guardian->students()->pluck('students.id')->toArray();
+                
+                $reportCardsQuery->whereIn('student_id', $wardIds)
+                    ->where('status', 'published');
+            } else {
+                // No guardian profile found, show no results
+                $reportCardsQuery->where('id', 0);
+            }
         } else {
             // For Teachers: Apply all filters
             if ($selectedClassId) {
@@ -275,11 +298,46 @@ class ReportCardController extends Controller
     public function show($id)
     {
         $school = Auth::user()->school;
+        $user = Auth::user();
         
         $reportCard = ReportCard::where('school_id', $school->id)
             ->where('id', $id)
             ->with(['student.user', 'schoolClass', 'session', 'term', 'generatedBy'])
             ->firstOrFail();
+
+        // Security Check: If logged in as Student or Guardian, ensure they can only view their own report cards
+        if ($user->role->name === 'Student') {
+            $student = \App\Models\Student::where('user_id', $user->id)->where('school_id', $school->id)->first();
+            if (!$student || $reportCard->student_id !== $student->id) {
+                abort(403, 'Unauthorized access to this report card.');
+            }
+            // Students can only view published report cards
+            if ($reportCard->status !== 'published') {
+                abort(403, 'This report card has not been published yet.');
+            }
+        }
+
+        if ($user->role->name === 'Guardian') {
+            // Check if this guardian has a ward matching this report card's student
+            $guardian = \App\Models\Guardian::where('school_id', $school->id)
+                ->where('user_id', $user->id)
+                ->first();
+            
+            if (!$guardian) {
+                abort(403, 'Guardian profile not found.');
+            }
+            
+            // Check if the student is linked to this guardian through the pivot table
+            $isWard = $guardian->students()->where('students.id', $reportCard->student_id)->exists();
+            
+            if (!$isWard) {
+                abort(403, 'Unauthorized access to this report card.');
+            }
+            // Guardians can only view published report cards
+            if ($reportCard->status !== 'published') {
+                abort(403, 'This report card has not been published yet.');
+            }
+        }
 
         // Get student results for this term
         $results = Result::where('school_id', $school->id)
@@ -323,10 +381,9 @@ class ReportCardController extends Controller
             ->with(['student.user', 'schoolClass'])
             ->firstOrFail();
 
-        // Owner can only view (redirect to show page)
-        if ($userRole === 'Owner') {
-            return redirect()->route('report-cards.show', $id)
-                ->with('info', 'As school owner, you can view reports but not edit them. This maintains proper accountability.');
+        // Students and Owners cannot edit (redirect to show page)
+        if (in_array($userRole, ['Owner', 'Student'])) {
+            return redirect()->route('report-cards.show', $id);
         }
 
         $sessions = AcademicSession::where('school_id', $school->id)->orderBy('name', 'desc')->get();
@@ -422,6 +479,40 @@ class ReportCardController extends Controller
 
         return redirect()->route('report-cards.show', $reportCard->id)
             ->with('success', 'Report card updated successfully!');
+    }
+
+    
+    /**
+     * Publish an approved report card (make it visible to students)
+     */
+    public function publish($id)
+    {
+        $school = Auth::user()->school;
+        $user = Auth::user();
+
+        $reportCard = ReportCard::where('school_id', $school->id)
+            ->where('id', $id)
+            ->firstOrFail();
+
+        // Only Teachers can publish
+        if ($user->role->name !== 'Teacher') {
+            return redirect()->back()->with('error', 'Only teachers can publish report cards.');
+        }
+
+        // Can only publish if status is 'approved'
+        if ($reportCard->status !== 'approved') {
+            return redirect()->back()->with('error', 'Report card must be approved by Principal before publishing.');
+        }
+
+        // Update status to published
+        $reportCard->status = 'published';
+        $reportCard->published_at = now();
+        $reportCard->published_by = $user->id;
+        $reportCard->save();
+
+        // TODO: Send notification to student and guardian
+        
+        return redirect()->back()->with('success', 'Report card published successfully! Students can now view it.');
     }
 
     public function destroy($id)

@@ -46,6 +46,17 @@
                                 @endforeach
                             </select>
                         </div>
+                        @if(isset($branches) && $branches->count() > 0)
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">Campus / Branch</label>
+                            <select name="school_branch_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                                <option value="">All Branches / Main Campus</option>
+                                @foreach($branches as $b)
+                                <option value="{{ $b->id }}">{{ $b->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
                         <div>
                             <label class="block text-sm font-semibold text-gray-600 mb-2">Description</label>
                             <textarea name="description" placeholder="Brief details about class level" rows="3" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"></textarea>
@@ -62,7 +73,12 @@
                             <div>
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <span class="text-[9px] font-bold text-accent-dark bg-accent-light/50 px-2 py-0.5 rounded-md uppercase tracking-wider">{{ $c->level }}</span>
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <span class="text-[9px] font-bold text-accent-dark bg-accent-light/50 px-2 py-0.5 rounded-md uppercase tracking-wider">{{ $c->level }}</span>
+                                            @if($c->schoolBranch)
+                                            <span class="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md uppercase tracking-wider">{{ $c->schoolBranch->name }}</span>
+                                            @endif
+                                        </div>
                                         <h4 class="text-lg font-bold text-dark mt-1">{{ $c->name }}</h4>
                                     </div>
                                     <form method="POST" action="{{ route('classes.destroy', $c->id) }}" onsubmit="return confirm('Delete this class?')">
@@ -158,6 +174,18 @@
                     @endforeach
                 </select>
             </div>
+
+            @if(isset($branches) && $branches->count() > 0)
+            <div>
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Campus / Branch</label>
+                <select name="school_branch_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm">
+                    <option value="">Inherit from Class / Main Campus</option>
+                    @foreach($branches as $b)
+                    <option value="{{ $b->id }}">{{ $b->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
 
             <div class="flex gap-3 pt-2">
                 <button type="button" onclick="closeArmModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-semibold text-sm">Cancel</button>

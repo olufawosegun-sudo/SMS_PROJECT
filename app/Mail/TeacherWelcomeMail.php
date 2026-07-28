@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Queue\SerializesModels;
 
 class TeacherWelcomeMail extends Mailable
@@ -29,8 +30,14 @@ class TeacherWelcomeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: new \Illuminate\Mail\Mailables\Address(config('mail.from.address'), $this->schoolName),
-            subject: 'Welcome to ' . $this->schoolName . ' - Your Teacher Account',
+            from: new Address(
+                config('mail.from.address'), 
+                config('mail.from.name', $this->schoolName)
+            ),
+            replyTo: [
+                new Address(config('mail.from.address'), config('mail.from.name', $this->schoolName))
+            ],
+            subject: 'Welcome to ' . $this->schoolName . ' - Your Staff Account',
         );
     }
 

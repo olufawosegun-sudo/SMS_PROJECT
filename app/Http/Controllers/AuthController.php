@@ -395,6 +395,8 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $user = Auth::user();
+        \Log::info('Logout attempt', ['user_id' => $user?->id, 'email' => $user?->email]);
+        
         if ($user) {
             // Mark login session as logged out
             LoginSession::where('user_id', $user->id)
@@ -403,11 +405,14 @@ class AuthController extends Controller
                     'logout_at' => now(),
                     'status' => 'inactive',
                 ]);
+            \Log::info('LoginSession updated', ['user_id' => $user->id]);
         }
 
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        
+        \Log::info('Logout successful, redirecting to landing page');
 
         return redirect()->route('landing');
     }

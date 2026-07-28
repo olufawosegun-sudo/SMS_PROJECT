@@ -10,4 +10,8 @@ class SubscriptionPayment extends Model {
         'amount' => 'decimal:2',
         'paid_at' => 'datetime'
     ];
+
+    public function subscription() {
+        return $this->belongsTo(Subscription::class);
+    }
 }

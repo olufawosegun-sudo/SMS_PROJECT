@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\SchoolBranch;
 use App\Models\AdmissionApplication;
 use App\Models\AdmissionOffer;
 use App\Mail\AdmissionAppliedMail;
@@ -20,8 +21,9 @@ class AdmissionApplicationController extends Controller
     {
         $schools = School::all();
         $classes = SchoolClass::where('status', 'active')->get();
+        $branches = SchoolBranch::where('status', 'active')->get();
 
-        return view('apply', compact('schools', 'classes'));
+        return view('apply', compact('schools', 'classes', 'branches'));
     }
 
     /**
@@ -31,6 +33,8 @@ class AdmissionApplicationController extends Controller
     {
         $request->validate([
             'school_id' => 'required|exists:schools,id',
+            'school_branch_id' => 'nullable|exists:school_branches,id',
+            'preferred_branch' => 'nullable|string|max:150',
             'applied_class_id' => 'required|exists:classes,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -49,6 +53,16 @@ class AdmissionApplicationController extends Controller
             'medical_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
+        // Resolve branch ID if user typed a custom branch name
+        $branchId = $request->school_branch_id;
+        if (!$branchId && $request->filled('preferred_branch')) {
+            $branch = SchoolBranch::firstOrCreate([
+                'school_id' => $request->school_id,
+                'name' => trim($request->preferred_branch),
+            ]);
+            $branchId = $branch->id;
+        }
+
         // Generate a unique application number
         $year = date('Y');
         $count = AdmissionApplication::whereYear('created_at', $year)->count() + 1;
@@ -63,6 +77,7 @@ class AdmissionApplicationController extends Controller
         // Save application
         $application = AdmissionApplication::create([
             'school_id' => $request->school_id,
+            'school_branch_id' => $branchId,
             'application_no' => $applicationNo,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,

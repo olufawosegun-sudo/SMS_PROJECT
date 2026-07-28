@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\ClassArm;
+use App\Models\SchoolBranch;
 use App\Mail\StudentWelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -24,7 +25,7 @@ class StudentController extends Controller
     {
         $school = Auth::user()->school;
         $students = Student::where('school_id', $school->id)
-            ->with(['user', 'schoolClass', 'arm'])
+            ->with(['user', 'schoolClass', 'arm', 'schoolBranch'])
             ->latest()
             ->paginate(20);
 
@@ -50,8 +51,9 @@ class StudentController extends Controller
         $arms = ClassArm::whereHas('schoolClass', function($query) use ($school) {
             $query->where('school_id', $school->id);
         })->get();
+        $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
 
-        return view('students.create', compact('classes', 'arms', 'school'));
+        return view('students.create', compact('classes', 'arms', 'branches', 'school'));
     }
 
     /**
@@ -81,6 +83,7 @@ class StudentController extends Controller
             ],
             'admission_no' => ['nullable', 'string', 'unique:students,admission_no'],
             'admission_date' => ['nullable', 'date'],
+            'school_branch_id' => ['nullable', 'exists:school_branches,id'],
         ]);
         $studentRole = Role::where('school_id', $school->id)
             ->where('name', 'Student')
@@ -96,6 +99,7 @@ class StudentController extends Controller
         $user = User::create([
             'uuid' => (string) Str::uuid(),
             'school_id' => $school->id,
+            'school_branch_id' => $validated['school_branch_id'] ?? null,
             'role_id' => $studentRole->id,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
@@ -115,6 +119,7 @@ class StudentController extends Controller
         $student = Student::create([
             'uuid' => (string) Str::uuid(),
             'school_id' => $school->id,
+            'school_branch_id' => $validated['school_branch_id'] ?? null,
             'user_id' => $user->id,
             'admission_no' => $admissionNo,
             'class_id' => $validated['class_id'],

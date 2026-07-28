@@ -45,6 +45,13 @@ class CbtExamController extends Controller
         if ($userRole === 'Teacher') {
             // Teachers only see their own exams
             $examsQuery->where('created_by', Auth::id());
+        } elseif ($userRole === 'Student') {
+            // Students only see approved exams
+            $student = \App\Models\Student::where('school_id', $school->id)->where('user_id', Auth::id())->first();
+            $examsQuery->where('status', 'approved');
+            if ($student && $student->class_id) {
+                $examsQuery->where('class_id', $student->class_id);
+            }
         }
         // Principal and Owner see all exams
 

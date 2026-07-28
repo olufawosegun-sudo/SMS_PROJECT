@@ -110,15 +110,41 @@ class GuardianController extends Controller
 
         // Link students to guardian
         if (!empty($validated['student_ids'])) {
-            $guardian->students()->attach($validated['student_ids']);
+            $syncData = [];
+            foreach ($validated['student_ids'] as $studentId) {
+                $syncData[$studentId] = [
+                    'school_id' => $school->id,
+                    'relationship' => $validated['relationship'],
+                    'is_primary' => true,
+                    'is_emergency_contact' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            $guardian->students()->attach($syncData);
         }
 
         // Send welcome email with default password
         try {
-            Mail::to($user->email)->send(new GuardianWelcomeMail($guardian, 'password123'));
+            \Log::info('Attempting to send guardian welcome email', [
+                'guardian_id' => $guardian->id,
+                'email' => $user->email,
+                'school_name' => $school->name ?? 'Unknown'
+            ]);
+            
+            Mail::to($user->email)->send(new GuardianWelcomeMail($guardian->load('school'), 'password123'));
+            
+            \Log::info('Guardian welcome email sent successfully', [
+                'guardian_id' => $guardian->id,
+                'email' => $user->email
+            ]);
         } catch (\Exception $e) {
             // Log error but don't fail the creation
-            \Log::error('Failed to send guardian welcome email: ' . $e->getMessage());
+            \Log::error('Failed to send guardian welcome email: ' . $e->getMessage(), [
+                'guardian_id' => $guardian->id,
+                'email' => $user->email,
+                'exception' => $e->getTraceAsString()
+            ]);
         }
 
         return redirect()->route('guardians.index')
@@ -221,7 +247,18 @@ class GuardianController extends Controller
                 ->pluck('id')
                 ->toArray();
             
-            $guardian->students()->sync($validStudentIds);
+            // Prepare sync data with required pivot fields
+            $syncData = [];
+            foreach ($validStudentIds as $studentId) {
+                $syncData[$studentId] = [
+                    'school_id' => $school->id,
+                    'relationship' => $validated['relationship'],
+                    'is_primary' => true,
+                    'is_emergency_contact' => true,
+                ];
+            }
+            
+            $guardian->students()->sync($syncData);
         } else {
             $guardian->students()->detach();
         }

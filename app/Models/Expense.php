@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Expense extends Model {
     protected $fillable = [
-        'school_id', 'expense_category_id', 'title', 'amount',
+        'school_id', 'school_branch_id', 'expense_category_id', 'title', 'amount',
         'paid_to', 'expense_date', 'description', 'approved_by'
     ];
 
@@ -16,5 +16,9 @@ class Expense extends Model {
 
     public function category() {
         return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
+    }
+
+    public function schoolBranch() {
+        return $this->belongsTo(SchoolBranch::class, 'school_branch_id');
     }
 }

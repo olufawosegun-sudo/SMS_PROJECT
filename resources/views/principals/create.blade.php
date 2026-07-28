@@ -104,7 +104,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="md:col-span-2">
+                                <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Role Type *</label>
                                     <select name="role_type" required
                                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
@@ -114,6 +114,30 @@
                                         <option value="Assistant Principal" {{ old('role_type') == 'Assistant Principal' ? 'selected' : '' }}>Assistant Principal</option>
                                     </select>
                                     @error('role_type')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Employment Campus / Branch</label>
+                                    @if(isset($branches) && $branches->count() > 0)
+                                    <select name="school_branch_id"
+                                            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                        <option value="">Main Campus / All Branches</option>
+                                        @foreach($branches as $branch)
+                                        <option value="{{ $branch->id }}" {{ old('school_branch_id') == $branch->id ? 'selected' : '' }}>
+                                            {{ $branch->name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    @else
+                                    <input type="text" name="custom_branch" value="{{ old('custom_branch') }}" placeholder="e.g. Main Campus, Ikeja Branch, Victoria Island Campus"
+                                           class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all">
+                                    @endif
+                                    @error('school_branch_id')
+                                    <p class="text-xs text-danger mt-1">{{ $message }}</p>
+                                    @enderror
+                                    @error('custom_branch')
                                     <p class="text-xs text-danger mt-1">{{ $message }}</p>
                                     @enderror
                                 </div>

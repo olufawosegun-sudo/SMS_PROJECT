@@ -69,6 +69,17 @@
                                 <option value="other">Other Operations</option>
                             </select>
                         </div>
+                        @if(isset($branches) && $branches->count() > 0)
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-2">Campus / Branch</label>
+                            <select name="school_branch_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm">
+                                <option value="">All Branches / Main Campus</option>
+                                @foreach($branches as $b)
+                                <option value="{{ $b->id }}">{{ $b->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
                         <div>
                             <label class="block text-sm font-semibold text-gray-600 mb-2">Date Paid</label>
                             <input type="date" name="expense_date" required value="{{ date('Y-m-d') }}" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm">
@@ -90,6 +101,7 @@
                                 <tr>
                                     <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Expense Title</th>
                                     <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Category</th>
+                                    <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Branch</th>
                                     <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Amount</th>
                                     <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Date</th>
                                     <th class="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase">Actions</th>
@@ -103,6 +115,7 @@
                                         <p class="text-xs text-gray-400 truncate max-w-xs">{{ $exp->description ?? 'No extra details' }}</p>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600 uppercase font-medium">{{ $exp->category->name ?? 'Other' }}</td>
+                                    <td class="px-6 py-4 text-xs font-bold"><span class="bg-primary/10 text-primary px-2 py-1 rounded">{{ $exp->schoolBranch->name ?? 'Main Campus' }}</span></td>
                                     <td class="px-6 py-4 text-sm font-bold text-danger">{{ $currencySymbol }}{{ number_format($exp->amount, 2) }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-500">{{ $exp->expense_date?->format('M d, Y') ?? 'N/A' }}</td>
                                     <td class="px-6 py-4">

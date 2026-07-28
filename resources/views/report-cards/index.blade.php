@@ -41,7 +41,7 @@
                         @endif
                     </p>
                 </div>
-                @if(!in_array($userRole, ['Principal', 'Owner']))
+                @if($userRole === 'Teacher')
                 <div class="flex gap-3">
                     <button type="button" onclick="document.getElementById('generateModal').classList.remove('hidden')" 
                         class="px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors font-semibold text-sm flex items-center gap-2">
@@ -159,8 +159,8 @@
             @endif
 
             {{-- Filters --}}
-            @if(in_array($userRole, ['Principal', 'Owner']))
-            {{-- Principal/Owner Status Filter Bar - Modern & Professional --}}
+            {{-- Status Filter Bar (NOT for Students/Guardians) --}}
+            @if(!in_array($userRole, ['Student', 'Guardian']))
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8 overflow-hidden">
                 <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
                     <h3 class="text-white font-bold flex items-center gap-2">
@@ -187,7 +187,7 @@
                                         <p class="text-xs opacity-75">Complete overview</p>
                                     </div>
                                 </div>
-                                <span class="text-2xl font-bold">{{ $draftCount + $publishedCount }}</span>
+                                <span class="text-2xl font-bold">{{ $draftCount + $approvedCount + $publishedCount }}</span>
                             </div>
                         </a>
                         
@@ -201,8 +201,8 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold">Pending Approval</p>
-                                        <p class="text-xs opacity-75">Requires review</p>
+                                        <p class="text-sm font-bold">{{ in_array($userRole, ['Principal', 'Owner']) ? 'Pending Approval' : 'Draft' }}</p>
+                                        <p class="text-xs opacity-75">{{ in_array($userRole, ['Principal', 'Owner']) ? 'Requires review' : 'Not submitted yet' }}</p>
                                     </div>
                                 </div>
                                 <span class="text-2xl font-bold">{{ $draftCount }}</span>
@@ -257,7 +257,10 @@
                     </div>
                 </div>
             </div>
-            @else
+            @endif
+            
+            {{-- Additional Class/Session/Term Filters for Teachers ONLY --}}
+            @if($userRole === 'Teacher')
             {{-- Full Filters with Class/Session/Term for Teachers --}}
             <div class="bg-white rounded-2xl p-6 border border-gray-100 mb-8 shadow-sm">
                 <form method="GET" action="{{ route('report-cards.index') }}" class="space-y-4">
@@ -481,17 +484,23 @@
                                 </a>
                             @elseif($reportCard->status === 'approved' && !in_array($userRole, ['Principal', 'Owner']))
                                 {{-- TEACHER: Publish Approved Report --}}
-                                <a href="{{ route('report-cards.edit', $reportCard->id) }}" 
-                                    class="block w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-center font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
-                                    <div class="flex items-center justify-center gap-3">
+                                <form method="POST" action="{{ route('report-cards.publish', $reportCard->id) }}" class="mb-2">
+                                    @csrf
+                                    <button type="submit" 
+                                        class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-center font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-3"
+                                        onclick="return confirm('Publish this report card? Students and guardians will be able to view it.');">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
-                                        <span class="text-lg">Publish Report</span>
+                                        <span class="text-lg">✅ Publish Report</span>
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                         </svg>
-                                    </div>
+                                    </button>
+                                </form>
+                                <a href="{{ route('report-cards.show', $reportCard->id) }}" 
+                                    class="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-center font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
+                                    Preview Before Publishing
                                 </a>
                             @elseif($userRole === 'Principal')
                                 {{-- PRINCIPAL: View Approved/Published --}}
@@ -505,6 +514,19 @@
                                     class="block w-full bg-purple-600 hover:bg-purple-700 text-white text-center font-semibold py-3 px-4 rounded-lg transition-colors">
                                     Monitor Report
                                 </a>
+                            @elseif(in_array($userRole, ['Student', 'Guardian']))
+                                 {{-- STUDENT / GUARDIAN: View & Print Only (HIGHLY VISIBLE) --}}
+                                 <a href="{{ route('report-cards.show', $reportCard->id) }}" 
+                                     style="display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:16px 20px; background:linear-gradient(135deg, #059669, #047857); color:#ffffff; font-weight:800; font-size:16px; text-decoration:none; border-radius:12px; box-shadow:0 4px 15px rgba(5,150,105,0.4); transition:all 0.2s; text-align:center; letter-spacing:0.5px; border:2px solid #10b981;">
+                                     <svg style="width:24px; height:24px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                     </svg>
+                                     👁️ VIEW & PRINT REPORT CARD
+                                     <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                                     </svg>
+                                 </a>
                             @else
                                 {{-- TEACHER: Normal Buttons --}}
                                 <div class="flex gap-2">
@@ -531,13 +553,15 @@
                     </svg>
                     <h3 class="text-lg font-semibold text-gray-500 mb-2">No Report Cards Found</h3>
                     <p class="text-sm text-gray-400 mb-6">
-                        @if(in_array($userRole, ['Principal', 'Owner']))
+                        @if($userRole === 'Student')
+                            No published report cards available yet. Your teacher will create and publish your report card once all assessments are completed.
+                        @elseif(in_array($userRole, ['Principal', 'Owner']))
                             No report cards available for review. Teachers will create report cards for students.
                         @else
                             Generate your first report card to get started
                         @endif
                     </p>
-                    @if(!in_array($userRole, ['Principal', 'Owner']))
+                    @if($userRole === 'Teacher')
                     <button type="button" onclick="document.getElementById('generateModal').classList.remove('hidden')" 
                         class="px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors font-semibold text-sm inline-flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -551,7 +575,7 @@
             </div>
 
             {{-- Students Without Reports - COLLATION CENTER (Teachers Only) --}}
-            @if($selectedClassId && !in_array($userRole, ['Principal', 'Owner']))
+            @if($userRole === 'Teacher' && $selectedClassId)
                 @if($studentsWithoutReports->count() > 0)
                 <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 overflow-hidden shadow-lg mt-8">
                     <div class="p-6 border-b-2 border-amber-300 bg-gradient-to-r from-amber-100 to-orange-100">
@@ -676,4 +700,5 @@
         </form>
     </div>
 </div>
+
 @endsection

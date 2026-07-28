@@ -63,6 +63,38 @@
                     @enderror
                 </div>
 
+                @if(isset($branches) && $branches->count() > 0)
+                <div class="form-group">
+                    <label class="block text-sm font-bold text-gray-800 mb-2.5">
+                        Campus / Branch
+                    </label>
+                    <div class="relative">
+                        <select name="school_branch_id"
+                                class="w-full px-4 py-3.5 pr-12 rounded-xl border-2 border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200 appearance-none bg-white cursor-pointer">
+                            <option value="">All Branches / Main Campus</option>
+                            @foreach($branches as $branch)
+                            <option value="{{ $branch->id }}" {{ old('school_branch_id') == $branch->id ? 'selected' : '' }}>
+                                {{ $branch->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    @error('school_branch_id')
+                    <p class="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ $message }}
+                    </p>
+                    @enderror
+                </div>
+                @endif
+
                 <div class="form-group">
                     <label class="block text-sm font-bold text-gray-800 mb-2.5">
                         Status <span class="text-red-500">*</span>

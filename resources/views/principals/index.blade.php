@@ -82,6 +82,7 @@
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Principal</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Role</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Campus/Branch</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Phone</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Gender</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
@@ -111,6 +112,11 @@
                                     @endphp
                                     <span class="px-3 py-1 text-xs font-bold bg-{{ $roleColor }}/10 text-{{ $roleColor }} rounded-full">
                                         {{ $principal->staff_type }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-gray-100 text-gray-700">
+                                        {{ $principal->schoolBranch->name ?? ($principal->user->schoolBranch->name ?? 'Main Campus') }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

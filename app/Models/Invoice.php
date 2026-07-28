@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model {
     protected $fillable = [
-        'uuid', 'school_id', 'student_id', 'class_id', 'session_id', 'term_id',
+        'uuid', 'school_id', 'school_branch_id', 'student_id', 'class_id', 'session_id', 'term_id',
         'invoice_number', 'currency', 'total_amount', 'paid_amount', 'balance', 'status',
         'due_date', 'issued_by'
     ];
@@ -16,6 +16,10 @@ class Invoice extends Model {
         'balance' => 'decimal:2',
         'due_date' => 'date'
     ];
+
+    public function schoolBranch() {
+        return $this->belongsTo(SchoolBranch::class, 'school_branch_id');
+    }
 
     public function student() {
         return $this->belongsTo(Student::class);

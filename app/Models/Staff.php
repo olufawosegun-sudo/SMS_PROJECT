@@ -14,6 +14,7 @@ class Staff extends Model
 
     protected $fillable = [
         'school_id',
+        'school_branch_id',
         'user_id',
         'department_id',
         'staff_no',
@@ -73,6 +74,11 @@ class Staff extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function schoolBranch()
+    {
+        return $this->belongsTo(SchoolBranch::class, 'school_branch_id');
     }
 
     /**
