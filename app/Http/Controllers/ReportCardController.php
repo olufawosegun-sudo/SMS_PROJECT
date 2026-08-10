@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Result;
-use App\Models\Student;
-use App\Models\SchoolClass;
-use App\Models\Subject;
-use App\Models\ReportCard;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
+use App\Models\Guardian;
+use App\Models\ReportCard;
+use App\Models\Result;
+use App\Models\ResultApproval;
+use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\StudentAttendance;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,26 +22,26 @@ class ReportCardController extends Controller
     {
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
-        
+
         // DEBUG: Log what we're getting
         \Log::info('ReportCard Index Debug', [
             'userRole' => $userRole,
             'selectedStatus' => $request->get('status'),
             'school_id' => $school->id,
         ]);
-        
+
         // Get current session and term
         $currentSession = AcademicSession::where('school_id', $school->id)
             ->where('is_current', true)
             ->first() ?? AcademicSession::where('school_id', $school->id)->first();
-        
+
         $currentTerm = AcademicTerm::where('school_id', $school->id)
             ->where('is_current', true)
             ->first() ?? AcademicTerm::where('school_id', $school->id)->first();
 
         $sessions = AcademicSession::where('school_id', $school->id)->orderBy('name', 'desc')->get();
         $terms = AcademicTerm::where('school_id', $school->id)->orderBy('name')->get();
-        
+
         // Show all classes in the school for all users
         $classes = SchoolClass::where('school_id', $school->id)->orderBy('name')->get();
 
@@ -62,19 +64,19 @@ class ReportCardController extends Controller
             $student = Student::where('school_id', $school->id)
                 ->where('user_id', Auth::id())
                 ->first();
-            
+
             $reportCardsQuery->where('student_id', $student->id ?? 0)
                 ->where('status', 'published');
         } elseif ($userRole === 'Guardian') {
             // Guardians can ONLY view their wards' published report cards
-            $guardian = \App\Models\Guardian::where('school_id', $school->id)
+            $guardian = Guardian::where('school_id', $school->id)
                 ->where('user_id', Auth::id())
                 ->first();
-            
+
             if ($guardian) {
                 // Get all ward (student) IDs linked to this guardian
                 $wardIds = $guardian->students()->pluck('students.id')->toArray();
-                
+
                 $reportCardsQuery->whereIn('student_id', $wardIds)
                     ->where('status', 'published');
             } else {
@@ -95,7 +97,7 @@ class ReportCardController extends Controller
         }
 
         $reportCards = $reportCardsQuery->orderBy('created_at', 'desc')->get();
-        
+
         // DEBUG: Log query results
         \Log::info('ReportCard Query Results', [
             'total_found' => $reportCards->count(),
@@ -110,18 +112,18 @@ class ReportCardController extends Controller
         $draftCount = ReportCard::where('school_id', $school->id)
             ->where('status', 'draft')
             ->count();
-        
+
         $approvedCount = ReportCard::where('school_id', $school->id)
             ->where('status', 'approved')
             ->count();
-        
+
         $publishedCount = ReportCard::where('school_id', $school->id)
             ->where('status', 'published')
             ->count();
 
         // Get students without report cards for selected filters
         $studentsWithoutReports = collect(); // Initialize as empty collection
-        
+
         if ($selectedClassId) {
             // Get all students in the selected class
             $studentsQuery = Student::where('school_id', $school->id)
@@ -130,23 +132,23 @@ class ReportCardController extends Controller
                 ->with(['user', 'schoolClass']);
 
             $allStudents = $studentsQuery->get();
-            
+
             // Get student IDs that already have reports for selected session and term
             $studentsWithReportsQuery = ReportCard::where('school_id', $school->id)
                 ->where('class_id', $selectedClassId);
-            
+
             if ($selectedSessionId) {
                 $studentsWithReportsQuery->where('session_id', $selectedSessionId);
             }
             if ($selectedTermId) {
                 $studentsWithReportsQuery->where('term_id', $selectedTermId);
             }
-            
+
             $studentsWithReports = $studentsWithReportsQuery->pluck('student_id')->toArray();
-            
+
             // Filter students who don't have reports yet
-            $studentsWithoutReports = $allStudents->filter(function($student) use ($studentsWithReports) {
-                return !in_array($student->id, $studentsWithReports);
+            $studentsWithoutReports = $allStudents->filter(function ($student) use ($studentsWithReports) {
+                return ! in_array($student->id, $studentsWithReports);
             });
         }
 
@@ -161,16 +163,16 @@ class ReportCardController extends Controller
     {
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
-        
+
         // Only Teachers can create report cards (not Principal or Owner)
         if (in_array($userRole, ['Principal', 'Owner'])) {
             return redirect()->route('report-cards.index')
                 ->with('error', 'Only teachers can create report cards. Your role is to review and approve.');
         }
-        
+
         $studentId = $request->get('student_id');
-        
-        if (!$studentId) {
+
+        if (! $studentId) {
             return redirect()->back()->with('error', 'Student ID is required');
         }
 
@@ -185,16 +187,16 @@ class ReportCardController extends Controller
         $currentSession = AcademicSession::where('school_id', $school->id)
             ->where('is_current', true)
             ->first() ?? $sessions->first();
-        
+
         $currentTerm = AcademicTerm::where('school_id', $school->id)
             ->where('is_current', true)
             ->first() ?? $terms->first();
 
         // Get existing results for this student in current session/term
-        //Note: We fetch for current session/term by default, but the form allows changing
+        // Note: We fetch for current session/term by default, but the form allows changing
         $sessionId = $request->get('session_id', $currentSession->id ?? null);
         $termId = $request->get('term_id', $currentTerm->id ?? null);
-        
+
         $existingResults = Result::where('school_id', $school->id)
             ->where('student_id', $student->id)
             ->where('session_id', $sessionId)
@@ -208,13 +210,13 @@ class ReportCardController extends Controller
     public function store(Request $request)
     {
         $userRole = Auth::user()->role->name;
-        
+
         // Only Teachers can create report cards (not Principal or Owner)
         if (in_array($userRole, ['Principal', 'Owner'])) {
             return redirect()->route('report-cards.index')
                 ->with('error', 'Only teachers can create report cards. Your role is to review and approve.');
         }
-        
+
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'class_id' => 'required|exists:classes,id',
@@ -222,7 +224,7 @@ class ReportCardController extends Controller
             'term_id' => 'required|exists:academic_terms,id',
             'teacher_comment' => 'nullable|string',
             'principal_comment' => 'nullable|string',
-            'status' => 'required|in:draft,published'
+            'status' => 'required|in:draft,published',
         ]);
 
         $school = Auth::user()->school;
@@ -246,7 +248,7 @@ class ReportCardController extends Controller
             ->orderBy('avg_score', 'desc')
             ->get();
 
-        $position = $classAverages->search(function($item) use ($request) {
+        $position = $classAverages->search(function ($item) use ($request) {
             return $item->student_id == $request->student_id;
         });
         $position = $position !== false ? $position + 1 : null;
@@ -266,9 +268,9 @@ class ReportCardController extends Controller
             ->where('status', 'present')
             ->count();
 
-        $attendanceText = $totalSchoolDays > 0 
-            ? "{$daysPresent} out of {$totalSchoolDays} days" 
-            : "N/A";
+        $attendanceText = $totalSchoolDays > 0
+            ? "{$daysPresent} out of {$totalSchoolDays} days"
+            : 'N/A';
 
         // Create or update report card
         $reportCard = ReportCard::updateOrCreate(
@@ -287,7 +289,7 @@ class ReportCardController extends Controller
                 'principal_comment' => $request->principal_comment,
                 'generated_by' => Auth::id(),
                 'generated_at' => now(),
-                'status' => $request->status
+                'status' => $request->status,
             ]
         );
 
@@ -299,7 +301,7 @@ class ReportCardController extends Controller
     {
         $school = Auth::user()->school;
         $user = Auth::user();
-        
+
         $reportCard = ReportCard::where('school_id', $school->id)
             ->where('id', $id)
             ->with(['student.user', 'schoolClass', 'session', 'term', 'generatedBy'])
@@ -307,8 +309,8 @@ class ReportCardController extends Controller
 
         // Security Check: If logged in as Student or Guardian, ensure they can only view their own report cards
         if ($user->role->name === 'Student') {
-            $student = \App\Models\Student::where('user_id', $user->id)->where('school_id', $school->id)->first();
-            if (!$student || $reportCard->student_id !== $student->id) {
+            $student = Student::where('user_id', $user->id)->where('school_id', $school->id)->first();
+            if (! $student || $reportCard->student_id !== $student->id) {
                 abort(403, 'Unauthorized access to this report card.');
             }
             // Students can only view published report cards
@@ -319,18 +321,18 @@ class ReportCardController extends Controller
 
         if ($user->role->name === 'Guardian') {
             // Check if this guardian has a ward matching this report card's student
-            $guardian = \App\Models\Guardian::where('school_id', $school->id)
+            $guardian = Guardian::where('school_id', $school->id)
                 ->where('user_id', $user->id)
                 ->first();
-            
-            if (!$guardian) {
+
+            if (! $guardian) {
                 abort(403, 'Guardian profile not found.');
             }
-            
+
             // Check if the student is linked to this guardian through the pivot table
             $isWard = $guardian->students()->where('students.id', $reportCard->student_id)->exists();
-            
-            if (!$isWard) {
+
+            if (! $isWard) {
                 abort(403, 'Unauthorized access to this report card.');
             }
             // Guardians can only view published report cards
@@ -375,7 +377,7 @@ class ReportCardController extends Controller
     {
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
-        
+
         $reportCard = ReportCard::where('school_id', $school->id)
             ->where('id', $id)
             ->with(['student.user', 'schoolClass'])
@@ -397,24 +399,24 @@ class ReportCardController extends Controller
         $request->validate([
             'teacher_comment' => 'nullable|string',
             'principal_comment' => 'nullable|string',
-            'status' => 'required|in:draft,approved,published'
+            'status' => 'required|in:draft,approved,published',
         ]);
 
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
-        
+
         $reportCard = ReportCard::where('school_id', $school->id)
             ->where('id', $id)
             ->firstOrFail();
 
         $updateData = ['status' => $request->status];
-        
+
         // Track what action was taken
         $principalApproved = false;
         $teacherPublished = false;
 
         // Teachers can update teacher comment (but not Principal)
-        if ($request->has('teacher_comment') && !in_array($userRole, ['Principal', 'Owner'])) {
+        if ($request->has('teacher_comment') && ! in_array($userRole, ['Principal', 'Owner'])) {
             $updateData['teacher_comment'] = $request->teacher_comment;
         }
 
@@ -423,7 +425,7 @@ class ReportCardController extends Controller
             if ($request->has('principal_comment')) {
                 $updateData['principal_comment'] = $request->principal_comment;
             }
-            
+
             // Principal approving (draft → approved)
             if ($reportCard->status === 'draft' && $request->status === 'approved') {
                 $updateData['approved_at'] = now();
@@ -440,7 +442,7 @@ class ReportCardController extends Controller
 
                 // Log the approval in the result_approvals table for every subject score
                 foreach ($results as $res) {
-                    \App\Models\ResultApproval::updateOrCreate(
+                    ResultApproval::updateOrCreate(
                         [
                             'result_id' => $res->id,
                         ],
@@ -456,7 +458,7 @@ class ReportCardController extends Controller
         }
 
         // Teacher publishing approved report (approved → published)
-        if (!in_array($userRole, ['Principal', 'Owner'])) {
+        if (! in_array($userRole, ['Principal', 'Owner'])) {
             if ($reportCard->status === 'approved' && $request->status === 'published') {
                 $updateData['published_at'] = now();
                 $updateData['published_by'] = Auth::id();
@@ -481,7 +483,6 @@ class ReportCardController extends Controller
             ->with('success', 'Report card updated successfully!');
     }
 
-    
     /**
      * Publish an approved report card (make it visible to students)
      */
@@ -511,14 +512,14 @@ class ReportCardController extends Controller
         $reportCard->save();
 
         // TODO: Send notification to student and guardian
-        
+
         return redirect()->back()->with('success', 'Report card published successfully! Students can now view it.');
     }
 
     public function destroy($id)
     {
         $school = Auth::user()->school;
-        
+
         $reportCard = ReportCard::where('school_id', $school->id)
             ->where('id', $id)
             ->firstOrFail();

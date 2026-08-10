@@ -3,13 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\DatabaseBackup;
-use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class DatabaseBackupController extends Controller
 {
@@ -24,7 +20,7 @@ class DatabaseBackupController extends Controller
         }
 
         $school = Auth::user()->school;
-        
+
         // Get all backups for this school
         $backups = DatabaseBackup::where('school_id', $school->id)
             ->orderBy('created_at', 'desc')
@@ -61,8 +57,8 @@ class DatabaseBackupController extends Controller
 
             // Generate backup filename
             $timestamp = Carbon::now()->format('Y-m-d_His');
-            $filename = 'backup_' . $school->school_code . '_' . $timestamp . '.sql';
-            $filepath = 'backups/' . $filename;
+            $filename = 'backup_'.$school->school_code.'_'.$timestamp.'.sql';
+            $filepath = 'backups/'.$filename;
 
             // Get database credentials from config
             $database = config('database.connections.mysql.database');
@@ -72,18 +68,18 @@ class DatabaseBackupController extends Controller
             $port = config('database.connections.mysql.port', 3306);
 
             // Debug: Log password value type and content
-            \Log::info('Password debug - Value: ' . var_export($password, true));
-            \Log::info('Password debug - Type: ' . gettype($password));
-            \Log::info('Password debug - empty() check: ' . (empty($password) ? 'true' : 'false'));
-            \Log::info('Password debug - Is null: ' . (is_null($password) ? 'true' : 'false'));
-            \Log::info('Password debug - Length: ' . strlen($password ?? ''));
+            \Log::info('Password debug - Value: '.var_export($password, true));
+            \Log::info('Password debug - Type: '.gettype($password));
+            \Log::info('Password debug - empty() check: '.(empty($password) ? 'true' : 'false'));
+            \Log::info('Password debug - Is null: '.(is_null($password) ? 'true' : 'false'));
+            \Log::info('Password debug - Length: '.strlen($password ?? ''));
 
             // Full path to backup file - use storage_path directly
             $backupDir = storage_path('app/backups');
-            $fullPath = $backupDir . '/' . $filename;
+            $fullPath = $backupDir.'/'.$filename;
 
             // Create backup directory if it doesn't exist (use filesystem directly to ensure correct path)
-            if (!is_dir($backupDir)) {
+            if (! is_dir($backupDir)) {
                 mkdir($backupDir, 0755, true);
             }
 
@@ -102,16 +98,16 @@ class DatabaseBackupController extends Controller
                 }
             }
 
-            if (!$mysqldumpPath) {
+            if (! $mysqldumpPath) {
                 throw new \Exception('mysqldump not found. Please ensure MySQL is installed.');
             }
 
             // Build mysqldump command for Windows
             // Use a temporary error file to capture stderr
-            $errorFile = $backupDir . '/error_temp_' . uniqid() . '.txt';
-            
+            $errorFile = $backupDir.'/error_temp_'.uniqid().'.txt';
+
             // Conditionally include password only if it's not empty/null
-            if (!empty($password) && trim($password) !== '') {
+            if (! empty($password) && trim($password) !== '') {
                 \Log::info('Building command WITH password');
                 $command = sprintf(
                     '"%s" --user=%s --password="%s" --host=%s --port=%s %s > "%s" 2> "%s"',
@@ -151,25 +147,25 @@ class DatabaseBackupController extends Controller
             }
 
             // Log the command and output for debugging
-            \Log::info('Backup command: ' . str_replace($password ?? '', '***', $command));
-            \Log::info('Backup stdout: ' . implode("\n", $output));
-            \Log::info('Backup stderr: ' . $errorOutput);
-            \Log::info('Backup return code: ' . $returnVar);
+            \Log::info('Backup command: '.str_replace($password ?? '', '***', $command));
+            \Log::info('Backup stdout: '.implode("\n", $output));
+            \Log::info('Backup stderr: '.$errorOutput);
+            \Log::info('Backup return code: '.$returnVar);
 
             if ($returnVar !== 0) {
                 $errorMessage = 'Database backup failed. ';
-                if (!empty($errorOutput)) {
-                    $errorMessage .= 'Error: ' . $errorOutput;
-                } elseif (!empty($output)) {
-                    $errorMessage .= 'Error: ' . implode(' ', $output);
+                if (! empty($errorOutput)) {
+                    $errorMessage .= 'Error: '.$errorOutput;
+                } elseif (! empty($output)) {
+                    $errorMessage .= 'Error: '.implode(' ', $output);
                 } else {
-                    $errorMessage .= 'mysqldump returned error code: ' . $returnVar;
+                    $errorMessage .= 'mysqldump returned error code: '.$returnVar;
                 }
                 throw new \Exception($errorMessage);
             }
 
             // Check if file was created and get its size
-            if (!file_exists($fullPath)) {
+            if (! file_exists($fullPath)) {
                 throw new \Exception('Backup file was not created.');
             }
 
@@ -185,15 +181,15 @@ class DatabaseBackupController extends Controller
             ]);
 
             return redirect()->route('database-backup.index')
-                ->with('success', 'Database backup created successfully! File: ' . $filename . ' (' . $this->formatBytes($fileSize) . ')');
+                ->with('success', 'Database backup created successfully! File: '.$filename.' ('.$this->formatBytes($fileSize).')');
 
         } catch (\Exception $e) {
-            \Log::error('Database backup failed: ' . $e->getMessage());
-            \Log::error('Command that was executed: ' . ($command ?? 'Command not set'));
-            \Log::error('mysqldump path used: ' . ($mysqldumpPath ?? 'Path not found'));
-            
+            \Log::error('Database backup failed: '.$e->getMessage());
+            \Log::error('Command that was executed: '.($command ?? 'Command not set'));
+            \Log::error('mysqldump path used: '.($mysqldumpPath ?? 'Path not found'));
+
             return redirect()->route('database-backup.index')
-                ->withErrors(['error' => 'Backup failed: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Backup failed: '.$e->getMessage()]);
         }
     }
 
@@ -208,20 +204,21 @@ class DatabaseBackupController extends Controller
         }
 
         $school = Auth::user()->school;
-        
+
         // Find backup and verify it belongs to current school
         $backup = DatabaseBackup::where('school_id', $school->id)
             ->where('id', $id)
             ->firstOrFail();
 
         // Build full path to backup file
-        $fullPath = storage_path('app/' . $backup->backup_path);
+        $fullPath = storage_path('app/'.$backup->backup_path);
 
         // Check if file exists using full path
-        if (!file_exists($fullPath)) {
-            \Log::error('Backup file not found at: ' . $fullPath);
+        if (! file_exists($fullPath)) {
+            \Log::error('Backup file not found at: '.$fullPath);
+
             return redirect()->route('database-backup.index')
-                ->withErrors(['error' => 'Backup file not found. Path: ' . $backup->backup_path]);
+                ->withErrors(['error' => 'Backup file not found. Path: '.$backup->backup_path]);
         }
 
         // Download the file using response()->download()
@@ -239,7 +236,7 @@ class DatabaseBackupController extends Controller
         }
 
         $school = Auth::user()->school;
-        
+
         // Find backup and verify it belongs to current school
         $backup = DatabaseBackup::where('school_id', $school->id)
             ->where('id', $id)
@@ -247,7 +244,7 @@ class DatabaseBackupController extends Controller
 
         try {
             // Build full path to backup file
-            $fullPath = storage_path('app/' . $backup->backup_path);
+            $fullPath = storage_path('app/'.$backup->backup_path);
 
             // Delete the physical file if it exists
             if (file_exists($fullPath)) {
@@ -261,9 +258,10 @@ class DatabaseBackupController extends Controller
                 ->with('success', 'Backup deleted successfully!');
 
         } catch (\Exception $e) {
-            \Log::error('Backup deletion failed: ' . $e->getMessage());
+            \Log::error('Backup deletion failed: '.$e->getMessage());
+
             return redirect()->route('database-backup.index')
-                ->withErrors(['error' => 'Failed to delete backup: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Failed to delete backup: '.$e->getMessage()]);
         }
     }
 
@@ -273,11 +271,11 @@ class DatabaseBackupController extends Controller
     private function formatBytes($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
 
-        return round($bytes, $precision) . ' ' . $units[$i];
+        return round($bytes, $precision).' '.$units[$i];
     }
 }

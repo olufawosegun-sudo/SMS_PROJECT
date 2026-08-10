@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Student;
-use App\Models\Staff;
-use App\Models\User;
-use App\Models\SchoolClass;
-use App\Models\StudentAttendance;
-use App\Models\Announcement;
-use App\Models\Notification;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
-use App\Models\TeacherSubject;
+use App\Models\AdmissionApplication;
+use App\Models\Announcement;
+use App\Models\Department;
+use App\Models\Event;
+use App\Models\Guardian;
+use App\Models\Notification;
+use App\Models\ReportCard;
+use App\Models\SchoolClass;
+use App\Models\Staff;
+use App\Models\Student;
+use App\Models\StudentAttendance;
 use App\Models\StudentDocument;
-use Illuminate\Http\Request;
+use App\Models\Subject;
+use App\Models\TeacherSubject;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -27,6 +32,16 @@ class DashboardController extends Controller
 
         if ($user->isSuperAdmin()) {
             return redirect()->route('super-admin.dashboard');
+        }
+
+        // Check if user has a school assigned
+        if (! $user->school_id || ! $user->school) {
+            abort(403, 'You are not assigned to any school. Please contact the administrator.');
+        }
+
+        // Check if user has a role assigned
+        if (! $user->role_id || ! $user->role) {
+            abort(403, 'You do not have a role assigned. Please contact the administrator.');
         }
 
         $school = $user->school;
@@ -60,10 +75,10 @@ class DashboardController extends Controller
         $stats = [
             'total_students' => Student::where('school_id', $school->id)->where('status', 'active')->count(),
             'total_teachers' => Staff::where('school_id', $school->id)->where('staff_type', 'Teacher')->where('status', 'active')->count(),
-            'total_guardians' => \App\Models\Guardian::where('school_id', $school->id)->where('status', 'active')->count(),
+            'total_guardians' => Guardian::where('school_id', $school->id)->where('status', 'active')->count(),
             'total_classes' => SchoolClass::where('school_id', $school->id)->count(),
-            'total_subjects' => \App\Models\Subject::where('school_id', $school->id)->count(),
-            'total_departments' => \App\Models\Department::where('school_id', $school->id)->count(),
+            'total_subjects' => Subject::where('school_id', $school->id)->count(),
+            'total_departments' => Department::where('school_id', $school->id)->count(),
             'total_principals' => Staff::where('school_id', $school->id)
                 ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
                 ->where('status', 'active')
@@ -84,9 +99,9 @@ class DashboardController extends Controller
             'present' => $todayAttendance->present ?? 0,
             'absent' => $todayAttendance->absent ?? 0,
             'late' => $todayAttendance->late ?? 0,
-            'rate' => $todayAttendance->total > 0 
-                ? round((($todayAttendance->present + ($todayAttendance->late * 0.5)) / $todayAttendance->total) * 100) 
-                : 0
+            'rate' => $todayAttendance->total > 0
+                ? round((($todayAttendance->present + ($todayAttendance->late * 0.5)) / $todayAttendance->total) * 100)
+                : 0,
         ];
 
         // Financial statistics (mock data for now - will be real when finance tables are ready)
@@ -136,7 +151,7 @@ class DashboardController extends Controller
         $enrollmentLabels = [];
         foreach ($enrollmentTrend as $item) {
             $enrollmentData[] = $item->count;
-            $enrollmentLabels[] = date('M', strtotime($item->month . '-01'));
+            $enrollmentLabels[] = date('M', strtotime($item->month.'-01'));
         }
 
         // Gender distribution
@@ -150,7 +165,7 @@ class DashboardController extends Controller
 
         // Classes and Class Arms data
         $classesWithArms = SchoolClass::where('school_id', $school->id)
-            ->with(['arms' => function($q) {
+            ->with(['arms' => function ($q) {
                 $q->withCount('students');
             }])
             ->withCount('students')
@@ -158,7 +173,7 @@ class DashboardController extends Controller
             ->get();
 
         // Get notifications
-        $notifications = \App\Models\Notification::where('user_id', $user->id)
+        $notifications = Notification::where('user_id', $user->id)
             ->where('is_read', false)
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -185,7 +200,7 @@ class DashboardController extends Controller
             $recentActivities[] = [
                 'icon' => 'user-add',
                 'title' => 'New Student Enrolled',
-                'description' => $student->user->name . ' joined ' . ($student->schoolClass->name ?? 'N/A'),
+                'description' => $student->user->name.' joined '.($student->schoolClass->name ?? 'N/A'),
                 'time' => $student->created_at->diffForHumans(),
                 'color' => 'success',
                 'type' => 'student',
@@ -204,7 +219,7 @@ class DashboardController extends Controller
             $recentActivities[] = [
                 'icon' => 'briefcase',
                 'title' => 'New Teacher Added',
-                'description' => $teacher->user->name . ' joined as ' . ($teacher->department->name ?? 'teaching') . ' staff',
+                'description' => $teacher->user->name.' joined as '.($teacher->department->name ?? 'teaching').' staff',
                 'time' => $teacher->created_at->diffForHumans(),
                 'color' => 'info',
                 'type' => 'teacher',
@@ -212,7 +227,7 @@ class DashboardController extends Controller
         }
 
         // Recent guardians (last 3)
-        $recentGuardians = \App\Models\Guardian::where('school_id', $school->id)
+        $recentGuardians = Guardian::where('school_id', $school->id)
             ->with('user')
             ->orderBy('created_at', 'desc')
             ->limit(3)
@@ -222,7 +237,7 @@ class DashboardController extends Controller
             $recentActivities[] = [
                 'icon' => 'users',
                 'title' => 'New Parent Registered',
-                'description' => $guardian->user->name . ' registered as parent/guardian',
+                'description' => $guardian->user->name.' registered as parent/guardian',
                 'time' => $guardian->created_at->diffForHumans(),
                 'color' => 'warning',
                 'type' => 'guardian',
@@ -242,7 +257,7 @@ class DashboardController extends Controller
         }
 
         // Sort all activities by time
-        usort($recentActivities, function($a, $b) {
+        usort($recentActivities, function ($a, $b) {
             return strtotime($a['time']) <=> strtotime($b['time']);
         });
 
@@ -255,7 +270,7 @@ class DashboardController extends Controller
                 'total' => $stats['total_teachers'],
                 'active_today' => Staff::where('school_id', $school->id)
                     ->where('staff_type', 'Teacher')
-                    ->whereHas('user', function($q) {
+                    ->whereHas('user', function ($q) {
                         $q->where('last_login', '>=', now()->startOfDay());
                     })->count(),
                 'recent_activity' => 'Marked attendance, uploaded lessons',
@@ -267,8 +282,8 @@ class DashboardController extends Controller
             ],
             'guardians' => [
                 'total' => $stats['total_guardians'],
-                'active_this_week' => \App\Models\Guardian::where('school_id', $school->id)
-                    ->whereHas('user', function($q) {
+                'active_this_week' => Guardian::where('school_id', $school->id)
+                    ->whereHas('user', function ($q) {
                         $q->where('last_login', '>=', now()->subDays(7));
                     })->count(),
                 'recent_activity' => 'Viewed reports, made payments',
@@ -277,7 +292,7 @@ class DashboardController extends Controller
                 'total' => $stats['total_principals'],
                 'active_today' => Staff::where('school_id', $school->id)
                     ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
-                    ->whereHas('user', function($q) {
+                    ->whereHas('user', function ($q) {
                         $q->where('last_login', '>=', now()->startOfDay());
                     })->count(),
                 'recent_activity' => 'Approved results, created announcements',
@@ -286,10 +301,10 @@ class DashboardController extends Controller
 
         // Quick action stats
         $quickStats = [
-            'pending_admissions' => \App\Models\AdmissionApplication::where('school_id', $school->id)->where('status', 'pending')->count(),
+            'pending_admissions' => AdmissionApplication::where('school_id', $school->id)->where('status', 'pending')->count(),
             'leave_requests' => 0, // When leave table is ready
             'pending_results' => 0, // When results table is ready
-            'upcoming_events' => \App\Models\Event::where('school_id', $school->id)->where('event_date', '>=', now())->count(),
+            'upcoming_events' => Event::where('school_id', $school->id)->where('event_date', '>=', now())->count(),
         ];
 
         // Student Documents Statistics
@@ -297,7 +312,7 @@ class DashboardController extends Controller
             'total_documents' => StudentDocument::where('school_id', $school->id)->count(),
             'missing_documents' => Student::where('school_id', $school->id)
                 ->where('status', 'active')
-                ->whereDoesntHave('documents', function($q) {
+                ->whereDoesntHave('documents', function ($q) {
                     $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
                 })
                 ->count(),
@@ -356,7 +371,7 @@ class DashboardController extends Controller
 
         // Get ALL school classes for the teacher dashboard class listing
         $allClasses = SchoolClass::where('school_id', $school->id)
-            ->with(['arms', 'students' => function($q) {
+            ->with(['arms', 'students' => function ($q) {
                 $q->where('status', 'active');
             }])
             ->orderBy('name')
@@ -383,8 +398,8 @@ class DashboardController extends Controller
             ->whereIn('status', ['present', 'late'])
             ->count();
 
-        $attendanceRate = $totalAttendanceCount > 0 
-            ? round(($presentAttendanceCount / $totalAttendanceCount) * 100) 
+        $attendanceRate = $totalAttendanceCount > 0
+            ? round(($presentAttendanceCount / $totalAttendanceCount) * 100)
             : 100;
 
         // Teacher-specific statistics
@@ -399,7 +414,7 @@ class DashboardController extends Controller
         $currentSession = AcademicSession::where('school_id', $school->id)
             ->where('is_current', true)
             ->first();
-        
+
         $currentTerm = AcademicTerm::where('school_id', $school->id)
             ->where('is_current', true)
             ->first();
@@ -416,7 +431,7 @@ class DashboardController extends Controller
             'total_students' => $totalActiveStudents,
             'missing_documents' => Student::where('school_id', $school->id)
                 ->where('status', 'active')
-                ->whereDoesntHave('documents', function($q) {
+                ->whereDoesntHave('documents', function ($q) {
                     $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
                 })
                 ->count(),
@@ -430,14 +445,14 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboard.teacher', compact(
-            'user', 
-            'school', 
-            'stats', 
+            'user',
+            'school',
+            'stats',
             'teacherSubjects',
             'allClasses',
             'markedClassIds',
-            'currentSession', 
-            'currentTerm', 
+            'currentSession',
+            'currentTerm',
             'todaySchedule',
             'documentStats',
             'recentDocuments'
@@ -454,7 +469,7 @@ class DashboardController extends Controller
             'total_students' => Student::where('school_id', $school->id)->where('status', 'active')->count(),
             'total_teachers' => Staff::where('school_id', $school->id)->where('staff_type', 'Teacher')->where('status', 'active')->count(),
             'total_classes' => SchoolClass::where('school_id', $school->id)->count(),
-            'total_subjects' => \App\Models\Subject::where('school_id', $school->id)->count(),
+            'total_subjects' => Subject::where('school_id', $school->id)->count(),
         ];
 
         // Today's attendance
@@ -471,9 +486,9 @@ class DashboardController extends Controller
             'present' => $todayAttendance->present ?? 0,
             'absent' => $todayAttendance->absent ?? 0,
             'late' => $todayAttendance->late ?? 0,
-            'rate' => $todayAttendance->total > 0 
-                ? round((($todayAttendance->present + ($todayAttendance->late * 0.5)) / $todayAttendance->total) * 100) 
-                : 0
+            'rate' => $todayAttendance->total > 0
+                ? round((($todayAttendance->present + ($todayAttendance->late * 0.5)) / $todayAttendance->total) * 100)
+                : 0,
         ];
 
         // Academic session and term
@@ -517,7 +532,7 @@ class DashboardController extends Controller
 
         // Classes and Class Arms data
         $classesWithArms = SchoolClass::where('school_id', $school->id)
-            ->with(['arms' => function($q) {
+            ->with(['arms' => function ($q) {
                 $q->withCount('students');
             }])
             ->withCount('students')
@@ -525,7 +540,7 @@ class DashboardController extends Controller
             ->get();
 
         // Get notifications
-        $notifications = \App\Models\Notification::where('user_id', $user->id)
+        $notifications = Notification::where('user_id', $user->id)
             ->where('is_read', false)
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -552,7 +567,7 @@ class DashboardController extends Controller
             $recentActivities[] = [
                 'icon' => 'user-add',
                 'title' => 'New Student Enrolled',
-                'description' => $student->user->name . ' joined ' . ($student->schoolClass->name ?? 'N/A'),
+                'description' => $student->user->name.' joined '.($student->schoolClass->name ?? 'N/A'),
                 'time' => $student->created_at->diffForHumans(),
                 'color' => 'success',
                 'type' => 'student',
@@ -571,7 +586,7 @@ class DashboardController extends Controller
             $recentActivities[] = [
                 'icon' => 'briefcase',
                 'title' => 'New Teacher Added',
-                'description' => $teacher->user->name . ' joined as ' . ($teacher->department->name ?? 'teaching') . ' staff',
+                'description' => $teacher->user->name.' joined as '.($teacher->department->name ?? 'teaching').' staff',
                 'time' => $teacher->created_at->diffForHumans(),
                 'color' => 'info',
                 'type' => 'teacher',
@@ -591,7 +606,7 @@ class DashboardController extends Controller
         }
 
         // Sort all activities by time
-        usort($recentActivities, function($a, $b) {
+        usort($recentActivities, function ($a, $b) {
             return strtotime($a['time']) <=> strtotime($b['time']);
         });
 
@@ -600,11 +615,11 @@ class DashboardController extends Controller
 
         // Academic quick stats
         $quickStats = [
-            'pending_admissions' => \App\Models\AdmissionApplication::where('school_id', $school->id)->where('status', 'pending')->count(),
-            'upcoming_events' => \App\Models\Event::where('school_id', $school->id)->where('event_date', '>=', now())->count(),
+            'pending_admissions' => AdmissionApplication::where('school_id', $school->id)->where('status', 'pending')->count(),
+            'upcoming_events' => Event::where('school_id', $school->id)->where('event_date', '>=', now())->count(),
             'active_teachers' => Staff::where('school_id', $school->id)
                 ->where('staff_type', 'Teacher')
-                ->whereHas('user', function($q) {
+                ->whereHas('user', function ($q) {
                     $q->where('last_login', '>=', now()->startOfDay());
                 })->count(),
         ];
@@ -614,7 +629,7 @@ class DashboardController extends Controller
             'total_documents' => StudentDocument::where('school_id', $school->id)->count(),
             'missing_documents' => Student::where('school_id', $school->id)
                 ->where('status', 'active')
-                ->whereDoesntHave('documents', function($q) {
+                ->whereDoesntHave('documents', function ($q) {
                     $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
                 })
                 ->count(),
@@ -672,7 +687,7 @@ class DashboardController extends Controller
 
         $publishedReportCards = collect();
         if ($student) {
-            $publishedReportCards = \App\Models\ReportCard::where('school_id', $school->id)
+            $publishedReportCards = ReportCard::where('school_id', $school->id)
                 ->where('student_id', $student->id)
                 ->where('status', 'published')
                 ->with(['schoolClass', 'session', 'term', 'generatedBy'])

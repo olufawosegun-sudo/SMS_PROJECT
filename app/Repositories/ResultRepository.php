@@ -18,7 +18,7 @@ class ResultRepository extends BaseRepository
     {
         $query = $this->model->where('school_id', $schoolId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -40,7 +40,7 @@ class ResultRepository extends BaseRepository
             $query->where('academic_term_id', $termId);
         }
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -56,7 +56,7 @@ class ResultRepository extends BaseRepository
             ->where('academic_session_id', $sessionId)
             ->where('academic_term_id', $termId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -72,7 +72,7 @@ class ResultRepository extends BaseRepository
             ->where('academic_session_id', $sessionId)
             ->where('academic_term_id', $termId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -89,7 +89,7 @@ class ResultRepository extends BaseRepository
             ->where('academic_session_id', $sessionId)
             ->where('academic_term_id', $termId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -169,7 +169,7 @@ class ResultRepository extends BaseRepository
             ->groupBy('student_id')
             ->orderByDesc('total_score');
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -187,7 +187,7 @@ class ResultRepository extends BaseRepository
             ->where('academic_term_id', $termId)
             ->sum('total_score');
 
-        if (!$studentTotal) {
+        if (! $studentTotal) {
             return null;
         }
 
@@ -221,7 +221,7 @@ class ResultRepository extends BaseRepository
             ->where('academic_term_id', $termId)
             ->where('grade', 'F');
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 

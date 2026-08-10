@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicSession;
+use App\Models\AcademicTerm;
 use App\Models\Result;
+use App\Models\ResultApproval;
 use App\Models\SchoolClass;
-use App\Models\Subject;
 use App\Models\Student;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,7 +44,7 @@ class ResultController extends Controller
                 ->where('status', 'active')
                 ->with(['user', 'schoolClass'])
                 ->get()
-                ->sortBy(function($student) {
+                ->sortBy(function ($student) {
                     return $student->user->first_name ?? '';
                 })
                 ->values();
@@ -64,7 +67,7 @@ class ResultController extends Controller
         $total = $request->ca_score + $request->exam_score;
 
         // Determine grade
-        $grade = match(true) {
+        $grade = match (true) {
             $total >= 70 => 'A',
             $total >= 60 => 'B',
             $total >= 50 => 'C',
@@ -74,13 +77,13 @@ class ResultController extends Controller
 
         // Resolve session and term (from request or current)
         $sessionId = $request->session_id ?? (
-            \App\Models\AcademicSession::where('school_id', $school->id)->where('is_current', true)->first()
-            ?? \App\Models\AcademicSession::where('school_id', $school->id)->first()
+            AcademicSession::where('school_id', $school->id)->where('is_current', true)->first()
+            ?? AcademicSession::where('school_id', $school->id)->first()
         )->id ?? 1;
-        
+
         $termId = $request->term_id ?? (
-            \App\Models\AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first()
-            ?? \App\Models\AcademicTerm::where('school_id', $school->id)->first()
+            AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first()
+            ?? AcademicTerm::where('school_id', $school->id)->first()
         )->id ?? 1;
 
         $result = Result::updateOrCreate(
@@ -107,7 +110,7 @@ class ResultController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Result recorded successfully!',
-                'data' => $result
+                'data' => $result,
             ]);
         }
 
@@ -122,7 +125,7 @@ class ResultController extends Controller
         ]);
 
         $result = Result::findOrFail($id);
-        
+
         // Verify ownership
         if ($result->school_id !== Auth::user()->school->id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
@@ -130,14 +133,14 @@ class ResultController extends Controller
 
         // Lock if approved and user is not Principal/Owner
         $isApproved = $result->approvals()->where('status', 'approved')->exists();
-        if ($isApproved && !in_array(Auth::user()->role->name, ['Principal', 'Owner'])) {
+        if ($isApproved && ! in_array(Auth::user()->role->name, ['Principal', 'Owner'])) {
             return response()->json(['success' => false, 'message' => 'This result is already approved and locked.'], 403);
         }
 
         $total = $request->ca_score + $request->exam_score;
 
         // Determine grade
-        $grade = match(true) {
+        $grade = match (true) {
             $total >= 70 => 'A',
             $total >= 60 => 'B',
             $total >= 50 => 'C',
@@ -162,7 +165,7 @@ class ResultController extends Controller
                 'exam_score' => $result->exam_score,
                 'total_score' => $result->total_score,
                 'grade' => $grade,
-            ]
+            ],
         ]);
     }
 
@@ -172,30 +175,31 @@ class ResultController extends Controller
 
         // Lock if approved and user is not Principal/Owner
         $isApproved = $result->approvals()->where('status', 'approved')->exists();
-        if ($isApproved && !in_array(Auth::user()->role->name, ['Principal', 'Owner'])) {
+        if ($isApproved && ! in_array(Auth::user()->role->name, ['Principal', 'Owner'])) {
             return redirect()->back()->with('error', 'This result is already approved and locked.');
         }
 
         $result->delete();
+
         return redirect()->back()->with('success', 'Result deleted successfully!');
     }
 
     public function approve($id)
     {
         $userRole = Auth::user()->role->name;
-        if (!in_array($userRole, ['Principal', 'Owner'])) {
+        if (! in_array($userRole, ['Principal', 'Owner'])) {
             return redirect()->back()->with('error', 'Only the Principal or Owner can approve results.');
         }
 
         $result = Result::findOrFail($id);
 
-        \App\Models\ResultApproval::updateOrCreate(
+        ResultApproval::updateOrCreate(
             ['result_id' => $result->id],
             [
                 'approved_by' => Auth::id(),
                 'status' => 'approved',
                 'approved_at' => now(),
-                'remarks' => 'Approved from grades sheet.'
+                'remarks' => 'Approved from grades sheet.',
             ]
         );
 
@@ -205,23 +209,23 @@ class ResultController extends Controller
     public function batchApprove(Request $request)
     {
         $userRole = Auth::user()->role->name;
-        if (!in_array($userRole, ['Principal', 'Owner'])) {
+        if (! in_array($userRole, ['Principal', 'Owner'])) {
             return redirect()->back()->with('error', 'Only the Principal or Owner can approve results.');
         }
 
         $request->validate([
             'result_ids' => 'required|array',
-            'result_ids.*' => 'exists:results,id'
+            'result_ids.*' => 'exists:results,id',
         ]);
 
         foreach ($request->result_ids as $resultId) {
-            \App\Models\ResultApproval::updateOrCreate(
+            ResultApproval::updateOrCreate(
                 ['result_id' => $resultId],
                 [
                     'approved_by' => Auth::id(),
                     'status' => 'approved',
                     'approved_at' => now(),
-                    'remarks' => 'Batch approved from grades sheet.'
+                    'remarks' => 'Batch approved from grades sheet.',
                 ]
             );
         }

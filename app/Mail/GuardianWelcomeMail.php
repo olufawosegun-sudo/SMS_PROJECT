@@ -5,9 +5,9 @@ namespace App\Mail;
 use App\Models\Guardian;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Address;
 use Illuminate\Queue\SerializesModels;
 
 class GuardianWelcomeMail extends Mailable
@@ -15,8 +15,11 @@ class GuardianWelcomeMail extends Mailable
     use Queueable, SerializesModels;
 
     public $guardian;
+
     public $defaultPassword;
+
     public $schoolName;
+
     public $loginUrl;
 
     public function __construct(Guardian $guardian, $defaultPassword = 'password123')
@@ -31,13 +34,13 @@ class GuardianWelcomeMail extends Mailable
     {
         return new Envelope(
             from: new Address(
-                config('mail.from.address'), 
+                config('mail.from.address'),
                 config('mail.from.name', $this->schoolName)
             ),
             replyTo: [
-                new Address(config('mail.from.address'), config('mail.from.name', $this->schoolName))
+                new Address(config('mail.from.address'), config('mail.from.name', $this->schoolName)),
             ],
-            subject: 'Welcome to ' . $this->schoolName . ' - Your Parent Portal Account',
+            subject: 'Welcome to '.$this->schoolName.' - Your Parent Portal Account',
         );
     }
 

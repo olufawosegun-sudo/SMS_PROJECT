@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CbtExam;
-use App\Models\SchoolClass;
-use App\Models\Subject;
-use App\Models\Staff;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
+use App\Models\CbtExam;
+use App\Models\ContinuousAssessment;
+use App\Models\SchoolClass;
+use App\Models\Staff;
+use App\Models\Student;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,7 +19,7 @@ class CbtExamController extends Controller
     {
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
-        
+
         $classes = SchoolClass::where('school_id', $school->id)->orderBy('name')->get();
         $subjects = Subject::where('school_id', $school->id)->orderBy('name')->get();
         $teachers = Staff::where('school_id', $school->id)->where('staff_type', 'Teacher')->where('status', 'active')->with('user')->get();
@@ -25,14 +27,14 @@ class CbtExamController extends Controller
         $terms = AcademicTerm::where('school_id', $school->id)->orderBy('name')->get();
 
         // Get assessments list to serve as the Question Bank
-        $assessments = \App\Models\ContinuousAssessment::where('school_id', $school->id)
+        $assessments = ContinuousAssessment::where('school_id', $school->id)
             ->with(['schoolClass', 'subject'])
             ->orderBy('title')
             ->get();
 
         // Get exams based on role and status filter
         $statusFilter = request()->get('status');
-        
+
         $examsQuery = CbtExam::where('school_id', $school->id)
             ->with(['subject', 'schoolClass', 'session', 'term', 'createdBy', 'assessment']);
 
@@ -47,7 +49,7 @@ class CbtExamController extends Controller
             $examsQuery->where('created_by', Auth::id());
         } elseif ($userRole === 'Student') {
             // Students only see approved exams
-            $student = \App\Models\Student::where('school_id', $school->id)->where('user_id', Auth::id())->first();
+            $student = Student::where('school_id', $school->id)->where('user_id', Auth::id())->first();
             $examsQuery->where('status', 'approved');
             if ($student && $student->class_id) {
                 $examsQuery->where('class_id', $student->class_id);
@@ -105,7 +107,7 @@ class CbtExamController extends Controller
     {
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
-        
+
         $exam = CbtExam::where('school_id', $school->id)
             ->with(['subject', 'schoolClass', 'session', 'term', 'createdBy', 'approvedBy', 'rejectedBy', 'assessment.questions.options'])
             ->findOrFail($id);
@@ -117,13 +119,13 @@ class CbtExamController extends Controller
     {
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
-        
+
         $exam = CbtExam::where('school_id', $school->id)->findOrFail($id);
 
         // Check if exam can be edited
-        if (!$exam->canEdit()) {
+        if (! $exam->canEdit()) {
             return redirect()->route('cbt-exams.show', $id)
-                ->with('error', 'This exam cannot be edited. Status: ' . $exam->getStatusLabel());
+                ->with('error', 'This exam cannot be edited. Status: '.$exam->getStatusLabel());
         }
 
         // Only creator or Principal can edit
@@ -136,8 +138,8 @@ class CbtExamController extends Controller
         $subjects = Subject::where('school_id', $school->id)->orderBy('name')->get();
         $sessions = AcademicSession::where('school_id', $school->id)->orderBy('name', 'desc')->get();
         $terms = AcademicTerm::where('school_id', $school->id)->orderBy('name')->get();
-        
-        $assessments = \App\Models\ContinuousAssessment::where('school_id', $school->id)
+
+        $assessments = ContinuousAssessment::where('school_id', $school->id)
             ->with(['schoolClass', 'subject'])
             ->orderBy('title')
             ->get();
@@ -162,7 +164,7 @@ class CbtExamController extends Controller
         $exam = CbtExam::where('school_id', $school->id)->findOrFail($id);
 
         // Check if exam can be edited
-        if (!$exam->canEdit()) {
+        if (! $exam->canEdit()) {
             return redirect()->back()->with('error', 'This exam cannot be edited.');
         }
 
@@ -196,6 +198,7 @@ class CbtExamController extends Controller
         }
 
         $exam->delete();
+
         return redirect()->route('cbt-exams.index')->with('success', 'CBT Exam deleted successfully!');
     }
 
@@ -206,7 +209,7 @@ class CbtExamController extends Controller
         $exam = CbtExam::where('school_id', $school->id)->findOrFail($id);
 
         // Only draft or needs_revision exams can be submitted
-        if (!in_array($exam->status, ['draft', 'needs_revision'])) {
+        if (! in_array($exam->status, ['draft', 'needs_revision'])) {
             return redirect()->back()->with('error', 'This exam cannot be submitted for approval.');
         }
 
@@ -232,7 +235,7 @@ class CbtExamController extends Controller
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
 
-        if (!in_array($userRole, ['Principal', 'Owner'])) {
+        if (! in_array($userRole, ['Principal', 'Owner'])) {
             return redirect()->back()->with('error', 'Only Principal can approve exams.');
         }
 
@@ -263,7 +266,7 @@ class CbtExamController extends Controller
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
 
-        if (!in_array($userRole, ['Principal', 'Owner'])) {
+        if (! in_array($userRole, ['Principal', 'Owner'])) {
             return redirect()->back()->with('error', 'Only Principal can return exams for revision.');
         }
 
@@ -294,7 +297,7 @@ class CbtExamController extends Controller
         $school = Auth::user()->school;
         $userRole = Auth::user()->role->name;
 
-        if (!in_array($userRole, ['Principal', 'Owner'])) {
+        if (! in_array($userRole, ['Principal', 'Owner'])) {
             return redirect()->back()->with('error', 'Only Principal can reject exams.');
         }
 

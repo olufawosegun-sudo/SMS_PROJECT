@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Teacher extends Model {
+class Teacher extends Model
+{
     use SoftDeletes;
 
     protected $table = 'staffs';
@@ -12,7 +14,7 @@ class Teacher extends Model {
     protected $fillable = [
         'school_id', 'user_id', 'department_id', 'staff_no',
         'qualification', 'employment_date', 'salary', 'status',
-        'staff_type'
+        'staff_type',
     ];
 
     protected static function booted()
@@ -28,22 +30,26 @@ class Teacher extends Model {
 
     protected $casts = [
         'employment_date' => 'date',
-        'salary' => 'decimal:2'
+        'salary' => 'decimal:2',
     ];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function department() {
+    public function department()
+    {
         return $this->belongsTo(Department::class);
     }
 
-    public function teacherSubjects() {
+    public function teacherSubjects()
+    {
         return $this->hasMany(TeacherSubject::class, 'staff_id');
     }
 
-    public function subjects() {
+    public function subjects()
+    {
         return $this->belongsToMany(Subject::class, 'teacher_subjects', 'staff_id', 'subject_id')
             ->withPivot('class_id', 'session_id', 'term_id')
             ->withTimestamps();

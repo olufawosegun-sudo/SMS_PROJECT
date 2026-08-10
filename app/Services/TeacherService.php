@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Repositories\TeacherRepository;
-use App\Models\User;
 use App\Models\Role;
 use App\Models\Teacher;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Repositories\TeacherRepository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TeacherService
 {
@@ -107,7 +107,7 @@ class TeacherService
             $teacher->load(['user', 'department']);
 
             // Assign subjects if provided
-            if (!empty($data['subject_ids'])) {
+            if (! empty($data['subject_ids'])) {
                 $teacher->subjects()->sync($data['subject_ids']);
             }
 
@@ -123,7 +123,7 @@ class TeacherService
         return DB::transaction(function () use ($teacherId, $data, $schoolId) {
             $teacher = $this->findTeacher($teacherId, $schoolId);
 
-            if (!$teacher) {
+            if (! $teacher) {
                 throw new \Exception('Teacher not found.');
             }
 
@@ -131,7 +131,7 @@ class TeacherService
                 if ($teacher->user->profile_photo) {
                     Storage::disk('public')->delete($teacher->user->profile_photo);
                 }
-                
+
                 $photoPath = $data['profile_photo']->store('profile-photos', 'public');
                 $teacher->user->update(['profile_photo' => $photoPath]);
             }
@@ -170,7 +170,7 @@ class TeacherService
         return DB::transaction(function () use ($teacherId, $schoolId) {
             $teacher = $this->findTeacher($teacherId, $schoolId);
 
-            if (!$teacher) {
+            if (! $teacher) {
                 throw new \Exception('Teacher not found.');
             }
 
@@ -228,6 +228,6 @@ class TeacherService
         $year = date('Y');
         $sequence = str_pad($userId, 5, '0', STR_PAD_LEFT);
 
-        return $prefix . $year . $sequence;
+        return $prefix.$year.$sequence;
     }
 }

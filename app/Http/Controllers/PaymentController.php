@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
 use App\Models\Invoice;
+use App\Models\Payment;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +47,7 @@ class PaymentController extends Controller
             'amount' => $request->amount,
             'payment_method' => $request->payment_method,
             'paid_at' => now(),
-            'payment_reference' => 'PAY-' . strtoupper(uniqid()),
+            'payment_reference' => 'PAY-'.strtoupper(uniqid()),
             'received_by' => Auth::id(),
             'status' => 'completed',
         ]);
@@ -69,6 +69,7 @@ class PaymentController extends Controller
     public function destroy($id)
     {
         Payment::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Payment deleted successfully!');
     }
 }

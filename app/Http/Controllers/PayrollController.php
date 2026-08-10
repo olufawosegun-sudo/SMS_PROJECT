@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Staff;
 use App\Models\Payroll;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -69,6 +69,7 @@ class PayrollController extends Controller
     public function destroy($id)
     {
         Payroll::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Payroll record removed!');
     }
 }

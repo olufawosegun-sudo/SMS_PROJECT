@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('results', function (Blueprint $table) {
             $table->unsignedBigInteger('recorded_by')->nullable()->after('published_at');
             $table->timestamp('recorded_at')->nullable()->after('recorded_by');
-            
+
             // Foreign key to users table (teacher who recorded the result)
             $table->foreign('recorded_by')->references('id')->on('users')->onDelete('set null');
         });

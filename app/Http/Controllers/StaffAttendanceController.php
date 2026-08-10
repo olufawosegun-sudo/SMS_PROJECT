@@ -12,7 +12,7 @@ class StaffAttendanceController extends Controller
     public function index(Request $request)
     {
         $userRole = Auth::user()->role->name;
-        if (!in_array($userRole, ['Owner', 'Principal'])) {
+        if (! in_array($userRole, ['Owner', 'Principal'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -47,7 +47,7 @@ class StaffAttendanceController extends Controller
     public function store(Request $request)
     {
         $userRole = Auth::user()->role->name;
-        if (!in_array($userRole, ['Owner', 'Principal'])) {
+        if (! in_array($userRole, ['Owner', 'Principal'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -84,14 +84,15 @@ class StaffAttendanceController extends Controller
     public function destroy($id)
     {
         $attendance = StaffAttendance::findOrFail($id);
-        
+
         // Only allow deletion if user has permission (owner/principal)
         $userRole = Auth::user()->role->name;
-        if (!in_array($userRole, ['Owner', 'Principal'])) {
+        if (! in_array($userRole, ['Owner', 'Principal'])) {
             return redirect()->back()->with('error', 'You do not have permission to delete attendance records.');
         }
 
         $attendance->delete();
+
         return redirect()->back()->with('success', 'Attendance record deleted successfully!');
     }
 }

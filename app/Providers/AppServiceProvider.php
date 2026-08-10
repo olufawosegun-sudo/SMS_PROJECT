@@ -2,18 +2,15 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-
-// Models
 use App\Models\Student;
 use App\Models\Teacher;
-
-// Policies
-use App\Policies\StudentPolicy;
-
-// Observers
+// Models
 use App\Observers\StudentObserver;
+use App\Policies\StudentPolicy;
+// Policies
+use Illuminate\Support\Facades\Gate;
+// Observers
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Policies
         Gate::policy(Student::class, StudentPolicy::class);
-        
+
         // You can add more observers and policies here as needed
         // Example:
         // Teacher::observe(TeacherObserver::class);

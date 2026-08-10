@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Student;
-use App\Models\StudentAttendance;
-use App\Models\SchoolClass;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
+use App\Models\Guardian;
+use App\Models\SchoolClass;
+use App\Models\Student;
+use App\Models\StudentAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -61,7 +62,7 @@ class AttendanceController extends Controller
 
         if ($userRole === 'Guardian') {
             // Get guardian profile
-            $guardian = \App\Models\Guardian::where('school_id', $school->id)
+            $guardian = Guardian::where('school_id', $school->id)
                 ->where('user_id', Auth::id())
                 ->first();
 
@@ -70,7 +71,7 @@ class AttendanceController extends Controller
                 $wards = $guardian->students()->with(['user', 'schoolClass', 'arm'])->get();
 
                 // Get attendance statistics for each ward
-                $wardsStats = $wards->map(function($ward) use ($school) {
+                $wardsStats = $wards->map(function ($ward) use ($school) {
                     $attendanceHistory = StudentAttendance::where('school_id', $school->id)
                         ->where('student_id', $ward->id)
                         ->orderBy('attendance_date', 'desc')
@@ -118,17 +119,17 @@ class AttendanceController extends Controller
             }
         } elseif (in_array($userRole, ['Principal', 'Owner'])) {
             $classSummaries = SchoolClass::where('school_id', $school->id)
-                ->withCount(['students' => function($q) {
+                ->withCount(['students' => function ($q) {
                     $q->where('status', 'active');
                 }])
                 ->orderBy('name')
                 ->get()
-                ->map(function($class) use ($school, $selectedDate) {
+                ->map(function ($class) use ($school, $selectedDate) {
                     $records = StudentAttendance::where('school_id', $school->id)
                         ->where('class_id', $class->id)
                         ->where('attendance_date', $selectedDate)
                         ->get();
-                    
+
                     $total = $class->students_count;
                     $present = $records->where('status', 'present')->count();
                     $late = $records->where('status', 'late')->count();
@@ -146,7 +147,7 @@ class AttendanceController extends Controller
                         'late' => $late,
                         'absent' => $absent,
                         'unmarked' => $unmarked,
-                        'rate' => $rate
+                        'rate' => $rate,
                     ];
                 });
 
@@ -159,7 +160,7 @@ class AttendanceController extends Controller
         }
 
         return view('attendance.index', compact(
-            'classes', 'attendance', 'students', 'selectedDate', 'selectedClassId', 
+            'classes', 'attendance', 'students', 'selectedDate', 'selectedClassId',
             'summary', 'school', 'userRole', 'classSummaries', 'absentStudents',
             'studentStats', 'studentAttendanceHistory', 'wardsStats'
         ));

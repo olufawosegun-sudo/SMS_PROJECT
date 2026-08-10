@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Timetable;
-use App\Models\SchoolClass;
-use App\Models\Subject;
-use App\Models\Staff;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
+use App\Models\SchoolClass;
+use App\Models\Staff;
+use App\Models\Subject;
+use App\Models\Timetable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -70,6 +70,7 @@ class TimetableController extends Controller
     public function destroy($id)
     {
         Timetable::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Timetable entry deleted successfully!');
     }
 }

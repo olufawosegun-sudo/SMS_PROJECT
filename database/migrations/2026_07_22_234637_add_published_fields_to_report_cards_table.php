@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('report_cards', function (Blueprint $table) {
-            if (!Schema::hasColumn('report_cards', 'published_at')) {
+            if (! Schema::hasColumn('report_cards', 'published_at')) {
                 $table->timestamp('published_at')->nullable()->after('approved_by');
             }
-            if (!Schema::hasColumn('report_cards', 'published_by')) {
+            if (! Schema::hasColumn('report_cards', 'published_by')) {
                 $table->foreignId('published_by')->nullable()->after('published_at')
                     ->constrained('users')->nullOnDelete();
             }

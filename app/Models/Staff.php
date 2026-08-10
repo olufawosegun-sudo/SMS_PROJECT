@@ -110,7 +110,7 @@ class Staff extends Model
      */
     public function getFullNameAttribute()
     {
-        return $this->user->first_name . ' ' . $this->user->last_name;
+        return $this->user->first_name.' '.$this->user->last_name;
     }
 
     /**

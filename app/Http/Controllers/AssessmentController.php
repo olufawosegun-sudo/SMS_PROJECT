@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicSession;
+use App\Models\AcademicTerm;
 use App\Models\ContinuousAssessment;
 use App\Models\SchoolClass;
-use App\Models\Subject;
 use App\Models\Staff;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -46,10 +48,10 @@ class AssessmentController extends Controller
         $school = Auth::user()->school;
 
         // Resolve current session and term dynamically
-        $currentSession = \App\Models\AcademicSession::where('school_id', $school->id)->where('is_current', true)->first()
-            ?? \App\Models\AcademicSession::where('school_id', $school->id)->first();
-        $currentTerm = \App\Models\AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first()
-            ?? \App\Models\AcademicTerm::where('school_id', $school->id)->first();
+        $currentSession = AcademicSession::where('school_id', $school->id)->where('is_current', true)->first()
+            ?? AcademicSession::where('school_id', $school->id)->first();
+        $currentTerm = AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first()
+            ?? AcademicTerm::where('school_id', $school->id)->first();
 
         $sessionId = $currentSession ? $currentSession->id : 1;
         $termId = $currentTerm ? $currentTerm->id : 1;
@@ -73,6 +75,7 @@ class AssessmentController extends Controller
     public function destroy($id)
     {
         ContinuousAssessment::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Assessment deleted successfully!');
     }
 }

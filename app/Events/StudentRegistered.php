@@ -12,13 +12,13 @@ class StudentRegistered
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $student;
+
     public $password;
 
     /**
      * Create a new event instance.
      *
-     * @param Student $student
-     * @param string $password The plain text password to send in the welcome email
+     * @param  string  $password  The plain text password to send in the welcome email
      */
     public function __construct(Student $student, string $password)
     {

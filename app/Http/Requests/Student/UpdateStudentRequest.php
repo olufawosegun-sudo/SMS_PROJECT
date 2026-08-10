@@ -32,7 +32,7 @@ class UpdateStudentRequest extends FormRequest
                 'nullable',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->ignore($student->user_id)
+                Rule::unique('users', 'email')->ignore($student->user_id),
             ],
             'phone' => ['nullable', 'string', 'max:50'],
             'gender' => ['required', 'in:male,female'],
@@ -41,14 +41,14 @@ class UpdateStudentRequest extends FormRequest
             'class_id' => [
                 'required',
                 'integer',
-                Rule::exists('classes', 'id')->where('school_id', $school->id)
+                Rule::exists('classes', 'id')->where('school_id', $school->id),
             ],
             'arm_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('class_arms', 'id')->whereIn('class_id', function($query) use ($school) {
+                Rule::exists('class_arms', 'id')->whereIn('class_id', function ($query) use ($school) {
                     $query->select('id')->from('classes')->where('school_id', $school->id);
-                })
+                }),
             ],
             'status' => ['required', 'in:active,inactive,graduated,suspended,transferred'],
             'school_branch_id' => [
@@ -56,7 +56,7 @@ class UpdateStudentRequest extends FormRequest
                 'integer',
                 Rule::exists('school_branches', 'id')->where(function ($query) use ($school) {
                     $query->where('school_id', $school->id);
-                })
+                }),
             ],
         ];
     }

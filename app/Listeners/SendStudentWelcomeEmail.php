@@ -44,6 +44,7 @@ class SendStudentWelcomeEmail implements ShouldQueue
                 'student_id' => $student->id,
                 'admission_no' => $student->admission_no,
             ]);
+
             return;
         }
 

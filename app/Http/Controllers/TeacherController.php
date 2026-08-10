@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Staff;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Department;
-use App\Models\SchoolBranch;
-use App\Models\SchoolClass;
-use App\Models\Subject;
+use App\Mail\TeacherWelcomeMail;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
+use App\Models\Department;
+use App\Models\Role;
+use App\Models\SchoolBranch;
+use App\Models\SchoolClass;
+use App\Models\Staff;
+use App\Models\Subject;
 use App\Models\TeacherSubject;
-use App\Mail\TeacherWelcomeMail;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class TeacherController extends Controller
@@ -29,20 +29,20 @@ class TeacherController extends Controller
     public function index()
     {
         $school = Auth::user()->school;
-        
+
         // Get all staff members with staff_type = 'Teacher'
         $teachers = Staff::where('school_id', $school->id)
             ->where('staff_type', 'Teacher')
             ->with([
-                'user', 
-                'department', 
+                'user',
+                'department',
                 'schoolBranch',
                 'user.schoolBranch',
-                'teacherSubjects' => function($query) use ($school) {
+                'teacherSubjects' => function ($query) use ($school) {
                     $query->where('school_id', $school->id);
                 },
                 'teacherSubjects.schoolClass',
-                'teacherSubjects.subject'
+                'teacherSubjects.subject',
             ])
             ->latest()
             ->paginate(20);
@@ -72,7 +72,7 @@ class TeacherController extends Controller
         $classes = SchoolClass::where('school_id', $school->id)->get();
         $subjects = Subject::where('school_id', $school->id)->get();
         $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
-        
+
         // Get current session and term
         $currentSession = AcademicSession::where('school_id', $school->id)
             ->where('is_current', true)
@@ -90,7 +90,7 @@ class TeacherController extends Controller
     public function store(Request $request)
     {
         $school = Auth::user()->school;
-        
+
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
@@ -101,7 +101,7 @@ class TeacherController extends Controller
             'profile_photo' => ['nullable', 'image', 'max:2048'],
             'department_id' => [
                 'nullable',
-                Rule::exists('departments', 'id')->where('school_id', $school->id)
+                Rule::exists('departments', 'id')->where('school_id', $school->id),
             ],
             'qualification' => ['nullable', 'string', 'max:255'],
             'employment_date' => ['nullable', 'date'],
@@ -111,11 +111,11 @@ class TeacherController extends Controller
             'subject_assignments' => ['nullable', 'array'],
             'subject_assignments.*.class_id' => [
                 'required_with:subject_assignments',
-                Rule::exists('classes', 'id')->where('school_id', $school->id)
+                Rule::exists('classes', 'id')->where('school_id', $school->id),
             ],
             'subject_assignments.*.subject_id' => [
                 'required_with:subject_assignments',
-                Rule::exists('subjects', 'id')->where('school_id', $school->id)
+                Rule::exists('subjects', 'id')->where('school_id', $school->id),
             ],
         ]);
         $teacherRole = Role::where('school_id', $school->id)
@@ -124,7 +124,7 @@ class TeacherController extends Controller
 
         // Resolve branch ID if user typed a custom branch name
         $branchId = $validated['school_branch_id'] ?? null;
-        if (!$branchId && !empty($validated['custom_branch'])) {
+        if (! $branchId && ! empty($validated['custom_branch'])) {
             $branch = SchoolBranch::firstOrCreate([
                 'school_id' => $school->id,
                 'name' => trim($validated['custom_branch']),
@@ -171,7 +171,7 @@ class TeacherController extends Controller
                 'school_branch_id' => $branchId,
                 'user_id' => $user->id,
                 'department_id' => $validated['department_id'] ?? null,
-                'staff_no' => 'TCH' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
+                'staff_no' => 'TCH'.str_pad($user->id, 5, '0', STR_PAD_LEFT),
                 'staff_type' => 'Teacher',
                 'qualification' => $validated['qualification'] ?? null,
                 'employment_date' => $validated['employment_date'] ?? now(),
@@ -180,7 +180,7 @@ class TeacherController extends Controller
             ]);
 
             // Create subject assignments
-            if (!empty($validated['subject_assignments'])) {
+            if (! empty($validated['subject_assignments'])) {
                 foreach ($validated['subject_assignments'] as $assignment) {
                     TeacherSubject::create([
                         'school_id' => $school->id,
@@ -198,16 +198,17 @@ class TeacherController extends Controller
                 Mail::to($user->email)->send(new TeacherWelcomeMail($staff, 'password123'));
             } catch (\Exception $e) {
                 // Log email error but don't fail the transaction
-                \Log::error('Failed to send welcome email to teacher: ' . $e->getMessage());
+                \Log::error('Failed to send welcome email to teacher: '.$e->getMessage());
             }
 
             DB::commit();
 
             return redirect()->route('teachers.index')
-                ->with('success', 'Teacher added successfully! Welcome email sent to ' . $user->email);
+                ->with('success', 'Teacher added successfully! Welcome email sent to '.$user->email);
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Failed to create teacher: ' . $e->getMessage()]);
+
+            return back()->withInput()->withErrors(['error' => 'Failed to create teacher: '.$e->getMessage()]);
         }
     }
 
@@ -217,7 +218,7 @@ class TeacherController extends Controller
     public function show($id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $teacher = Staff::where('school_id', $school->id)
             ->where('staff_type', 'Teacher')
@@ -234,7 +235,7 @@ class TeacherController extends Controller
     public function edit($id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $teacher = Staff::where('school_id', $school->id)
             ->where('staff_type', 'Teacher')
@@ -245,12 +246,12 @@ class TeacherController extends Controller
         $departments = Department::where('school_id', $school->id)->get();
         $classes = SchoolClass::where('school_id', $school->id)->get();
         $subjects = Subject::where('school_id', $school->id)->get();
-        
+
         // Get current session and term
         $currentSession = AcademicSession::where('school_id', $school->id)
             ->where('is_current', true)
             ->first();
-        
+
         $currentTerm = AcademicTerm::where('school_id', $school->id)
             ->where('is_current', true)
             ->first();
@@ -264,7 +265,7 @@ class TeacherController extends Controller
     public function update(Request $request, $id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $teacher = Staff::where('school_id', $school->id)
             ->where('staff_type', 'Teacher')
@@ -274,7 +275,7 @@ class TeacherController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,' . $teacher->user_id],
+            'email' => ['required', 'email', 'unique:users,email,'.$teacher->user_id],
             'phone' => ['nullable', 'string', 'max:50'],
             'gender' => ['nullable', 'in:male,female'],
             'dob' => ['nullable', 'date', 'before:today'],
@@ -322,7 +323,7 @@ class TeacherController extends Controller
     public function destroy($id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $teacher = Staff::where('school_id', $school->id)
             ->where('staff_type', 'Teacher')

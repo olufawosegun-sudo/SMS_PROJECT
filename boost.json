@@ -1,0 +1,14 @@
+{
+    "agents": [
+        "kiro"
+    ],
+    "cloud": false,
+    "guidelines": true,
+    "skills": [
+        "laravel-best-practices",
+        "configure-nightwatch",
+        "tailwindcss-development",
+        "sms-payment-processing",
+        "sms-student-management"
+    ]
+}

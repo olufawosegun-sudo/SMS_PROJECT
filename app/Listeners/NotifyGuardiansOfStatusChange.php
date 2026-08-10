@@ -34,13 +34,14 @@ class NotifyGuardiansOfStatusChange implements ShouldQueue
 
         // Get guardians with email addresses
         $guardians = $student->guardians->filter(function ($guardian) {
-            return !empty($guardian->user->email);
+            return ! empty($guardian->user->email);
         });
 
         if ($guardians->isEmpty()) {
             Log::info('No guardians with email to notify', [
                 'student_id' => $student->id,
             ]);
+
             return;
         }
 

@@ -16,8 +16,11 @@ class ProcessBulkStudentImport implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $filePath;
+
     protected $schoolId;
+
     protected $branchId;
+
     protected $userId;
 
     /**

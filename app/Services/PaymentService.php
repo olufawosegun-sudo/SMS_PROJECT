@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
-use App\Repositories\PaymentRepository;
 use App\Models\Payment;
+use App\Repositories\PaymentRepository;
+use App\Services\PaymentGateways\PaymentGatewayFactory;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class PaymentService
 {
@@ -90,7 +91,7 @@ class PaymentService
     {
         $payment = $this->findPayment($paymentId, $schoolId);
 
-        if (!$payment) {
+        if (! $payment) {
             throw new \Exception('Payment not found.');
         }
 
@@ -117,7 +118,7 @@ class PaymentService
     {
         $payment = $this->findPayment($paymentId, $schoolId);
 
-        if (!$payment) {
+        if (! $payment) {
             throw new \Exception('Payment not found.');
         }
 
@@ -188,7 +189,7 @@ class PaymentService
     protected function generatePaymentReference(): string
     {
         do {
-            $reference = 'PAY' . date('Ymd') . strtoupper(Str::random(6));
+            $reference = 'PAY'.date('Ymd').strtoupper(Str::random(6));
         } while ($this->paymentRepository->findByReference($reference));
 
         return $reference;
@@ -203,5 +204,55 @@ class PaymentService
             $reference,
             ['student.user', 'invoice', 'academicSession', 'academicTerm']
         );
+    }
+
+    /**
+     * Initialize gateway payment using Factory & Strategy pattern.
+     */
+    public function initializeGatewayPayment(int $paymentId, int $schoolId, string $driver, array $options = []): array
+    {
+        $payment = $this->findPayment($paymentId, $schoolId);
+
+        if (! $payment) {
+            throw new \Exception('Payment record not found.');
+        }
+
+        $gateway = PaymentGatewayFactory::make($driver);
+
+        $result = $gateway->initializePayment($payment, $options);
+
+        if (($result['status'] ?? '') === 'confirmed') {
+            $this->confirmPayment($payment->id, $schoolId);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Verify gateway transaction using Strategy pattern.
+     */
+    public function verifyGatewayPayment(string $reference, string $driver): array
+    {
+        $gateway = PaymentGatewayFactory::make($driver);
+
+        $verification = $gateway->verifyPayment($reference);
+
+        $payment = $this->paymentRepository->findByReference($reference);
+
+        if ($payment && ($verification['paid'] ?? false) && $payment->status !== 'confirmed') {
+            $this->confirmPayment($payment->id, $payment->school_id);
+        }
+
+        return $verification;
+    }
+
+    /**
+     * Handle gateway webhook using Strategy pattern.
+     */
+    public function handleGatewayWebhook(string $driver, array $payload): bool
+    {
+        $gateway = PaymentGatewayFactory::make($driver);
+
+        return $gateway->handleWebhook($payload);
     }
 }

@@ -40,6 +40,7 @@ class SyncStudentStatusCommand extends Command
 
         if ($students->isEmpty()) {
             $this->info('All student statuses are synchronized with user accounts.');
+
             return 0;
         }
 
@@ -51,7 +52,7 @@ class SyncStudentStatusCommand extends Command
             return [
                 'ID' => $student->id,
                 'Admission No' => $student->admission_no,
-                'Name' => $student->user->first_name . ' ' . $student->user->last_name,
+                'Name' => $student->user->first_name.' '.$student->user->last_name,
                 'Student Status' => $student->status,
                 'User Status' => $student->user->status,
             ];
@@ -63,8 +64,9 @@ class SyncStudentStatusCommand extends Command
         );
 
         if ($shouldFix) {
-            if (!$this->confirm('Do you want to sync these statuses? (User status will be updated to match student status)')) {
+            if (! $this->confirm('Do you want to sync these statuses? (User status will be updated to match student status)')) {
                 $this->info('Sync cancelled.');
+
                 return 0;
             }
 
@@ -81,7 +83,7 @@ class SyncStudentStatusCommand extends Command
                 } catch (\Exception $e) {
                     $failed++;
                     $this->newLine();
-                    $this->error("Failed to sync student {$student->admission_no}: " . $e->getMessage());
+                    $this->error("Failed to sync student {$student->admission_no}: ".$e->getMessage());
                 }
 
                 $progressBar->advance();
@@ -90,9 +92,9 @@ class SyncStudentStatusCommand extends Command
             $progressBar->finish();
             $this->newLine(2);
 
-            $this->info("Sync completed!");
+            $this->info('Sync completed!');
             $this->info("Fixed: {$fixed} student(s)");
-            
+
             if ($failed > 0) {
                 $this->warn("Failed: {$failed} student(s)");
             }
@@ -100,6 +102,7 @@ class SyncStudentStatusCommand extends Command
             return 0;
         } else {
             $this->info('Run with --fix-mismatches to automatically fix these issues.');
+
             return 0;
         }
     }

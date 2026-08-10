@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Repositories\StudentRepository;
-use App\Models\User;
+use App\Events\StudentRegistered;
 use App\Models\Role;
 use App\Models\Student;
-use App\Events\StudentRegistered;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Repositories\StudentRepository;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class StudentService
 {
@@ -128,7 +128,7 @@ class StudentService
         return DB::transaction(function () use ($studentId, $data, $schoolId) {
             $student = $this->findStudent($studentId, $schoolId);
 
-            if (!$student) {
+            if (! $student) {
                 throw new \Exception('Student not found.');
             }
 
@@ -138,7 +138,7 @@ class StudentService
                 if ($student->user->profile_photo) {
                     Storage::disk('public')->delete($student->user->profile_photo);
                 }
-                
+
                 $photoPath = $data['profile_photo']->store('profile-photos', 'public');
                 $student->user->update(['profile_photo' => $photoPath]);
             }
@@ -173,7 +173,7 @@ class StudentService
         return DB::transaction(function () use ($studentId, $schoolId) {
             $student = $this->findStudent($studentId, $schoolId);
 
-            if (!$student) {
+            if (! $student) {
                 throw new \Exception('Student not found.');
             }
 
@@ -229,7 +229,7 @@ class StudentService
     /**
      * Promote students to next class
      */
-    public function promoteStudents(array $studentIds, int $newClassId, ?int $newArmId = null, int $schoolId)
+    public function promoteStudents(array $studentIds, int $newClassId, ?int $newArmId, int $schoolId)
     {
         return DB::transaction(function () use ($studentIds, $newClassId, $newArmId, $schoolId) {
             $promoted = [];
@@ -238,7 +238,7 @@ class StudentService
             foreach ($studentIds as $studentId) {
                 try {
                     $student = $this->findStudent($studentId, $schoolId);
-                    
+
                     if ($student && $student->status === 'active') {
                         $student->update([
                             'class_id' => $newClassId,
@@ -269,7 +269,7 @@ class StudentService
     {
         $student = $this->findStudent($studentId, $schoolId);
 
-        if (!$student) {
+        if (! $student) {
             throw new \Exception('Student not found.');
         }
 
@@ -288,12 +288,12 @@ class StudentService
         $year = date('Y');
         $sequence = str_pad($userId, 5, '0', STR_PAD_LEFT);
 
-        $admissionNo = $prefix . $year . $sequence;
+        $admissionNo = $prefix.$year.$sequence;
 
         // Ensure uniqueness
         $counter = 1;
         while ($this->studentRepository->admissionNumberExists($admissionNo)) {
-            $admissionNo = $prefix . $year . $sequence . $counter;
+            $admissionNo = $prefix.$year.$sequence.$counter;
             $counter++;
         }
 
@@ -305,7 +305,7 @@ class StudentService
      */
     public function isAdmissionNumberAvailable(string $admissionNo, ?int $excludeStudentId = null)
     {
-        return !$this->studentRepository->admissionNumberExists($admissionNo, $excludeStudentId);
+        return ! $this->studentRepository->admissionNumberExists($admissionNo, $excludeStudentId);
     }
 
     /**

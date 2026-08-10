@@ -45,7 +45,7 @@ return new class extends Migration
     public function up(): void
     {
         foreach ($this->tables as $tableName) {
-            if (Schema::hasTable($tableName) && !Schema::hasColumn($tableName, 'school_branch_id')) {
+            if (Schema::hasTable($tableName) && ! Schema::hasColumn($tableName, 'school_branch_id')) {
                 Schema::table($tableName, function (Blueprint $table) use ($tableName) {
                     // Check if school_id exists so we can place school_branch_id right after it
                     if (Schema::hasColumn($tableName, 'school_id')) {

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
 use App\Models\Expense;
 use App\Models\Invoice;
-use Illuminate\Http\Request;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
 
 class FinancialReportController extends Controller

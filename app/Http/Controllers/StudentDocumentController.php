@@ -17,7 +17,7 @@ class StudentDocumentController extends Controller
     public function all(Request $request)
     {
         // Only Owner and Principal can access this
-        if (!in_array(Auth::user()->role->name, ['Owner', 'Principal'])) {
+        if (! in_array(Auth::user()->role->name, ['Owner', 'Principal'])) {
             abort(403, 'Unauthorized access');
         }
 
@@ -31,10 +31,10 @@ class StudentDocumentController extends Controller
         // Apply filters
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->whereHas('student.user', function($q) use ($search) {
+            $query->whereHas('student.user', function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%");
-            })->orWhereHas('student', function($q) use ($search) {
+                    ->orWhere('last_name', 'like', "%{$search}%");
+            })->orWhereHas('student', function ($q) use ($search) {
                 $q->where('admission_no', 'like', "%{$search}%");
             });
         }
@@ -46,15 +46,15 @@ class StudentDocumentController extends Controller
         if ($request->filled('status')) {
             if ($request->status === 'expired') {
                 $query->whereNotNull('expiry_date')
-                      ->where('expiry_date', '<', now());
+                    ->where('expiry_date', '<', now());
             } elseif ($request->status === 'expiring') {
                 $query->whereNotNull('expiry_date')
-                      ->where('expiry_date', '<=', now()->addDays(30))
-                      ->where('expiry_date', '>', now());
+                    ->where('expiry_date', '<=', now()->addDays(30))
+                    ->where('expiry_date', '>', now());
             } elseif ($request->status === 'active') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->whereNull('expiry_date')
-                      ->orWhere('expiry_date', '>', now()->addDays(30));
+                        ->orWhere('expiry_date', '>', now()->addDays(30));
                 });
             }
         }
@@ -67,7 +67,7 @@ class StudentDocumentController extends Controller
             'total_documents' => StudentDocument::where('school_id', $school->id)->count(),
             'missing_birth_certificates' => Student::where('school_id', $school->id)
                 ->where('status', 'active')
-                ->whereDoesntHave('documents', function($q) {
+                ->whereDoesntHave('documents', function ($q) {
                     $q->where('document_type', StudentDocument::TYPE_BIRTH_CERTIFICATE);
                 })
                 ->count(),
@@ -92,7 +92,7 @@ class StudentDocumentController extends Controller
      */
     public function index($studentId)
     {
-        $student = Student::with(['documents' => function($query) {
+        $student = Student::with(['documents' => function ($query) {
             $query->active()->latest('uploaded_at');
         }])->findOrFail($studentId);
 
@@ -117,7 +117,7 @@ class StudentDocumentController extends Controller
         ]);
 
         $student = Student::findOrFail($request->student_id);
-        
+
         // Check permission
         $this->authorizeUpload($student);
 
@@ -158,11 +158,11 @@ class StudentDocumentController extends Controller
     public function view($id)
     {
         $document = StudentDocument::with('student')->findOrFail($id);
-        
+
         // Check permission
         $this->authorizeView($document->student);
 
-        if (!Storage::disk('public')->exists($document->file_path)) {
+        if (! Storage::disk('public')->exists($document->file_path)) {
             abort(404, 'File not found');
         }
 
@@ -171,7 +171,7 @@ class StudentDocumentController extends Controller
 
         return response()->file($filePath, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . basename($document->file_path) . '"'
+            'Content-Disposition' => 'inline; filename="'.basename($document->file_path).'"',
         ]);
     }
 
@@ -181,17 +181,17 @@ class StudentDocumentController extends Controller
     public function download($id)
     {
         $document = StudentDocument::with('student')->findOrFail($id);
-        
+
         // Check permission
         $this->authorizeView($document->student);
 
-        if (!Storage::disk('public')->exists($document->file_path)) {
+        if (! Storage::disk('public')->exists($document->file_path)) {
             abort(404, 'File not found');
         }
 
         return Storage::disk('public')->download(
             $document->file_path,
-            $document->document_name . '.' . $document->getFileExtension()
+            $document->document_name.'.'.$document->getFileExtension()
         );
     }
 
@@ -201,7 +201,7 @@ class StudentDocumentController extends Controller
     public function destroy($id)
     {
         $document = StudentDocument::with('student')->findOrFail($id);
-        
+
         // Check permission - only owner can delete
         if (Auth::user()->role->name !== 'Owner') {
             return redirect()->back()->with('error', 'You do not have permission to delete documents.');
@@ -245,7 +245,7 @@ class StudentDocumentController extends Controller
                     ->where('staff_id', $teacherStaff->id)
                     ->where('class_id', $student->class_id)
                     ->exists();
-                
+
                 if ($teachesStudent) {
                     return true;
                 }
@@ -295,6 +295,7 @@ class StudentDocumentController extends Controller
         $extension = $file->getClientOriginalExtension();
         $timestamp = now()->format('YmdHis');
         $random = Str::random(8);
+
         return "{$documentType}_{$timestamp}_{$random}.{$extension}";
     }
 }

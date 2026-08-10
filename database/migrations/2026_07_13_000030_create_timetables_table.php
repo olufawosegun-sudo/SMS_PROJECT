@@ -1,10 +1,13 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::create('timetables', function (Blueprint $table) {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
@@ -19,12 +22,14 @@ return new class extends Migration {
             $table->time('start_time');
             $table->time('end_time');
             $table->timestamps();
-            
+
             // Prevent duplicate timetable entries
             $table->unique(['school_id', 'arm_id', 'day', 'start_time', 'session_id', 'term_id'], 'unique_timetable_slot');
         });
     }
-    public function down(): void {
+
+    public function down(): void
+    {
         Schema::dropIfExists('timetables');
     }
 };

@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-class StudentDocument extends Model {
+class StudentDocument extends Model
+{
     protected $fillable = [
         'school_id',
         'student_id',
@@ -17,24 +19,33 @@ class StudentDocument extends Model {
         'uploaded_at',
         'status',
         'notes',
-        'expiry_date'
+        'expiry_date',
     ];
 
     protected $casts = [
         'uploaded_at' => 'datetime',
-        'expiry_date' => 'date'
+        'expiry_date' => 'date',
     ];
 
     // Document type constants
     const TYPE_BIRTH_CERTIFICATE = 'birth_certificate';
+
     const TYPE_MEDICAL_RECORD = 'medical_record';
+
     const TYPE_PASSPORT_PHOTO = 'passport_photo';
+
     const TYPE_PREVIOUS_SCHOOL_RECORD = 'previous_school_record';
+
     const TYPE_IMMUNIZATION_RECORD = 'immunization_record';
+
     const TYPE_PARENT_ID = 'parent_id';
+
     const TYPE_PROOF_OF_RESIDENCE = 'proof_of_residence';
+
     const TYPE_NATIONAL_ID = 'national_id';
+
     const TYPE_SPECIAL_NEEDS_DOC = 'special_needs_document';
+
     const TYPE_OTHER = 'other';
 
     /**
@@ -110,6 +121,7 @@ class StudentDocument extends Model {
     public function getDocumentTypeLabel(): string
     {
         $types = self::getDocumentTypes();
+
         return $types[$this->document_type] ?? ucfirst(str_replace('_', ' ', $this->document_type));
     }
 
@@ -127,6 +139,7 @@ class StudentDocument extends Model {
     public function isImage(): bool
     {
         $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
         return in_array(strtolower($this->getFileExtension()), $imageExtensions);
     }
 
@@ -143,17 +156,17 @@ class StudentDocument extends Model {
      */
     public function getFormattedFileSize(): string
     {
-        if (!$this->file_size) {
+        if (! $this->file_size) {
             return 'Unknown';
         }
 
         $sizeInKb = (int) $this->file_size;
-        
+
         if ($sizeInKb < 1024) {
-            return $sizeInKb . ' KB';
+            return $sizeInKb.' KB';
         }
-        
-        return round($sizeInKb / 1024, 2) . ' MB';
+
+        return round($sizeInKb / 1024, 2).' MB';
     }
 
     /**
@@ -180,6 +193,7 @@ class StudentDocument extends Model {
         if (Storage::disk('public')->exists($this->file_path)) {
             return Storage::disk('public')->delete($this->file_path);
         }
+
         return false;
     }
 
@@ -205,7 +219,7 @@ class StudentDocument extends Model {
     public function scopeExpired($query)
     {
         return $query->whereNotNull('expiry_date')
-                     ->where('expiry_date', '<', now());
+            ->where('expiry_date', '<', now());
     }
 
     /**
@@ -214,7 +228,7 @@ class StudentDocument extends Model {
     public function scopeExpiringSoon($query)
     {
         return $query->whereNotNull('expiry_date')
-                     ->where('expiry_date', '>', now())
-                     ->where('expiry_date', '<=', now()->addDays(30));
+            ->where('expiry_date', '>', now())
+            ->where('expiry_date', '<=', now()->addDays(30));
     }
 }

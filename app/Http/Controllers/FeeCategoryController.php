@@ -46,12 +46,14 @@ class FeeCategoryController extends Controller
         ]);
 
         $category->update($request->only('name', 'amount', 'description'));
+
         return redirect()->back()->with('success', 'Fee category updated successfully!');
     }
 
     public function destroy($id)
     {
         FeeCategory::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Fee category deleted successfully!');
     }
 }

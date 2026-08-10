@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('results', function (Blueprint $table) {
             // Add total_score column (in addition to existing 'total')
             $table->decimal('total_score', 5, 2)->nullable()->after('exam_score');
-            
+
             // Add grade column (string for A1, B2, C3, etc.)
             $table->string('grade', 2)->nullable()->after('total_score');
         });

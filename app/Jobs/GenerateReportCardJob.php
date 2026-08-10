@@ -9,14 +9,15 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class GenerateReportCardJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $studentId;
+
     protected $sessionId;
+
     protected $termId;
 
     /**
@@ -55,7 +56,7 @@ class GenerateReportCardJob implements ShouldQueue
                 'user',
                 'schoolClass',
                 'arm',
-                'school'
+                'school',
             ])->findOrFail($this->studentId);
 
             // TODO: Implement actual report card generation logic

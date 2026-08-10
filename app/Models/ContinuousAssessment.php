@@ -1,18 +1,20 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ContinuousAssessment extends Model {
+class ContinuousAssessment extends Model
+{
     protected $fillable = [
         'school_id', 'session_id', 'term_id', 'class_id',
         'subject_id', 'staff_id', 'title', 'description', 'total_marks',
-        'weight', 'start_time', 'end_time', 'status'
+        'weight', 'start_time', 'end_time', 'status',
     ];
 
     protected $casts = [
         'start_time' => 'datetime',
-        'end_time' => 'datetime'
+        'end_time' => 'datetime',
     ];
 
     public function getMaxScoreAttribute()
@@ -25,19 +27,23 @@ class ContinuousAssessment extends Model {
         $this->attributes['total_marks'] = $value;
     }
 
-    public function staff() {
+    public function staff()
+    {
         return $this->belongsTo(Staff::class);
     }
 
-    public function subject() {
+    public function subject()
+    {
         return $this->belongsTo(Subject::class);
     }
 
-    public function schoolClass() {
+    public function schoolClass()
+    {
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
-    public function questions() {
+    public function questions()
+    {
         return $this->hasMany(ContinuousAssessmentQuestion::class, 'assessment_id');
     }
 }

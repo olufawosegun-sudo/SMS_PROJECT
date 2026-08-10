@@ -1,16 +1,19 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StudentHouse extends Model {
+class StudentHouse extends Model
+{
     protected $fillable = ['student_id', 'house_id', 'joined_at'];
 
     protected $casts = [
-        'joined_at' => 'datetime'
+        'joined_at' => 'datetime',
     ];
 
-    public function student() {
+    public function student()
+    {
         return $this->belongsTo(Student::class);
     }
 }

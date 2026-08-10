@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\StudentService;
 use App\Http\Requests\Student\StoreStudentRequest;
 use App\Http\Requests\Student\UpdateStudentRequest;
-use App\Models\Student;
-use App\Models\SchoolClass;
 use App\Models\ClassArm;
 use App\Models\SchoolBranch;
-use Illuminate\Http\Request;
+use App\Models\SchoolClass;
+use App\Models\Student;
+use App\Services\StudentService;
 use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
@@ -32,7 +31,7 @@ class StudentController extends Controller
         $this->authorize('viewAny', Student::class);
 
         $school = Auth::user()->school;
-        
+
         $students = $this->studentService->getSchoolStudents($school->id, 20);
         $stats = $this->studentService->getSchoolStats($school->id);
 
@@ -48,7 +47,7 @@ class StudentController extends Controller
 
         $school = Auth::user()->school;
         $classes = SchoolClass::where('school_id', $school->id)->get();
-        $arms = ClassArm::whereHas('schoolClass', function($query) use ($school) {
+        $arms = ClassArm::whereHas('schoolClass', function ($query) use ($school) {
             $query->where('school_id', $school->id);
         })->get();
         $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
@@ -78,7 +77,7 @@ class StudentController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Failed to enroll student: ' . $e->getMessage());
+                ->with('error', 'Failed to enroll student: '.$e->getMessage());
         }
     }
 
@@ -93,6 +92,7 @@ class StudentController extends Controller
 
         try {
             $student = $this->studentService->findStudent($student->id, $school->id);
+
             return view('students.show', compact('student'));
 
         } catch (\Exception $e) {
@@ -113,7 +113,7 @@ class StudentController extends Controller
             $student = $this->studentService->findStudent($student->id, $school->id);
 
             $classes = SchoolClass::where('school_id', $school->id)->get();
-            $arms = ClassArm::whereHas('schoolClass', function($query) use ($school) {
+            $arms = ClassArm::whereHas('schoolClass', function ($query) use ($school) {
                 $query->where('school_id', $school->id);
             })->get();
 
@@ -146,7 +146,7 @@ class StudentController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Failed to update student: ' . $e->getMessage());
+                ->with('error', 'Failed to update student: '.$e->getMessage());
         }
     }
 
@@ -167,7 +167,7 @@ class StudentController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Failed to delete student: ' . $e->getMessage());
+                ->with('error', 'Failed to delete student: '.$e->getMessage());
         }
     }
 }

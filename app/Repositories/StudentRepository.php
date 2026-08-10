@@ -19,7 +19,7 @@ class StudentRepository extends BaseRepository
     {
         $query = $this->model->where('school_id', $schoolId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -34,7 +34,7 @@ class StudentRepository extends BaseRepository
         $query = $this->model->where('school_id', $schoolId)
             ->where('status', $status);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -48,7 +48,7 @@ class StudentRepository extends BaseRepository
     {
         $query = $this->model->where('class_id', $classId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -66,7 +66,7 @@ class StudentRepository extends BaseRepository
             $query->where('arm_id', $armId);
         }
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -87,11 +87,11 @@ class StudentRepository extends BaseRepository
             'graduated' => $this->model->where('school_id', $schoolId)
                 ->where('status', 'graduated')->count(),
             'male' => $this->model->where('school_id', $schoolId)
-                ->whereHas('user', function($q) {
+                ->whereHas('user', function ($q) {
                     $q->where('gender', 'male');
                 })->count(),
             'female' => $this->model->where('school_id', $schoolId)
-                ->whereHas('user', function($q) {
+                ->whereHas('user', function ($q) {
                     $q->where('gender', 'female');
                 })->count(),
         ];
@@ -104,7 +104,7 @@ class StudentRepository extends BaseRepository
     {
         $query = $this->model->where('admission_no', $admissionNo);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -118,7 +118,7 @@ class StudentRepository extends BaseRepository
     {
         $query = $this->model->where('user_id', $userId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -141,11 +141,11 @@ class StudentRepository extends BaseRepository
     public function updateWithUser(int $studentId, array $userData, array $studentData)
     {
         $student = $this->find($studentId, ['*'], ['user']);
-        
+
         if ($student && $student->user) {
             $student->user->update($userData);
         }
-        
+
         return $this->update($studentId, $studentData);
     }
 
@@ -155,11 +155,11 @@ class StudentRepository extends BaseRepository
     public function deleteWithUser(int $studentId)
     {
         $student = $this->find($studentId, ['*'], ['user']);
-        
+
         if ($student && $student->user) {
             $student->user->delete();
         }
-        
+
         return $this->delete($studentId);
     }
 
@@ -169,16 +169,16 @@ class StudentRepository extends BaseRepository
     public function search(int $schoolId, string $keyword, array $relations = [])
     {
         $query = $this->model->where('school_id', $schoolId)
-            ->where(function($q) use ($keyword) {
+            ->where(function ($q) use ($keyword) {
                 $q->where('admission_no', 'LIKE', "%{$keyword}%")
-                    ->orWhereHas('user', function($userQuery) use ($keyword) {
+                    ->orWhereHas('user', function ($userQuery) use ($keyword) {
                         $userQuery->where('first_name', 'LIKE', "%{$keyword}%")
                             ->orWhere('last_name', 'LIKE', "%{$keyword}%")
                             ->orWhere('email', 'LIKE', "%{$keyword}%");
                     });
             });
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 

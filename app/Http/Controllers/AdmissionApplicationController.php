@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\School;
-use App\Models\SchoolClass;
-use App\Models\SchoolBranch;
-use App\Models\AdmissionApplication;
-use App\Models\AdmissionOffer;
 use App\Mail\AdmissionAppliedMail;
+use App\Models\AdmissionApplication;
+use App\Models\AdmissionDocument;
+use App\Models\AdmissionOffer;
+use App\Models\School;
+use App\Models\SchoolBranch;
+use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class AdmissionApplicationController extends Controller
 {
@@ -55,7 +55,7 @@ class AdmissionApplicationController extends Controller
 
         // Resolve branch ID if user typed a custom branch name
         $branchId = $request->school_branch_id;
-        if (!$branchId && $request->filled('preferred_branch')) {
+        if (! $branchId && $request->filled('preferred_branch')) {
             $branch = SchoolBranch::firstOrCreate([
                 'school_id' => $request->school_id,
                 'name' => trim($request->preferred_branch),
@@ -66,12 +66,12 @@ class AdmissionApplicationController extends Controller
         // Generate a unique application number
         $year = date('Y');
         $count = AdmissionApplication::whereYear('created_at', $year)->count() + 1;
-        $applicationNo = 'APP-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        $applicationNo = 'APP-'.$year.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
 
         // Double check uniqueness
         while (AdmissionApplication::where('application_no', $applicationNo)->exists()) {
             $count++;
-            $applicationNo = 'APP-' . $year . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+            $applicationNo = 'APP-'.$year.'-'.str_pad($count, 4, '0', STR_PAD_LEFT);
         }
 
         // Save application
@@ -105,11 +105,11 @@ class AdmissionApplicationController extends Controller
         foreach ($documents as $fieldName => $documentName) {
             if ($request->hasFile($fieldName)) {
                 $file = $request->file($fieldName);
-                $fileName = $applicationNo . '_' . str_replace(' ', '_', strtolower($documentName)) . '.' . $file->getClientOriginalExtension();
+                $fileName = $applicationNo.'_'.str_replace(' ', '_', strtolower($documentName)).'.'.$file->getClientOriginalExtension();
                 $filePath = $file->storeAs('admission-documents', $fileName, 'public');
 
                 // Create document record
-                \App\Models\AdmissionDocument::create([
+                AdmissionDocument::create([
                     'application_id' => $application->id,
                     'document_name' => $documentName,
                     'file' => $filePath,
@@ -123,12 +123,12 @@ class AdmissionApplicationController extends Controller
             Mail::to($application->guardian_email)->send(new AdmissionAppliedMail($application));
         } catch (\Exception $e) {
             // Log warning but continue so the user's submission is not lost
-            logger()->warning('Failed to send admission confirmation email: ' . $e->getMessage());
+            logger()->warning('Failed to send admission confirmation email: '.$e->getMessage());
         }
 
         return redirect()->back()->with('success_application', [
             'application_no' => $application->application_no,
-            'student_name' => $application->first_name . ' ' . $application->last_name,
+            'student_name' => $application->first_name.' '.$application->last_name,
             'guardian_email' => $application->guardian_email,
         ]);
     }
@@ -145,7 +145,7 @@ class AdmissionApplicationController extends Controller
         if ($offer->status !== 'pending') {
             return view('offer-response', [
                 'offer' => $offer,
-                'alreadyResponded' => true
+                'alreadyResponded' => true,
             ]);
         }
 
@@ -159,7 +159,7 @@ class AdmissionApplicationController extends Controller
             'school' => $offer->application->school,
             'offeredClass' => $offer->offeredClass,
             'expiryDate' => $expiryDate,
-            'isExpired' => $isExpired
+            'isExpired' => $isExpired,
         ]);
     }
 
@@ -185,7 +185,7 @@ class AdmissionApplicationController extends Controller
         if ($request->response === 'accept') {
             $offer->update([
                 'status' => 'accepted',
-                'accepted_at' => now()
+                'accepted_at' => now(),
             ]);
 
             $message = 'Congratulations! You have successfully accepted the admission offer. The school will contact you shortly with the next steps.';
@@ -194,7 +194,7 @@ class AdmissionApplicationController extends Controller
                 'status' => 'declined',
             ]);
 
-            $message = 'You have declined the admission offer. Thank you for considering ' . $offer->application->school->name . '.';
+            $message = 'You have declined the admission offer. Thank you for considering '.$offer->application->school->name.'.';
         }
 
         return view('offer-response', [
@@ -202,7 +202,7 @@ class AdmissionApplicationController extends Controller
             'application' => $offer->application,
             'school' => $offer->application->school,
             'message' => $message,
-            'accepted' => $request->response === 'accept'
+            'accepted' => $request->response === 'accept',
         ]);
     }
 }

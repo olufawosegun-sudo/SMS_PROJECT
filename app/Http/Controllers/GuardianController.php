@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\GuardianWelcomeMail;
 use App\Models\Guardian;
-use App\Models\User;
 use App\Models\Role;
 use App\Models\Student;
-use App\Mail\GuardianWelcomeMail;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class GuardianController extends Controller
@@ -55,7 +55,7 @@ class GuardianController extends Controller
     public function store(Request $request)
     {
         $school = Auth::user()->school;
-        
+
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
@@ -69,7 +69,7 @@ class GuardianController extends Controller
             'relationship' => ['required', 'string', 'max:50'],
             'student_ids' => ['nullable', 'array'],
             'student_ids.*' => [
-                Rule::exists('students', 'id')->where('school_id', $school->id)
+                Rule::exists('students', 'id')->where('school_id', $school->id),
             ],
         ]);
         $guardianRole = Role::where('school_id', $school->id)
@@ -109,7 +109,7 @@ class GuardianController extends Controller
         ]);
 
         // Link students to guardian
-        if (!empty($validated['student_ids'])) {
+        if (! empty($validated['student_ids'])) {
             $syncData = [];
             foreach ($validated['student_ids'] as $studentId) {
                 $syncData[$studentId] = [
@@ -129,21 +129,21 @@ class GuardianController extends Controller
             \Log::info('Attempting to send guardian welcome email', [
                 'guardian_id' => $guardian->id,
                 'email' => $user->email,
-                'school_name' => $school->name ?? 'Unknown'
+                'school_name' => $school->name ?? 'Unknown',
             ]);
-            
+
             Mail::to($user->email)->send(new GuardianWelcomeMail($guardian->load('school'), 'password123'));
-            
+
             \Log::info('Guardian welcome email sent successfully', [
                 'guardian_id' => $guardian->id,
-                'email' => $user->email
+                'email' => $user->email,
             ]);
         } catch (\Exception $e) {
             // Log error but don't fail the creation
-            \Log::error('Failed to send guardian welcome email: ' . $e->getMessage(), [
+            \Log::error('Failed to send guardian welcome email: '.$e->getMessage(), [
                 'guardian_id' => $guardian->id,
                 'email' => $user->email,
-                'exception' => $e->getTraceAsString()
+                'exception' => $e->getTraceAsString(),
             ]);
         }
 
@@ -163,6 +163,7 @@ class GuardianController extends Controller
         }
 
         $guardian->load(['user', 'students.user', 'students.schoolClass']);
+
         return view('guardians.show', compact('guardian'));
     }
 
@@ -199,7 +200,7 @@ class GuardianController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,' . $guardian->user_id],
+            'email' => ['required', 'email', 'unique:users,email,'.$guardian->user_id],
             'phone' => ['required', 'string', 'max:50'],
             'gender' => ['nullable', 'in:male,female'],
             'date_of_birth' => ['nullable', 'date', 'before:today'],
@@ -209,7 +210,7 @@ class GuardianController extends Controller
             'relationship' => ['required', 'string', 'max:50'],
             'student_ids' => ['nullable', 'array'],
             'student_ids.*' => [
-                Rule::exists('students', 'id')->where('school_id', $school->id)
+                Rule::exists('students', 'id')->where('school_id', $school->id),
             ],
             'status' => ['required', 'in:active,inactive'],
         ]);
@@ -240,13 +241,13 @@ class GuardianController extends Controller
         ]);
 
         // Update student links (only students from the same school)
-        if (!empty($validated['student_ids'])) {
+        if (! empty($validated['student_ids'])) {
             // SECURITY: Verify all student_ids belong to the same school
             $validStudentIds = Student::where('school_id', $school->id)
                 ->whereIn('id', $validated['student_ids'])
                 ->pluck('id')
                 ->toArray();
-            
+
             // Prepare sync data with required pivot fields
             $syncData = [];
             foreach ($validStudentIds as $studentId) {
@@ -257,7 +258,7 @@ class GuardianController extends Controller
                     'is_emergency_contact' => true,
                 ];
             }
-            
+
             $guardian->students()->sync($syncData);
         } else {
             $guardian->students()->detach();

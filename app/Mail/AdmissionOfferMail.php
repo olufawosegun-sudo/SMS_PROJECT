@@ -6,9 +6,10 @@ use App\Models\AdmissionApplication;
 use App\Models\AdmissionOffer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 
 class AdmissionOfferMail extends Mailable
@@ -16,7 +17,9 @@ class AdmissionOfferMail extends Mailable
     use Queueable, SerializesModels;
 
     public $application;
+
     public $offer;
+
     public $pdfPath;
 
     /**
@@ -35,8 +38,8 @@ class AdmissionOfferMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: new \Illuminate\Mail\Mailables\Address(config('mail.from.address'), $this->application->school->name),
-            subject: '🎓 Admission Offer - ' . $this->application->school->name,
+            from: new Address(config('mail.from.address'), $this->application->school->name),
+            subject: '🎓 Admission Offer - '.$this->application->school->name,
         );
     }
 
@@ -53,7 +56,7 @@ class AdmissionOfferMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

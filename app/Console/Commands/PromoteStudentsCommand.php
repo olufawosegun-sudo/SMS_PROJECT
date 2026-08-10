@@ -6,7 +6,6 @@ use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Services\StudentService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class PromoteStudentsCommand extends Command
 {
@@ -61,13 +60,15 @@ class PromoteStudentsCommand extends Command
             ->where('school_id', $schoolId)
             ->first();
 
-        if (!$fromClass) {
+        if (! $fromClass) {
             $this->error("Source class with ID {$fromClassId} not found for this school.");
+
             return 1;
         }
 
-        if (!$toClass) {
+        if (! $toClass) {
             $this->error("Target class with ID {$toClassId} not found for this school.");
+
             return 1;
         }
 
@@ -80,6 +81,7 @@ class PromoteStudentsCommand extends Command
 
         if ($students->isEmpty()) {
             $this->warn("No students found in {$fromClass->name} with status '{$status}'.");
+
             return 0;
         }
 
@@ -96,7 +98,7 @@ class PromoteStudentsCommand extends Command
             return [
                 'ID' => $student->id,
                 'Admission No' => $student->admission_no,
-                'Name' => $student->user->first_name . ' ' . $student->user->last_name,
+                'Name' => $student->user->first_name.' '.$student->user->last_name,
                 'Current Class' => $student->schoolClass->name ?? 'N/A',
                 'Status' => $student->status,
             ];
@@ -107,9 +109,10 @@ class PromoteStudentsCommand extends Command
             $tableData
         );
 
-        if (!$isDryRun) {
-            if (!$this->confirm('Do you want to proceed with the promotion?')) {
+        if (! $isDryRun) {
+            if (! $this->confirm('Do you want to proceed with the promotion?')) {
                 $this->info('Promotion cancelled.');
+
                 return 0;
             }
 
@@ -118,7 +121,7 @@ class PromoteStudentsCommand extends Command
             $progressBar->start();
 
             $studentIds = $students->pluck('id')->toArray();
-            
+
             try {
                 $result = $this->studentService->promoteStudents(
                     $studentIds,
@@ -130,9 +133,9 @@ class PromoteStudentsCommand extends Command
                 $progressBar->finish();
                 $this->newLine(2);
 
-                $this->info("Promotion completed successfully!");
+                $this->info('Promotion completed successfully!');
                 $this->info("Promoted: {$result['promoted_count']} student(s)");
-                
+
                 if ($result['failed_count'] > 0) {
                     $this->warn("Failed: {$result['failed_count']} student(s)");
                 }
@@ -142,11 +145,13 @@ class PromoteStudentsCommand extends Command
             } catch (\Exception $e) {
                 $progressBar->finish();
                 $this->newLine(2);
-                $this->error("Promotion failed: " . $e->getMessage());
+                $this->error('Promotion failed: '.$e->getMessage());
+
                 return 1;
             }
         } else {
             $this->info('Dry run completed. No changes were made.');
+
             return 0;
         }
     }

@@ -2,30 +2,28 @@
 
 namespace Tests\Unit\Services;
 
-use Tests\TestCase;
-use App\Services\StudentService;
-use App\Repositories\StudentRepository;
 use App\Models\Student;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\School;
+use App\Repositories\StudentRepository;
+use App\Services\StudentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
+use Tests\TestCase;
 
 class StudentServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $studentService;
+
     protected $mockRepository;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create mock repository
         $this->mockRepository = Mockery::mock(StudentRepository::class);
-        
+
         // Inject mock into service
         $this->studentService = new StudentService($this->mockRepository);
     }

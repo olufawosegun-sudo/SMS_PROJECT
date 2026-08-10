@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
-use App\Models\Student;
-use App\Models\FeeCategory;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
+use App\Models\FeeCategory;
+use App\Models\Invoice;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -59,7 +59,7 @@ class InvoiceController extends Controller
             'class_id' => $student->class_id,
             'session_id' => $session->id ?? 1,
             'term_id' => $term->id ?? 1,
-            'invoice_number' => 'INV-' . date('Y') . '-' . str_pad(Invoice::where('school_id', $school->id)->count() + 1, 4, '0', STR_PAD_LEFT),
+            'invoice_number' => 'INV-'.date('Y').'-'.str_pad(Invoice::where('school_id', $school->id)->count() + 1, 4, '0', STR_PAD_LEFT),
             'total_amount' => $request->amount,
             'paid_amount' => 0,
             'balance' => $request->amount,
@@ -75,12 +75,14 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($id);
         $invoice->update(['status' => $request->status]);
+
         return redirect()->back()->with('success', 'Invoice status updated!');
     }
 
     public function destroy($id)
     {
         Invoice::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Invoice deleted successfully!');
     }
 }

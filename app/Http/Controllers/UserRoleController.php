@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Role;
-use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class UserRoleController extends Controller
@@ -18,7 +17,7 @@ class UserRoleController extends Controller
             ->get();
         $roles = Role::all();
 
-        $usersByRole = $users->groupBy(fn($u) => $u->role->name ?? 'Unknown');
+        $usersByRole = $users->groupBy(fn ($u) => $u->role->name ?? 'Unknown');
 
         return view('users-roles.index', compact('users', 'roles', 'usersByRole', 'school'));
     }

@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
 use Illuminate\Cache\RateLimiter;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class RateLimitMiddleware
@@ -47,7 +47,7 @@ class RateLimitMiddleware
     protected function resolveRequestSignature(Request $request): string
     {
         if ($user = $request->user()) {
-            return sha1($user->id . '|' . $request->ip());
+            return sha1($user->id.'|'.$request->ip());
         }
 
         return sha1($request->ip());

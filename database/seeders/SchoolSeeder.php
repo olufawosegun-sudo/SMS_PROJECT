@@ -2,24 +2,24 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\School;
-use App\Models\Role;
-use App\Models\User;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
-use App\Models\Department;
-use App\Models\SchoolClass;
+use App\Models\Announcement;
 use App\Models\ClassArm;
-use App\Models\Subject;
+use App\Models\Department;
+use App\Models\Guardian;
+use App\Models\Role;
+use App\Models\School;
+use App\Models\SchoolClass;
+use App\Models\Setting;
 use App\Models\Staff;
 use App\Models\Student;
-use App\Models\Guardian;
 use App\Models\StudentAttendance;
-use App\Models\Announcement;
-use App\Models\Setting;
-use Illuminate\Support\Str;
+use App\Models\Subject;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class SchoolSeeder extends Seeder
 {
@@ -105,7 +105,7 @@ class SchoolSeeder extends Seeder
             $departments[$name] = Department::create([
                 'school_id' => $school->id,
                 'name' => $name,
-                'description' => $name . ' Department',
+                'description' => $name.' Department',
                 'status' => 'active',
             ]);
         }
@@ -118,7 +118,7 @@ class SchoolSeeder extends Seeder
                 'school_id' => $school->id,
                 'name' => $name,
                 'level' => $name,
-                'description' => $name . ' Class Level',
+                'description' => $name.' Class Level',
                 'status' => 'active',
             ]);
         }
@@ -161,7 +161,7 @@ class SchoolSeeder extends Seeder
                 'first_name' => $t['first'],
                 'last_name' => $t['last'],
                 'email' => $t['email'],
-                'phone' => '+234800000000' . rand(1, 9),
+                'phone' => '+234800000000'.rand(1, 9),
                 'gender' => 'Male',
                 'password' => Hash::make('password'),
                 'status' => 'active',
@@ -188,7 +188,7 @@ class SchoolSeeder extends Seeder
                 'school_id' => $school->id,
                 'class_id' => $cObj->id,
                 'teacher_id' => $teachers[rand(0, count($teachers) - 1)]->id,
-                'name' => $cName . ' A',
+                'name' => $cName.' A',
                 'capacity' => 40,
                 'status' => 'active',
             ]);
@@ -197,11 +197,11 @@ class SchoolSeeder extends Seeder
                 'school_id' => $school->id,
                 'class_id' => $cObj->id,
                 'teacher_id' => $teachers[rand(0, count($teachers) - 1)]->id,
-                'name' => $cName . ' B',
+                'name' => $cName.' B',
                 'capacity' => 40,
                 'status' => 'active',
             ]);
-// Note: teacher_id here refers to the staff ID from the staffs table
+            // Note: teacher_id here refers to the staff ID from the staffs table
         }
 
         // 10. Create Guardians & Students
@@ -275,7 +275,7 @@ class SchoolSeeder extends Seeder
 
         // 11. Create Student Attendance Data for the chart
         $dates = [
-            '2026-07-07', '2026-07-08', '2026-07-09', '2026-07-10', '2026-07-11', '2026-07-12', '2026-07-13'
+            '2026-07-07', '2026-07-08', '2026-07-09', '2026-07-10', '2026-07-11', '2026-07-12', '2026-07-13',
         ];
         foreach ($dates as $d) {
             foreach ($studentList as $s) {

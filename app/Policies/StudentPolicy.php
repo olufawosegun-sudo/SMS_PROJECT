@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Student;
+use App\Models\User;
 
 class StudentPolicy
 {
@@ -12,8 +12,8 @@ class StudentPolicy
      */
     public function viewAny(User $user): bool
     {
-        // Principal, Admin, and Teachers can view students
-        return in_array($user->role->name, ['Principal', 'Admin', 'Teacher', 'SuperAdmin']);
+        // Owner, Principal, Admin, and Teachers can view students
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin', 'Teacher', 'SuperAdmin']);
     }
 
     /**
@@ -26,8 +26,8 @@ class StudentPolicy
             return false;
         }
 
-        // Principal, Admin, and Teachers can view
-        if (in_array($user->role->name, ['Principal', 'Admin', 'Teacher'])) {
+        // Owner, Principal, Admin, and Teachers can view
+        if (in_array($user->role->name, ['Owner', 'Principal', 'Admin', 'Teacher'])) {
             return true;
         }
 
@@ -49,8 +49,8 @@ class StudentPolicy
      */
     public function create(User $user): bool
     {
-        // Only Principal and Admin can create students
-        return in_array($user->role->name, ['Principal', 'Admin', 'SuperAdmin']);
+        // Owner, Principal and Admin can create students
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin', 'SuperAdmin']);
     }
 
     /**
@@ -63,8 +63,8 @@ class StudentPolicy
             return false;
         }
 
-        // Only Principal and Admin can update students
-        return in_array($user->role->name, ['Principal', 'Admin']);
+        // Owner, Principal and Admin can update students
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin']);
     }
 
     /**
@@ -77,8 +77,8 @@ class StudentPolicy
             return false;
         }
 
-        // Only Principal and Admin can delete students
-        return in_array($user->role->name, ['Principal', 'Admin']);
+        // Owner, Principal and Admin can delete students
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin']);
     }
 
     /**
@@ -91,8 +91,8 @@ class StudentPolicy
             return false;
         }
 
-        // Only Principal and Admin can restore students
-        return in_array($user->role->name, ['Principal', 'Admin']);
+        // Owner, Principal and Admin can restore students
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin']);
     }
 
     /**
@@ -105,8 +105,8 @@ class StudentPolicy
             return false;
         }
 
-        // Only Principal can permanently delete students
-        return $user->role->name === 'Principal';
+        // Owner and Principal can permanently delete students
+        return in_array($user->role->name, ['Owner', 'Principal']);
     }
 
     /**
@@ -114,8 +114,8 @@ class StudentPolicy
      */
     public function promote(User $user): bool
     {
-        // Only Principal and Admin can promote students
-        return in_array($user->role->name, ['Principal', 'Admin']);
+        // Owner, Principal and Admin can promote students
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin']);
     }
 
     /**
@@ -128,8 +128,8 @@ class StudentPolicy
             return false;
         }
 
-        // Only Principal and Admin can change student status
-        return in_array($user->role->name, ['Principal', 'Admin']);
+        // Owner, Principal and Admin can change student status
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin']);
     }
 
     /**
@@ -142,8 +142,8 @@ class StudentPolicy
             return false;
         }
 
-        // Principal, Admin, and Teachers can view grades
-        if (in_array($user->role->name, ['Principal', 'Admin', 'Teacher'])) {
+        // Owner, Principal, Admin, and Teachers can view grades
+        if (in_array($user->role->name, ['Owner', 'Principal', 'Admin', 'Teacher'])) {
             return true;
         }
 
@@ -170,8 +170,8 @@ class StudentPolicy
             return false;
         }
 
-        // Only Principal and Admin can manage documents
-        return in_array($user->role->name, ['Principal', 'Admin']);
+        // Owner, Principal and Admin can manage documents
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin']);
     }
 
     /**
@@ -179,8 +179,8 @@ class StudentPolicy
      */
     public function enroll(User $user): bool
     {
-        // Only Principal and Admin can enroll students
-        return in_array($user->role->name, ['Principal', 'Admin']);
+        // Owner, Principal and Admin can enroll students
+        return in_array($user->role->name, ['Owner', 'Principal', 'Admin']);
     }
 
     /**
@@ -193,7 +193,7 @@ class StudentPolicy
             return false;
         }
 
-        // Only Principal can transfer students
-        return $user->role->name === 'Principal';
+        // Owner and Principal can transfer students
+        return in_array($user->role->name, ['Owner', 'Principal']);
     }
 }

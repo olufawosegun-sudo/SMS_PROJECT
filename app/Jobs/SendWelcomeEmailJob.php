@@ -2,26 +2,29 @@
 
 namespace App\Jobs;
 
-use App\Models\Student;
-use App\Models\Teacher;
-use App\Models\Guardian;
+use App\Mail\GuardianWelcomeMail;
 use App\Mail\StudentWelcomeMail;
 use App\Mail\TeacherWelcomeMail;
-use App\Mail\GuardianWelcomeMail;
+use App\Models\EmailLog;
+use App\Models\Guardian;
+use App\Models\Student;
+use App\Models\Teacher;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SendWelcomeEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $model;
+
     protected $password;
+
     protected $type;
 
     /**
@@ -42,9 +45,9 @@ class SendWelcomeEmailJob implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param mixed $model (Student, Teacher, or Guardian model)
-     * @param string $password Plain text password
-     * @param string $type 'student', 'teacher', or 'guardian'
+     * @param  mixed  $model  (Student, Teacher, or Guardian model)
+     * @param  string  $password  Plain text password
+     * @param  string  $type  'student', 'teacher', or 'guardian'
      */
     public function __construct($model, string $password, string $type)
     {
@@ -66,6 +69,7 @@ class SendWelcomeEmailJob implements ShouldQueue
                     'type' => $this->type,
                     'model_id' => $this->model->id,
                 ]);
+
                 return;
             }
 
@@ -136,13 +140,13 @@ class SendWelcomeEmailJob implements ShouldQueue
     protected function logEmailSent(string $email): void
     {
         try {
-            if (class_exists(\App\Models\EmailLog::class)) {
-                \App\Models\EmailLog::create([
+            if (class_exists(EmailLog::class)) {
+                EmailLog::create([
                     'school_id' => $this->model->school_id,
                     'recipient_email' => $email,
-                    'recipient_name' => $this->model->user->first_name . ' ' . $this->model->user->last_name,
-                    'subject' => 'Welcome to ' . ($this->model->school->name ?? 'School'),
-                    'type' => 'welcome_' . $this->type,
+                    'recipient_name' => $this->model->user->first_name.' '.$this->model->user->last_name,
+                    'subject' => 'Welcome to '.($this->model->school->name ?? 'School'),
+                    'type' => 'welcome_'.$this->type,
                     'status' => 'sent',
                     'sent_at' => now(),
                 ]);

@@ -1,10 +1,13 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::create('school_rooms', function (Blueprint $table) {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
@@ -19,12 +22,14 @@ return new class extends Migration {
             $table->text('equipment')->nullable(); // Projector, Whiteboard, Computers, etc.
             $table->enum('status', ['active', 'inactive', 'maintenance', 'reserved'])->default('active');
             $table->timestamps();
-            
+
             // Index for faster queries
             $table->index(['school_id', 'room_type', 'status']);
         });
     }
-    public function down(): void {
+
+    public function down(): void
+    {
         Schema::dropIfExists('school_rooms');
     }
 };

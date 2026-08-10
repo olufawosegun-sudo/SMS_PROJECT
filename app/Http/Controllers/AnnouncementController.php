@@ -50,6 +50,7 @@ class AnnouncementController extends Controller
     public function destroy($id)
     {
         Announcement::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Announcement deleted successfully!');
     }
 }

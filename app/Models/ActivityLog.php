@@ -1,14 +1,17 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ActivityLog extends Model {
+class ActivityLog extends Model
+{
     public $timestamps = false;
 
     protected $fillable = ['user_id', 'activity', 'device', 'browser', 'operating_system', 'ip_address'];
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 }

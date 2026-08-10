@@ -2,17 +2,15 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-
+use App\Events\StudentPromoted;
 // Events
 use App\Events\StudentRegistered;
-use App\Events\StudentPromoted;
 use App\Events\StudentStatusChanged;
-
-// Listeners
-use App\Listeners\SendStudentWelcomeEmail;
 use App\Listeners\LogStudentPromotion;
+// Listeners
 use App\Listeners\NotifyGuardiansOfStatusChange;
+use App\Listeners\SendStudentWelcomeEmail;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
 {

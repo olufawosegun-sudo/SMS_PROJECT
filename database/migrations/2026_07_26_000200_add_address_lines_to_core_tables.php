@@ -16,28 +16,28 @@ return new class extends Migration
             'school_branches',
             'guardians',
             'admission_applications',
-            'transport_drivers'
+            'transport_drivers',
         ];
 
         foreach ($tables as $tableName) {
             if (Schema::hasTable($tableName)) {
                 Schema::table($tableName, function (Blueprint $table) use ($tableName) {
-                    if (!Schema::hasColumn($tableName, 'address_line_1')) {
+                    if (! Schema::hasColumn($tableName, 'address_line_1')) {
                         $table->string('address_line_1')->nullable()->after('address');
                     }
-                    if (!Schema::hasColumn($tableName, 'address_line_2')) {
+                    if (! Schema::hasColumn($tableName, 'address_line_2')) {
                         $table->string('address_line_2')->nullable()->after('address_line_1');
                     }
-                    if (!Schema::hasColumn($tableName, 'address_line_3')) {
+                    if (! Schema::hasColumn($tableName, 'address_line_3')) {
                         $table->string('address_line_3')->nullable()->after('address_line_2');
                     }
-                    if (!Schema::hasColumn($tableName, 'city')) {
+                    if (! Schema::hasColumn($tableName, 'city')) {
                         $table->string('city')->nullable()->after('address_line_3');
                     }
-                    if (!Schema::hasColumn($tableName, 'state')) {
+                    if (! Schema::hasColumn($tableName, 'state')) {
                         $table->string('state')->nullable()->after('city');
                     }
-                    if (!Schema::hasColumn($tableName, 'country')) {
+                    if (! Schema::hasColumn($tableName, 'country')) {
                         $table->string('country')->nullable()->after('state');
                     }
                 });
@@ -55,7 +55,7 @@ return new class extends Migration
             'school_branches',
             'guardians',
             'admission_applications',
-            'transport_drivers'
+            'transport_drivers',
         ];
 
         foreach ($tables as $tableName) {
@@ -67,7 +67,7 @@ return new class extends Migration
                             $colsToDrop[] = $col;
                         }
                     }
-                    if (!empty($colsToDrop)) {
+                    if (! empty($colsToDrop)) {
                         $table->dropColumn($colsToDrop);
                     }
                 });

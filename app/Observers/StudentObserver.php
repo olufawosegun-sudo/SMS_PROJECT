@@ -2,10 +2,11 @@
 
 namespace App\Observers;
 
-use App\Models\Student;
 use App\Models\ActivityLog;
+use App\Models\Student;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class StudentObserver
 {
@@ -17,7 +18,7 @@ class StudentObserver
     {
         // Ensure UUID is set
         if (empty($student->uuid)) {
-            $student->uuid = (string) \Illuminate\Support\Str::uuid();
+            $student->uuid = (string) Str::uuid();
         }
 
         // Set default status if not provided
@@ -109,7 +110,7 @@ class StudentObserver
         }
 
         // Log general update
-        if (!$student->wasChanged(['status', 'class_id'])) {
+        if (! $student->wasChanged(['status', 'class_id'])) {
             $this->logActivity($student, 'updated', 'Student information updated');
         }
 

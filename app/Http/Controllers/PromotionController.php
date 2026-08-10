@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Student;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\StudentPromotion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +16,7 @@ class PromotionController extends Controller
         $students = Student::where('school_id', $school->id)->with(['user', 'schoolClass'])->get();
         $classes = SchoolClass::where('school_id', $school->id)->get();
         $promotions = StudentPromotion::with(['student.user', 'fromClass', 'toClass'])
-            ->whereHas('student', function($q) use ($school) {
+            ->whereHas('student', function ($q) use ($school) {
                 $q->where('school_id', $school->id);
             })
             ->orderBy('promotion_date', 'desc')
@@ -49,7 +49,7 @@ class PromotionController extends Controller
 
         // Update student class
         $student->update([
-            'class_id' => $request->to_class_id
+            'class_id' => $request->to_class_id,
         ]);
 
         return redirect()->back()->with('success', 'Student promoted successfully!');

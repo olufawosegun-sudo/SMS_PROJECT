@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\School;
-use App\Models\Role;
+use App\Mail\GuardianWelcomeMail;
+use App\Mail\PrincipalWelcomeMail;
+use App\Mail\StudentWelcomeMail;
+use App\Mail\TeacherWelcomeMail;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
-use App\Models\LoginSession;
-use App\Models\Staff;
 use App\Models\Guardian;
+use App\Models\LoginSession;
+use App\Models\Role;
+use App\Models\School;
+use App\Models\Staff;
 use App\Models\Student;
-use App\Mail\PrincipalWelcomeMail;
-use App\Mail\TeacherWelcomeMail;
-use App\Mail\GuardianWelcomeMail;
-use App\Mail\StudentWelcomeMail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -214,7 +214,7 @@ class AuthController extends Controller
             ]);
 
             // 4. Create Principal User (if provided)
-            if (!empty($validated['principal_first_name']) && !empty($validated['principal_email'])) {
+            if (! empty($validated['principal_first_name']) && ! empty($validated['principal_email'])) {
                 $principalUser = User::create([
                     'uuid' => (string) Str::uuid(),
                     'school_id' => $school->id,
@@ -231,7 +231,7 @@ class AuthController extends Controller
                 $principalStaff = Staff::create([
                     'school_id' => $school->id,
                     'user_id' => $principalUser->id,
-                    'staff_no' => 'PRI' . str_pad($principalUser->id, 5, '0', STR_PAD_LEFT),
+                    'staff_no' => 'PRI'.str_pad($principalUser->id, 5, '0', STR_PAD_LEFT),
                     'staff_type' => 'Principal',
                     'employment_date' => now(),
                     'contract_type' => 'permanent',
@@ -243,12 +243,12 @@ class AuthController extends Controller
                     Mail::to($principalUser->email)->send(new PrincipalWelcomeMail($principalStaff, 'password123'));
                 } catch (\Exception $mailException) {
                     // Log email error but don't fail registration
-                    \Log::error('Failed to send principal welcome email: ' . $mailException->getMessage());
+                    \Log::error('Failed to send principal welcome email: '.$mailException->getMessage());
                 }
             }
 
             // 5. Create Teacher User (if provided)
-            if (!empty($validated['teacher_first_name']) && !empty($validated['teacher_email'])) {
+            if (! empty($validated['teacher_first_name']) && ! empty($validated['teacher_email'])) {
                 $teacherUser = User::create([
                     'uuid' => (string) Str::uuid(),
                     'school_id' => $school->id,
@@ -264,7 +264,7 @@ class AuthController extends Controller
                 $teacherStaff = Staff::create([
                     'school_id' => $school->id,
                     'user_id' => $teacherUser->id,
-                    'staff_no' => 'TCH' . str_pad($teacherUser->id, 5, '0', STR_PAD_LEFT),
+                    'staff_no' => 'TCH'.str_pad($teacherUser->id, 5, '0', STR_PAD_LEFT),
                     'staff_type' => 'Teacher',
                     'qualification' => $validated['teacher_qualification'] ?? null,
                     'employment_date' => now(),
@@ -277,13 +277,13 @@ class AuthController extends Controller
                     Mail::to($teacherUser->email)->send(new TeacherWelcomeMail($teacherStaff, 'password123'));
                 } catch (\Exception $mailException) {
                     // Log email error but don't fail registration
-                    \Log::error('Failed to send teacher welcome email: ' . $mailException->getMessage());
+                    \Log::error('Failed to send teacher welcome email: '.$mailException->getMessage());
                 }
             }
 
             // 6. Create Parent/Guardian User (if provided)
             $guardianUser = null;
-            if (!empty($validated['parent_first_name']) && !empty($validated['parent_email'])) {
+            if (! empty($validated['parent_first_name']) && ! empty($validated['parent_email'])) {
                 $guardianUser = User::create([
                     'uuid' => (string) Str::uuid(),
                     'school_id' => $school->id,
@@ -310,12 +310,12 @@ class AuthController extends Controller
                     Mail::to($guardianUser->email)->send(new GuardianWelcomeMail($guardian, 'password123'));
                 } catch (\Exception $mailException) {
                     // Log email error but don't fail registration
-                    \Log::error('Failed to send guardian welcome email: ' . $mailException->getMessage());
+                    \Log::error('Failed to send guardian welcome email: '.$mailException->getMessage());
                 }
             }
 
             // 7. Create Student User (if provided)
-            if (!empty($validated['student_first_name']) && !empty($validated['student_email'])) {
+            if (! empty($validated['student_first_name']) && ! empty($validated['student_email'])) {
                 $studentUser = User::create([
                     'uuid' => (string) Str::uuid(),
                     'school_id' => $school->id,
@@ -332,7 +332,7 @@ class AuthController extends Controller
                     'uuid' => (string) Str::uuid(),
                     'school_id' => $school->id,
                     'user_id' => $studentUser->id,
-                    'admission_no' => $validated['student_admission_no'] ?? 'STU' . str_pad($school->id, 5, '0', STR_PAD_LEFT) . '001',
+                    'admission_no' => $validated['student_admission_no'] ?? 'STU'.str_pad($school->id, 5, '0', STR_PAD_LEFT).'001',
                     'admission_date' => now(),
                     'status' => 'active',
                 ]);
@@ -342,16 +342,16 @@ class AuthController extends Controller
                     Mail::to($studentUser->email)->send(new StudentWelcomeMail($student, 'password123'));
                 } catch (\Exception $mailException) {
                     // Log email error but don't fail registration
-                    \Log::error('Failed to send student welcome email: ' . $mailException->getMessage());
+                    \Log::error('Failed to send student welcome email: '.$mailException->getMessage());
                 }
             }
 
             // 8. Create Default Academic Session & Term
             $session = AcademicSession::create([
                 'school_id' => $school->id,
-                'name' => date('Y') . '/' . (date('Y') + 1),
-                'start_date' => date('Y') . '-09-01',
-                'end_date' => (date('Y') + 1) . '-07-20',
+                'name' => date('Y').'/'.(date('Y') + 1),
+                'start_date' => date('Y').'-09-01',
+                'end_date' => (date('Y') + 1).'-07-20',
                 'is_current' => true,
             ]);
 
@@ -359,8 +359,8 @@ class AuthController extends Controller
                 'school_id' => $school->id,
                 'session_id' => $session->id,
                 'name' => 'First Term',
-                'start_date' => date('Y') . '-09-01',
-                'end_date' => date('Y') . '-12-15',
+                'start_date' => date('Y').'-09-01',
+                'end_date' => date('Y').'-12-15',
                 'is_current' => true,
             ]);
 
@@ -385,7 +385,8 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'An error occurred while creating your school profile: ' . $e->getMessage()])->withInput();
+
+            return back()->withErrors(['error' => 'An error occurred while creating your school profile: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -396,7 +397,7 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         \Log::info('Logout attempt', ['user_id' => $user?->id, 'email' => $user?->email]);
-        
+
         if ($user) {
             // Mark login session as logged out
             LoginSession::where('user_id', $user->id)
@@ -411,34 +412,64 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
+
         \Log::info('Logout successful, redirecting to landing page');
 
         return redirect()->route('landing');
     }
 
     // Helper functions for user-agent parsing
-    private function getDevice($ua) {
-        if (preg_match('/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i', $ua)) return 'Tablet';
-        if (preg_match('/(up.browser|up.link|mmp|symbian|smartphone|midp|wap|phone|android|iemobile)/i', $ua)) return 'Mobile';
+    private function getDevice($ua)
+    {
+        if (preg_match('/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i', $ua)) {
+            return 'Tablet';
+        }
+        if (preg_match('/(up.browser|up.link|mmp|symbian|smartphone|midp|wap|phone|android|iemobile)/i', $ua)) {
+            return 'Mobile';
+        }
+
         return 'Desktop';
     }
 
-    private function getBrowser($ua) {
-        if (preg_match('/MSIE/i', $ua) && !preg_match('/Opera/i', $ua)) return 'Internet Explorer';
-        if (preg_match('/Firefox/i', $ua)) return 'Firefox';
-        if (preg_match('/Chrome/i', $ua)) return 'Chrome';
-        if (preg_match('/Safari/i', $ua)) return 'Safari';
-        if (preg_match('/Opera/i', $ua)) return 'Opera';
+    private function getBrowser($ua)
+    {
+        if (preg_match('/MSIE/i', $ua) && ! preg_match('/Opera/i', $ua)) {
+            return 'Internet Explorer';
+        }
+        if (preg_match('/Firefox/i', $ua)) {
+            return 'Firefox';
+        }
+        if (preg_match('/Chrome/i', $ua)) {
+            return 'Chrome';
+        }
+        if (preg_match('/Safari/i', $ua)) {
+            return 'Safari';
+        }
+        if (preg_match('/Opera/i', $ua)) {
+            return 'Opera';
+        }
+
         return 'Unknown';
     }
 
-    private function getOS($ua) {
-        if (preg_match('/windows/i', $ua)) return 'Windows';
-        if (preg_match('/macintosh|mac os x/i', $ua)) return 'Mac OS';
-        if (preg_match('/linux/i', $ua)) return 'Linux';
-        if (preg_match('/iphone|ipad|ipod/i', $ua)) return 'iOS';
-        if (preg_match('/android/i', $ua)) return 'Android';
+    private function getOS($ua)
+    {
+        if (preg_match('/windows/i', $ua)) {
+            return 'Windows';
+        }
+        if (preg_match('/macintosh|mac os x/i', $ua)) {
+            return 'Mac OS';
+        }
+        if (preg_match('/linux/i', $ua)) {
+            return 'Linux';
+        }
+        if (preg_match('/iphone|ipad|ipod/i', $ua)) {
+            return 'iOS';
+        }
+        if (preg_match('/android/i', $ua)) {
+            return 'Android';
+        }
+
         return 'Unknown';
     }
 }

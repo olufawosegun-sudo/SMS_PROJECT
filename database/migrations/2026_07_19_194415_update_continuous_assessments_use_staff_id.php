@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('continuous_assessments', function (Blueprint $table) {
             // Drop old foreign key constraint
             $table->dropForeign(['teacher_id']);
-            
+
             // Rename column to staff_id
             $table->renameColumn('teacher_id', 'staff_id');
         });
@@ -33,7 +33,7 @@ return new class extends Migration
         Schema::table('continuous_assessments', function (Blueprint $table) {
             // Drop staff foreign key
             $table->dropForeign(['staff_id']);
-            
+
             // Rename back to teacher_id
             $table->renameColumn('staff_id', 'teacher_id');
         });

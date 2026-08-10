@@ -242,6 +242,48 @@
         </ul>
         @endif
 
+        {{-- WAEC MANAGEMENT - For Owner & Principal --}}
+        @if(in_array(Auth::user()->role->name, ['Owner', 'Principal', 'Vice Principal']))
+        <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">WAEC Management</p>
+        <ul class="space-y-1 mb-6">
+            @if(Auth::user()->role->name === 'Owner')
+                @foreach([
+                    ['label' => 'WAEC Candidates', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'owner.waec.candidates'],
+                    ['label' => 'Student Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'owner.waec.payments'],
+                    ['label' => 'WAEC Remittance', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'owner.waec.remittance.index'],
+                    ['label' => 'Fee Configuration', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'route' => 'owner.waec.fees.configuration'],
+                    ['label' => 'Financial Reports', 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z', 'route' => 'owner.waec.reports'],
+                ] as $item)
+                <li>
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
+                        </svg>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                </li>
+                @endforeach
+            @else
+                @foreach([
+                    ['label' => 'WAEC Candidates', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'principal.waec.candidates'],
+                    ['label' => 'Register Candidate', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'principal.waec.candidates.create'],
+                    ['label' => 'Student Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'principal.waec.payments'],
+                    ['label' => 'Pending Payments', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'principal.waec.payments.pending'],
+                    ['label' => 'WAEC Remittance', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'principal.waec.remittance.index'],
+                ] as $item)
+                <li>
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
+                        </svg>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                </li>
+                @endforeach
+            @endif
+        </ul>
+        @endif
+
         {{-- COMMUNICATION --}}
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Communication</p>
         <ul class="space-y-1 mb-6">

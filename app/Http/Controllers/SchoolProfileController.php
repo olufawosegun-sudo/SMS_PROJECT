@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\School;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,6 +10,7 @@ class SchoolProfileController extends Controller
     public function index()
     {
         $school = Auth::user()->school;
+
         return view('school-profile.index', compact('school'));
     }
 

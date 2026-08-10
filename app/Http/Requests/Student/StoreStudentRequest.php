@@ -35,21 +35,21 @@ class StoreStudentRequest extends FormRequest
             'class_id' => [
                 'required',
                 'integer',
-                Rule::exists('classes', 'id')->where('school_id', $school->id)
+                Rule::exists('classes', 'id')->where('school_id', $school->id),
             ],
             'arm_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('class_arms', 'id')->whereIn('class_id', function($query) use ($school) {
+                Rule::exists('class_arms', 'id')->whereIn('class_id', function ($query) use ($school) {
                     $query->select('id')->from('classes')->where('school_id', $school->id);
-                })
+                }),
             ],
             'admission_no' => [
                 'nullable',
                 'string',
                 'max:50',
                 'unique:students,admission_no',
-                'regex:/^[A-Z0-9]+$/'
+                'regex:/^[A-Z0-9]+$/',
             ],
             'admission_date' => ['nullable', 'date', 'before_or_equal:today'],
             'school_branch_id' => [
@@ -58,7 +58,7 @@ class StoreStudentRequest extends FormRequest
                 Rule::exists('school_branches', 'id')->where(function ($query) use ($school) {
                     $query->where('school_id', $school->id)
                         ->where('status', 'active');
-                })
+                }),
             ],
             'password' => ['nullable', 'string', 'min:8'],
         ];

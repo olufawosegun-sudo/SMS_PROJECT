@@ -12,15 +12,13 @@ class StudentPromoted
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $student;
+
     public $oldClassId;
+
     public $newClassId;
 
     /**
      * Create a new event instance.
-     *
-     * @param Student $student
-     * @param int $oldClassId
-     * @param int $newClassId
      */
     public function __construct(Student $student, int $oldClassId, int $newClassId)
     {

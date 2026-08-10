@@ -2,19 +2,24 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Change teacher_subjects.teacher_id to staff_id
      * to work with the new unified staff table.
      */
     public function up(): void
     {
+        // Skip if teacher_id column doesn't exist (table was already created with staff_id)
+        if (! Schema::hasColumn('teacher_subjects', 'teacher_id')) {
+            return;
+        }
+
         Schema::table('teacher_subjects', function (Blueprint $table) {
             // Add new staff_id column first (nullable temporarily)
             $table->foreignId('staff_id')
@@ -23,19 +28,25 @@ return new class extends Migration
                 ->constrained('staffs')
                 ->cascadeOnDelete();
         });
-        
-        // Migrate data: Copy teacher's user_id to find corresponding staff_id
-        DB::statement('
-            UPDATE teacher_subjects ts
-            INNER JOIN teachers t ON ts.teacher_id = t.id
-            INNER JOIN staffs s ON t.user_id = s.user_id
-            SET ts.staff_id = s.id
-        ');
-        
+
+        // Migrate data using portable query builder (SQLite-compatible)
+        // Guard against test environments where the teachers table may not exist
+        if (Schema::hasTable('teachers') && Schema::hasColumn('teacher_subjects', 'teacher_id')) {
+            $rows = DB::table('teacher_subjects as ts')
+                ->join('teachers as t', 'ts.teacher_id', '=', 't.id')
+                ->join('staffs as s', 't.user_id', '=', 's.user_id')
+                ->select('ts.id', 's.id as staff_id')
+                ->get();
+
+            foreach ($rows as $row) {
+                DB::table('teacher_subjects')->where('id', $row->id)->update(['staff_id' => $row->staff_id]);
+            }
+        }
+
         Schema::table('teacher_subjects', function (Blueprint $table) {
             // Now make staff_id required
             $table->foreignId('staff_id')->nullable(false)->change();
-            
+
             // Drop all foreign keys first to release unique index
             $table->dropForeign(['school_id']);
             $table->dropForeign(['teacher_id']);
@@ -43,10 +54,10 @@ return new class extends Migration
             $table->dropForeign(['subject_id']);
             $table->dropForeign(['session_id']);
             $table->dropForeign(['term_id']);
-            
+
             // Drop the old unique key
             $table->dropUnique('teacher_subject_school_unique');
-            
+
             // Drop the old column
             $table->dropColumn('teacher_id');
 
@@ -78,12 +89,12 @@ return new class extends Migration
             $table->dropForeign(['subject_id']);
             $table->dropForeign(['session_id']);
             $table->dropForeign(['term_id']);
-            
+
             // Drop staff_id column
             $table->dropColumn('staff_id');
         });
 
-        if (!Schema::hasColumn('teacher_subjects', 'teacher_id')) {
+        if (! Schema::hasColumn('teacher_subjects', 'teacher_id')) {
             Schema::table('teacher_subjects', function (Blueprint $table) {
                 // Restore teacher_id column
                 $table->foreignId('teacher_id')

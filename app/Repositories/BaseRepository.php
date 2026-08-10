@@ -21,7 +21,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $query = $this->model->select($columns);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -35,7 +35,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $query = $this->model->select($columns);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -49,7 +49,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $query = $this->model->select($columns);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -63,7 +63,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $query = $this->model->select($columns)->where($column, $value);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -77,7 +77,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $query = $this->model->select($columns)->where($column, $value);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -99,6 +99,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $record = $this->model->findOrFail($id);
         $record->update($data);
+
         return $record->fresh();
     }
 
@@ -108,6 +109,7 @@ abstract class BaseRepository implements RepositoryInterface
     public function delete(int $id)
     {
         $record = $this->model->findOrFail($id);
+
         return $record->delete();
     }
 
@@ -127,7 +129,7 @@ abstract class BaseRepository implements RepositoryInterface
             }
         }
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -166,6 +168,7 @@ abstract class BaseRepository implements RepositoryInterface
     public function setModel(Model $model)
     {
         $this->model = $model;
+
         return $this;
     }
 }

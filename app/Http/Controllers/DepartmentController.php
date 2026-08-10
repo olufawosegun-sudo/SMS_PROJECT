@@ -32,6 +32,7 @@ class DepartmentController extends Controller
     {
         $school = Auth::user()->school;
         $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
+
         return view('departments.create', compact('branches', 'school'));
     }
 
@@ -72,6 +73,7 @@ class DepartmentController extends Controller
         }
 
         $department->load(['teachers.user', 'schoolBranch']);
+
         return view('departments.show', compact('department', 'school'));
     }
 

@@ -1,29 +1,31 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class StudentAttendance extends Model {
+class StudentAttendance extends Model
+{
     protected $table = 'student_attendance';
 
     protected $fillable = [
-        'school_id', 
-        'student_id', 
+        'school_id',
+        'student_id',
         'class_id',
         'session_id',
         'term_id',
-        'attendance_date', 
+        'attendance_date',
         'attendance_time',
-        'status', 
+        'status',
         'remark',
-        'recorded_by'
+        'recorded_by',
     ];
 
     protected $casts = [
         'attendance_date' => 'date',
-        'attendance_time' => 'datetime'
+        'attendance_time' => 'datetime',
     ];
-    
+
     /**
      * Get the student for this attendance record.
      */
@@ -31,7 +33,7 @@ class StudentAttendance extends Model {
     {
         return $this->belongsTo(Student::class, 'student_id');
     }
-    
+
     /**
      * Get the school for this attendance record.
      */

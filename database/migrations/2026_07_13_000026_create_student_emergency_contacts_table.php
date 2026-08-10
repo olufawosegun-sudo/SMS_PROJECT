@@ -1,10 +1,13 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up(): void {
+return new class extends Migration
+{
+    public function up(): void
+    {
         Schema::create('student_emergency_contacts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('school_id')->constrained('schools')->onDelete('cascade');
@@ -22,12 +25,14 @@ return new class extends Migration {
             $table->boolean('is_primary')->default(false); // Primary emergency contact
             $table->integer('priority')->default(1); // 1 = first to call, 2 = second, etc.
             $table->timestamps();
-            
+
             // Index for faster queries
             $table->index(['school_id', 'student_id', 'is_primary']);
         });
     }
-    public function down(): void {
+
+    public function down(): void
+    {
         Schema::dropIfExists('student_emergency_contacts');
     }
 };

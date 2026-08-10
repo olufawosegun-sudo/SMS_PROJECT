@@ -53,6 +53,7 @@ class CleanupInactiveStudentsCommand extends Command
 
         if ($students->isEmpty()) {
             $this->info('No students found matching the cleanup criteria.');
+
             return 0;
         }
 
@@ -69,7 +70,7 @@ class CleanupInactiveStudentsCommand extends Command
             return [
                 'ID' => $student->id,
                 'Admission No' => $student->admission_no,
-                'Name' => $student->user->first_name . ' ' . $student->user->last_name,
+                'Name' => $student->user->first_name.' '.$student->user->last_name,
                 'Class' => $student->schoolClass->name ?? 'N/A',
                 'Status' => $student->status,
                 'Last Updated' => $student->updated_at->diffForHumans(),
@@ -81,9 +82,10 @@ class CleanupInactiveStudentsCommand extends Command
             $tableData
         );
 
-        if (!$isDryRun) {
-            if (!$force && !$this->confirm('Do you want to proceed with cleanup (soft delete)?', false)) {
+        if (! $isDryRun) {
+            if (! $force && ! $this->confirm('Do you want to proceed with cleanup (soft delete)?', false)) {
                 $this->info('Cleanup cancelled.');
+
                 return 0;
             }
 
@@ -104,7 +106,7 @@ class CleanupInactiveStudentsCommand extends Command
                 } catch (\Exception $e) {
                     $failed++;
                     $this->newLine();
-                    $this->error("Failed to delete student {$student->admission_no}: " . $e->getMessage());
+                    $this->error("Failed to delete student {$student->admission_no}: ".$e->getMessage());
                 }
 
                 $progressBar->advance();
@@ -113,9 +115,9 @@ class CleanupInactiveStudentsCommand extends Command
             $progressBar->finish();
             $this->newLine(2);
 
-            $this->info("Cleanup completed!");
+            $this->info('Cleanup completed!');
             $this->info("Deleted: {$deleted} student(s)");
-            
+
             if ($failed > 0) {
                 $this->warn("Failed: {$failed} student(s)");
             }
@@ -124,6 +126,7 @@ class CleanupInactiveStudentsCommand extends Command
         } else {
             $this->info('Dry run completed. No changes were made.');
             $this->info("Would delete: {$students->count()} student(s)");
+
             return 0;
         }
     }

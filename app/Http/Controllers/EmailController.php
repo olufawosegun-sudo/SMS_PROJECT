@@ -28,12 +28,12 @@ class EmailController extends Controller
         try {
             Mail::raw($request->body, function ($message) use ($request) {
                 $message->to($request->recipient_email)
-                        ->subject($request->subject);
+                    ->subject($request->subject);
             });
 
             return redirect()->back()->with('success', 'Email sent successfully!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to send email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to send email: '.$e->getMessage());
         }
     }
 }

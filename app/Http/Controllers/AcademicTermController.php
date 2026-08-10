@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AcademicTerm;
 use App\Models\AcademicSession;
+use App\Models\AcademicTerm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -77,6 +77,7 @@ class AcademicTermController extends Controller
     public function destroy($id)
     {
         AcademicTerm::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Academic term deleted successfully!');
     }
 }

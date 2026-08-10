@@ -1,29 +1,39 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Payment extends Model {
+class Payment extends Model
+{
     protected $fillable = [
-        'school_id', 'school_branch_id', 'invoice_id', 'student_id', 'payment_reference',
+        'uuid', 'school_id', 'school_branch_id', 'invoice_id', 'student_id', 'reference', 'payment_reference',
         'payment_method', 'gateway', 'amount', 'currency', 'received_by',
-        'status', 'paid_at'
+        'status', 'paid_at',
     ];
+
+    public function getReferenceAttribute()
+    {
+        return $this->attributes['payment_reference'] ?? $this->attributes['reference'] ?? null;
+    }
 
     protected $casts = [
         'amount' => 'decimal:2',
-        'paid_at' => 'datetime'
+        'paid_at' => 'datetime',
     ];
 
-    public function schoolBranch() {
+    public function schoolBranch()
+    {
         return $this->belongsTo(SchoolBranch::class, 'school_branch_id');
     }
 
-    public function student() {
+    public function student()
+    {
         return $this->belongsTo(Student::class);
     }
 
-    public function invoice() {
+    public function invoice()
+    {
         return $this->belongsTo(Invoice::class);
     }
 }

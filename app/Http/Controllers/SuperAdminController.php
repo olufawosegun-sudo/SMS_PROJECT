@@ -2,21 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\School;
-use App\Models\SchoolBranch;
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Staff;
-use App\Models\Invoice;
-use App\Models\Payment;
-use App\Models\Subscription;
-use App\Models\SubscriptionPayment;
 use App\Models\AdmissionApplication;
 use App\Models\AuditLog;
+use App\Models\Payment;
+use App\Models\School;
+use App\Models\SchoolBranch;
+use App\Models\Staff;
+use App\Models\Student;
+use App\Models\Subscription;
+use App\Models\SubscriptionPayment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class SuperAdminController extends Controller
 {
@@ -26,7 +24,7 @@ class SuperAdminController extends Controller
     protected function authorizeSuperAdmin()
     {
         $user = Auth::user();
-        if (!$user || !$user->isSuperAdmin()) {
+        if (! $user || ! $user->isSuperAdmin()) {
             abort(403, 'Unauthorized access. Only Master Super Admin can access this portal.');
         }
     }
@@ -40,35 +38,35 @@ class SuperAdminController extends Controller
 
         // Core platform stats
         $stats = [
-            'total_schools'      => School::count(),
-            'active_schools'     => School::whereNull('deleted_at')->count(),
-            'total_branches'     => SchoolBranch::count(),
-            'total_students'     => Student::count(),
-            'total_staff'        => Staff::count(),
-            'total_users'        => User::count(),
+            'total_schools' => School::count(),
+            'active_schools' => School::whereNull('deleted_at')->count(),
+            'total_branches' => SchoolBranch::count(),
+            'total_students' => Student::count(),
+            'total_staff' => Staff::count(),
+            'total_users' => User::count(),
             'total_applications' => AdmissionApplication::count(),
         ];
 
         // Subscription stats
-        $stats['active_subscriptions']   = Subscription::where('status', 'active')->count();
-        $stats['expired_subscriptions']  = Subscription::where('status', 'expired')->count();
-        $stats['expiring_soon']          = Subscription::where('status', 'active')
+        $stats['active_subscriptions'] = Subscription::where('status', 'active')->count();
+        $stats['expired_subscriptions'] = Subscription::where('status', 'expired')->count();
+        $stats['expiring_soon'] = Subscription::where('status', 'active')
             ->where('ends_at', '<=', now()->addDays(14))
             ->where('ends_at', '>', now())
             ->count();
 
         // Revenue stats
-        $stats['total_school_revenue']       = Payment::whereIn('status', ['successful', 'paid'])->sum('amount');
+        $stats['total_school_revenue'] = Payment::whereIn('status', ['successful', 'paid'])->sum('amount');
         $stats['total_subscription_revenue'] = SubscriptionPayment::where('status', 'paid')->sum('amount');
-        $stats['total_revenue']              = $stats['total_school_revenue'] + $stats['total_subscription_revenue'];
-        $stats['this_month_revenue']         = Payment::whereIn('status', ['successful', 'paid'])
+        $stats['total_revenue'] = $stats['total_school_revenue'] + $stats['total_subscription_revenue'];
+        $stats['this_month_revenue'] = Payment::whereIn('status', ['successful', 'paid'])
             ->whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->sum('amount')
             + SubscriptionPayment::where('status', 'paid')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('amount');
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->sum('amount');
 
         // Monthly revenue trend (last 6 months)
         $monthlyRevenue = [];
@@ -83,11 +81,11 @@ class SuperAdminController extends Controller
                 ->whereYear('created_at', $date->year)
                 ->sum('amount');
             $monthlyRevenue[] = [
-                'month'        => $date->format('M Y'),
-                'month_short'  => $date->format('M'),
-                'school_fees'  => (float) $schoolRev,
-                'subscriptions'=> (float) $subRev,
-                'total'        => (float) ($schoolRev + $subRev),
+                'month' => $date->format('M Y'),
+                'month_short' => $date->format('M'),
+                'school_fees' => (float) $schoolRev,
+                'subscriptions' => (float) $subRev,
+                'total' => (float) ($schoolRev + $subRev),
             ];
         }
 
@@ -154,9 +152,9 @@ class SuperAdminController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('city', 'like', "%{$search}%")
-                  ->orWhere('country', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%");
             });
         }
 
@@ -180,10 +178,10 @@ class SuperAdminController extends Controller
         $this->authorizeSuperAdmin();
 
         $school = School::findOrFail($id);
-        
+
         // Toggle user accounts status for this school
         $newStatus = ($school->trashed() || User::where('school_id', $school->id)->where('status', 'inactive')->exists()) ? 'active' : 'inactive';
-        
+
         User::where('school_id', $school->id)->update(['status' => $newStatus]);
 
         $msg = ($newStatus === 'active') ? "School '{$school->name}' activated successfully." : "School '{$school->name}' suspended successfully.";
@@ -215,7 +213,7 @@ class SuperAdminController extends Controller
         $subscriptions = $query->latest()->paginate(15)->withQueryString();
 
         $summaryStats = [
-            'active'  => Subscription::where('status', 'active')->count(),
+            'active' => Subscription::where('status', 'active')->count(),
             'expired' => Subscription::where('status', 'expired')->count(),
             'cancelled' => Subscription::where('status', 'cancelled')->count(),
             'revenue_this_month' => SubscriptionPayment::where('status', 'paid')
@@ -249,16 +247,24 @@ class SuperAdminController extends Controller
         $subscription = Subscription::findOrFail($id);
 
         $request->validate([
-            'plan'   => 'sometimes|string|in:Starter,Standard,Premium',
+            'plan' => 'sometimes|string|in:Starter,Standard,Premium',
             'status' => 'sometimes|string|in:active,expired,cancelled',
-            'ends_at'=> 'sometimes|date|after:today',
-            'price'  => 'sometimes|numeric|min:0',
+            'ends_at' => 'sometimes|date|after:today',
+            'price' => 'sometimes|numeric|min:0',
         ]);
 
-        if ($request->filled('plan'))    $subscription->plan = $request->plan;
-        if ($request->filled('status'))  $subscription->status = $request->status;
-        if ($request->filled('ends_at')) $subscription->ends_at = $request->ends_at;
-        if ($request->filled('price'))   $subscription->price = $request->price;
+        if ($request->filled('plan')) {
+            $subscription->plan = $request->plan;
+        }
+        if ($request->filled('status')) {
+            $subscription->status = $request->status;
+        }
+        if ($request->filled('ends_at')) {
+            $subscription->ends_at = $request->ends_at;
+        }
+        if ($request->filled('price')) {
+            $subscription->price = $request->price;
+        }
         $subscription->save();
 
         return back()->with('success', "Subscription for '{$subscription->school->name}' updated successfully.");
@@ -292,20 +298,20 @@ class SuperAdminController extends Controller
             if ($request->filled('search')) {
                 $query->whereHas('student', function ($q) use ($request) {
                     $q->where('first_name', 'like', "%{$request->search}%")
-                      ->orWhere('last_name', 'like', "%{$request->search}%");
+                        ->orWhere('last_name', 'like', "%{$request->search}%");
                 });
             }
             $payments = $query->latest()->paginate(20)->withQueryString();
         }
 
         $paymentStats = [
-            'total_collected'      => Payment::whereIn('status', ['successful', 'paid'])->sum('amount'),
-            'sub_collected'        => SubscriptionPayment::where('status', 'paid')->sum('amount'),
-            'pending'              => Payment::where('status', 'pending')->sum('amount'),
-            'this_month'           => Payment::whereIn('status', ['successful', 'paid'])
+            'total_collected' => Payment::whereIn('status', ['successful', 'paid'])->sum('amount'),
+            'sub_collected' => SubscriptionPayment::where('status', 'paid')->sum('amount'),
+            'pending' => Payment::where('status', 'pending')->sum('amount'),
+            'this_month' => Payment::whereIn('status', ['successful', 'paid'])
                 ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('amount')
                 + SubscriptionPayment::where('status', 'paid')
-                ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('amount'),
+                    ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('amount'),
         ];
 
         return view('super-admin.payments.index', compact('payments', 'paymentStats', 'tab'));
@@ -338,9 +344,9 @@ class SuperAdminController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -361,9 +367,9 @@ class SuperAdminController extends Controller
         $this->authorizeSuperAdmin();
 
         $planPricing = [
-            'Starter'  => ['monthly' => 5000, 'yearly' => 50000],
+            'Starter' => ['monthly' => 5000, 'yearly' => 50000],
             'Standard' => ['monthly' => 15000, 'yearly' => 150000],
-            'Premium'  => ['monthly' => 30000, 'yearly' => 300000],
+            'Premium' => ['monthly' => 30000, 'yearly' => 300000],
         ];
 
         return view('super-admin.settings', compact('planPricing'));
@@ -378,14 +384,16 @@ class SuperAdminController extends Controller
 
         $school = School::findOrFail($id);
         $schoolOwner = User::where('school_id', $school->id)
-            ->whereHas('role', function ($q) { $q->where('name', 'Owner'); })
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'Owner');
+            })
             ->first();
 
-        if (!$schoolOwner) {
+        if (! $schoolOwner) {
             $schoolOwner = User::where('school_id', $school->id)->first();
         }
 
-        if (!$schoolOwner) {
+        if (! $schoolOwner) {
             return back()->with('error', "No user found for school '{$school->name}'.");
         }
 
@@ -408,6 +416,7 @@ class SuperAdminController extends Controller
             if ($superAdmin) {
                 Auth::login($superAdmin);
                 session()->forget(['super_admin_id', 'impersonating']);
+
                 return redirect()->route('super-admin.dashboard')->with('success', 'Returned to Super Admin portal.');
             }
         }

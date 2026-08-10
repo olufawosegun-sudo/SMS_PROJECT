@@ -14,7 +14,7 @@ class TransferController extends Controller
         $school = Auth::user()->school;
         $students = Student::where('school_id', $school->id)->with('user')->get();
         $transfers = StudentTransfer::with('student.user')
-            ->whereHas('student', function($q) use ($school) {
+            ->whereHas('student', function ($q) use ($school) {
                 $q->where('school_id', $school->id);
             })
             ->orderBy('transfer_date', 'desc')

@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PrincipalWelcomeMail;
+use App\Models\Department;
+use App\Models\Role;
+use App\Models\SchoolBranch;
 use App\Models\Staff;
 use App\Models\User;
-use App\Models\Role;
-use App\Models\Department;
-use App\Models\SchoolBranch;
-use App\Mail\PrincipalWelcomeMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class PrincipalController extends Controller
@@ -24,7 +24,7 @@ class PrincipalController extends Controller
     public function index()
     {
         $school = Auth::user()->school;
-        
+
         // Get all staff members who are principals
         $principals = Staff::where('school_id', $school->id)
             ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
@@ -54,6 +54,7 @@ class PrincipalController extends Controller
     {
         $school = Auth::user()->school;
         $branches = SchoolBranch::where('school_id', $school->id)->where('status', 'active')->get();
+
         return view('principals.create', compact('branches', 'school'));
     }
 
@@ -92,15 +93,15 @@ class PrincipalController extends Controller
             ->first();
 
         // Check if role exists
-        if (!$principalRole) {
+        if (! $principalRole) {
             return back()->withInput()->withErrors([
-                'role_type' => 'The ' . $validated['role_type'] . ' role does not exist for your school. Please contact support.'
+                'role_type' => 'The '.$validated['role_type'].' role does not exist for your school. Please contact support.',
             ]);
         }
 
         // Resolve branch ID if user typed a custom branch name
         $branchId = $validated['school_branch_id'] ?? null;
-        if (!$branchId && !empty($validated['custom_branch'])) {
+        if (! $branchId && ! empty($validated['custom_branch'])) {
             $branch = SchoolBranch::firstOrCreate([
                 'school_id' => $school->id,
                 'name' => trim($validated['custom_branch']),
@@ -139,7 +140,7 @@ class PrincipalController extends Controller
                 'school_branch_id' => $branchId,
                 'user_id' => $user->id,
                 'department_id' => $validated['department_id'] ?? null,
-                'staff_no' => 'PRI' . str_pad($user->id, 5, '0', STR_PAD_LEFT),
+                'staff_no' => 'PRI'.str_pad($user->id, 5, '0', STR_PAD_LEFT),
                 'staff_type' => $validated['role_type'], // Principal, Vice Principal, or Assistant Principal
                 'qualification' => $validated['qualification'] ?? null,
                 'specialization' => $validated['specialization'] ?? null,
@@ -159,16 +160,17 @@ class PrincipalController extends Controller
                 Mail::to($user->email)->send(new PrincipalWelcomeMail($staff, 'password123'));
             } catch (\Exception $mailException) {
                 // Log email error but don't fail the creation
-                \Log::error('Failed to send principal welcome email: ' . $mailException->getMessage());
+                \Log::error('Failed to send principal welcome email: '.$mailException->getMessage());
             }
 
             DB::commit();
 
             return redirect()->route('principals.index')
-                ->with('success', $validated['role_type'] . ' added successfully! Default password: password123');
+                ->with('success', $validated['role_type'].' added successfully! Default password: password123');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Failed to create principal: ' . $e->getMessage()]);
+
+            return back()->withInput()->withErrors(['error' => 'Failed to create principal: '.$e->getMessage()]);
         }
     }
 
@@ -178,7 +180,7 @@ class PrincipalController extends Controller
     public function show($id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $staff = Staff::where('school_id', $school->id)
             ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
@@ -194,7 +196,7 @@ class PrincipalController extends Controller
     public function edit($id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $staff = Staff::where('school_id', $school->id)
             ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
@@ -212,7 +214,7 @@ class PrincipalController extends Controller
     public function update(Request $request, $id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $staff = Staff::where('school_id', $school->id)
             ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
@@ -222,7 +224,7 @@ class PrincipalController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,' . $staff->user_id],
+            'email' => ['required', 'email', 'unique:users,email,'.$staff->user_id],
             'phone' => ['nullable', 'string', 'max:50'],
             'gender' => ['nullable', 'in:male,female'],
             'date_of_birth' => ['nullable', 'date', 'before:today'],
@@ -290,7 +292,8 @@ class PrincipalController extends Controller
                 ->with('success', 'Principal updated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => 'Failed to update principal: ' . $e->getMessage()]);
+
+            return back()->withInput()->withErrors(['error' => 'Failed to update principal: '.$e->getMessage()]);
         }
     }
 
@@ -300,7 +303,7 @@ class PrincipalController extends Controller
     public function destroy($id)
     {
         $school = Auth::user()->school;
-        
+
         // Find staff member
         $staff = Staff::where('school_id', $school->id)
             ->whereIn('staff_type', ['Principal', 'Vice Principal', 'Assistant Principal'])
@@ -311,7 +314,7 @@ class PrincipalController extends Controller
         try {
             // Soft delete the user account (cascades to staff via database)
             $staff->user->delete();
-            
+
             // Also soft delete the staff record
             $staff->delete();
 
@@ -321,7 +324,8 @@ class PrincipalController extends Controller
                 ->with('success', 'Principal deleted successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to delete principal: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Failed to delete principal: '.$e->getMessage()]);
         }
     }
 }

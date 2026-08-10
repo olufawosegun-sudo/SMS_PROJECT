@@ -19,7 +19,7 @@ class AttendanceRepository extends BaseRepository
     {
         $query = $this->model->where('school_id', $schoolId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -37,7 +37,7 @@ class AttendanceRepository extends BaseRepository
             $query->whereBetween('date', [$startDate, $endDate]);
         }
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -52,7 +52,7 @@ class AttendanceRepository extends BaseRepository
         $query = $this->model->where('class_id', $classId)
             ->whereDate('date', $date);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -67,7 +67,7 @@ class AttendanceRepository extends BaseRepository
         $query = $this->model->where('school_id', $schoolId)
             ->whereDate('date', $date);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 

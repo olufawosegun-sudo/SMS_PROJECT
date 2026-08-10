@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SchoolClass;
 use App\Models\ClassArm;
-use App\Models\Staff;
 use App\Models\SchoolBranch;
+use App\Models\SchoolClass;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +15,7 @@ class ClassController extends Controller
     {
         $school = Auth::user()->school;
         $classes = SchoolClass::where('school_id', $school->id)
-            ->with(['schoolBranch', 'arms' => function($q) {
+            ->with(['schoolBranch', 'arms' => function ($q) {
                 $q->withCount('students')->with('schoolBranch');
             }, 'arms.teacher.user'])
             ->withCount(['students', 'arms'])
@@ -61,12 +61,14 @@ class ClassController extends Controller
         ]);
 
         $class->update($request->only('name', 'level', 'description', 'school_branch_id'));
+
         return redirect()->back()->with('success', 'Class updated successfully!');
     }
 
     public function destroy($id)
     {
         SchoolClass::findOrFail($id)->delete();
+
         return redirect()->back()->with('success', 'Class deleted successfully!');
     }
 
@@ -76,9 +78,9 @@ class ClassController extends Controller
     public function getArms($classId)
     {
         $school = Auth::user()->school;
-        
+
         $arms = ClassArm::where('class_id', $classId)
-            ->whereHas('schoolClass', function($query) use ($school) {
+            ->whereHas('schoolClass', function ($query) use ($school) {
                 $query->where('school_id', $school->id);
             })
             ->where('status', 'active')
@@ -89,7 +91,7 @@ class ClassController extends Controller
 
         return response()->json([
             'success' => true,
-            'arms' => $arms
+            'arms' => $arms,
         ]);
     }
 
@@ -99,7 +101,7 @@ class ClassController extends Controller
     public function storeArm(Request $request)
     {
         $school = Auth::user()->school;
-        
+
         $request->validate([
             'class_id' => 'required|exists:classes,id',
             'name' => 'required|string|max:10',
@@ -132,7 +134,7 @@ class ClassController extends Controller
     public function updateArm(Request $request, $armId)
     {
         $school = Auth::user()->school;
-        
+
         $request->validate([
             'name' => 'required|string|max:10',
             'capacity' => 'required|integer|min:1|max:100',

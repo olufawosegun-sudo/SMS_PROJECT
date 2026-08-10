@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasColumn('teacher_subjects', 'teacher_id')) {
+        if (! Schema::hasColumn('teacher_subjects', 'teacher_id')) {
             Schema::table('teacher_subjects', function (Blueprint $table) {
                 // Restore teacher_id column
                 $table->foreignId('teacher_id')

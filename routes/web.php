@@ -1,44 +1,57 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\TeacherController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\GuardianController;
-use App\Http\Controllers\PrincipalController;
-use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\DatabaseBackupController;
-use App\Http\Controllers\AdmissionApplicationController;
-use App\Http\Controllers\AdmissionController;
-use App\Http\Controllers\PromotionController;
-use App\Http\Controllers\TransferController;
-use App\Http\Controllers\AlumniController;
-use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AcademicSessionController;
 use App\Http\Controllers\AcademicTermController;
-use App\Http\Controllers\ClassController;
-use App\Http\Controllers\SubjectController;
-use App\Http\Controllers\TimetableController;
-use App\Http\Controllers\AssessmentController;
-use App\Http\Controllers\CbtExamController;
-use App\Http\Controllers\ResultController;
-use App\Http\Controllers\ReportCardController;
-use App\Http\Controllers\FeeCategoryController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ExpenseController;
-use App\Http\Controllers\FinancialReportController;
+use App\Http\Controllers\AdmissionApplicationController;
+use App\Http\Controllers\AdmissionController;
+use App\Http\Controllers\AlumniController;
 use App\Http\Controllers\AnnouncementController;
-use App\Http\Controllers\MessageController;
-use App\Http\Controllers\SmsController;
+use App\Http\Controllers\AssessmentAnswerController;
+use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\AssessmentOptionController;
+use App\Http\Controllers\AssessmentQuestionController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CbtExamController;
+use App\Http\Controllers\ClassController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabaseBackupController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmailController;
-use App\Http\Controllers\SchoolProfileController;
-use App\Http\Controllers\UserRoleController;
-use App\Http\Controllers\SystemSettingController;
-use App\Http\Controllers\StaffAttendanceController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FeeCategoryController;
+use App\Http\Controllers\FinancialReportController;
+use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\GuardianWaecController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\OwnerWaecController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\PrincipalController;
+use App\Http\Controllers\PrincipalWaecController;
+use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\ReportCardController;
+use App\Http\Controllers\ResultController;
+use App\Http\Controllers\SchoolProfileController;
+use App\Http\Controllers\SmsController;
+use App\Http\Controllers\StaffAttendanceController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\SystemSettingController;
+use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\TimetableController;
+use App\Http\Controllers\TransferController;
+use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\WaecRemittanceController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,13 +88,15 @@ Route::middleware('auth')->group(function () {
         return view('auth.verify-email');
     })->name('verification.notice');
 
-    Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
+
         return redirect('/dashboard')->with('success', 'Email verified successfully!');
     })->middleware(['signed'])->name('verification.verify');
 
-    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+    Route::post('/email/verification-notification', function (Request $request) {
         $request->user()->sendEmailVerificationNotification();
+
         return back()->with('success', 'Verification link sent to your email!');
     })->middleware(['throttle:6,1'])->name('verification.send');
 });
@@ -91,12 +106,13 @@ Route::get('/forgot-password', function () {
     return view('auth.forgot-password');
 })->middleware('guest')->name('password.request');
 
-Route::post('/forgot-password', function (\Illuminate\Http\Request $request) {
+Route::post('/forgot-password', function (Request $request) {
     $request->validate(['email' => 'required|email']);
-    $status = \Illuminate\Support\Facades\Password::sendResetLink(
+    $status = Password::sendResetLink(
         $request->only('email')
     );
-    return $status === \Illuminate\Support\Facades\Password::RESET_LINK_SENT
+
+    return $status === Password::RESET_LINK_SENT
         ? back()->with('success', 'Password reset link sent to your email!')
         : back()->withErrors(['email' => __($status)]);
 })->middleware('guest')->name('password.email');
@@ -105,22 +121,23 @@ Route::get('/reset-password/{token}', function (string $token) {
     return view('auth.reset-password', ['token' => $token]);
 })->middleware('guest')->name('password.reset');
 
-Route::post('/reset-password', function (\Illuminate\Http\Request $request) {
+Route::post('/reset-password', function (Request $request) {
     $request->validate([
         'token' => 'required',
         'email' => 'required|email',
         'password' => 'required|min:8|confirmed',
     ]);
-    $status = \Illuminate\Support\Facades\Password::reset(
+    $status = Password::reset(
         $request->only('email', 'password', 'password_confirmation', 'token'),
         function ($user, $password) {
             $user->forceFill([
-                'password' => \Illuminate\Support\Facades\Hash::make($password)
-            ])->setRememberToken(\Illuminate\Support\Str::random(60));
+                'password' => Hash::make($password),
+            ])->setRememberToken(Str::random(60));
             $user->save();
         }
     );
-    return $status === \Illuminate\Support\Facades\Password::PASSWORD_RESET
+
+    return $status === Password::PASSWORD_RESET
         ? redirect()->route('login')->with('success', 'Password reset successfully!')
         : back()->withErrors(['email' => [__($status)]]);
 })->middleware('guest')->name('password.update');
@@ -128,7 +145,7 @@ Route::post('/reset-password', function (\Illuminate\Http\Request $request) {
 // Protected Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // User Management Routes
     Route::resource('teachers', TeacherController::class);
     Route::resource('staff-attendance', StaffAttendanceController::class);
@@ -162,7 +179,7 @@ Route::middleware('auth')->group(function () {
 
     // Examination & Grading
     Route::resource('assessments', AssessmentController::class);
-    
+
     // Assessment Sub-modules
     Route::resource('continuous-assessments', AssessmentController::class)->names([
         'index' => 'continuous-assessments.index',
@@ -173,25 +190,25 @@ Route::middleware('auth')->group(function () {
         'update' => 'continuous-assessments.update',
         'destroy' => 'continuous-assessments.destroy',
     ]);
-    
+
     Route::prefix('assessment-questions')->name('assessment-questions.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\AssessmentQuestionController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\AssessmentQuestionController::class, 'store'])->name('store');
-        Route::delete('/{id}', [\App\Http\Controllers\AssessmentQuestionController::class, 'destroy'])->name('destroy');
+        Route::get('/', [AssessmentQuestionController::class, 'index'])->name('index');
+        Route::post('/', [AssessmentQuestionController::class, 'store'])->name('store');
+        Route::delete('/{id}', [AssessmentQuestionController::class, 'destroy'])->name('destroy');
     });
-    
+
     Route::prefix('assessment-options')->name('assessment-options.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\AssessmentOptionController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\AssessmentOptionController::class, 'store'])->name('store');
-        Route::delete('/{id}', [\App\Http\Controllers\AssessmentOptionController::class, 'destroy'])->name('destroy');
+        Route::get('/', [AssessmentOptionController::class, 'index'])->name('index');
+        Route::post('/', [AssessmentOptionController::class, 'store'])->name('store');
+        Route::delete('/{id}', [AssessmentOptionController::class, 'destroy'])->name('destroy');
     });
-    
+
     Route::prefix('assessment-answers')->name('assessment-answers.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\AssessmentAnswerController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\AssessmentAnswerController::class, 'store'])->name('store');
-        Route::delete('/{id}', [\App\Http\Controllers\AssessmentAnswerController::class, 'destroy'])->name('destroy');
+        Route::get('/', [AssessmentAnswerController::class, 'index'])->name('index');
+        Route::post('/', [AssessmentAnswerController::class, 'store'])->name('store');
+        Route::delete('/{id}', [AssessmentAnswerController::class, 'destroy'])->name('destroy');
     });
-    
+
     Route::resource('cbt-exams', CbtExamController::class);
     Route::post('cbt-exams/{id}/submit-for-approval', [CbtExamController::class, 'submitForApproval'])->name('cbt-exams.submit-for-approval');
     Route::post('cbt-exams/{id}/approve', [CbtExamController::class, 'approve'])->name('cbt-exams.approve');
@@ -243,7 +260,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Super Admin Master Portal Routes (Master System Controller)
-    Route::prefix('super-admin')->name('super-admin.')->controller(\App\Http\Controllers\SuperAdminController::class)->group(function () {
+    Route::prefix('super-admin')->name('super-admin.')->controller(SuperAdminController::class)->group(function () {
         Route::get('/', 'dashboard')->name('dashboard');
         Route::get('/schools', 'schools')->name('schools');
         Route::post('/schools/{id}/toggle-status', 'toggleSchoolStatus')->name('schools.toggle-status');
@@ -256,6 +273,65 @@ Route::middleware('auth')->group(function () {
         Route::get('/activities', 'activities')->name('activities');
         Route::get('/users', 'users')->name('users');
         Route::get('/settings', 'systemSettings')->name('settings');
+    });
+
+    // ============================================================================
+    // WAEC PAYMENT & CANDIDATE MANAGEMENT ROUTES
+    // ============================================================================
+
+    // Guardian/Student WAEC Routes
+    Route::prefix('waec')->name('waec.')->group(function () {
+        Route::get('/candidates', [GuardianWaecController::class, 'candidates'])->name('candidates');
+        Route::get('/payments', [GuardianWaecController::class, 'payments'])->name('payments');
+        Route::get('/payments/create', [GuardianWaecController::class, 'createPayment'])->name('payments.create');
+        Route::post('/payments', [GuardianWaecController::class, 'submitPayment'])->name('payments.submit');
+        Route::get('/payments/{payment}', [GuardianWaecController::class, 'showPayment'])->name('payments.show');
+        Route::get('/payments/{payment}/receipt', [GuardianWaecController::class, 'downloadReceipt'])->name('payments.receipt');
+    });
+
+    // Principal WAEC Routes
+    Route::prefix('principal/waec')->name('principal.waec.')->group(function () {
+        // Candidates Management
+        Route::get('/candidates', [PrincipalWaecController::class, 'candidates'])->name('candidates');
+        Route::get('/candidates/create', [PrincipalWaecController::class, 'createCandidate'])->name('candidates.create');
+        Route::post('/candidates', [PrincipalWaecController::class, 'storeCandidate'])->name('candidates.store');
+        Route::get('/candidates/{candidate}', [PrincipalWaecController::class, 'showCandidate'])->name('candidates.show');
+        Route::delete('/candidates/{candidate}', [PrincipalWaecController::class, 'destroyCandidate'])->name('candidates.destroy');
+
+        // Payments Management
+        Route::get('/payments', [PrincipalWaecController::class, 'payments'])->name('payments');
+        Route::get('/payments/pending', [PrincipalWaecController::class, 'pendingPayments'])->name('payments.pending');
+        Route::get('/payments/{payment}', [PrincipalWaecController::class, 'showPayment'])->name('payments.show');
+        Route::post('/payments/{payment}/approve', [PrincipalWaecController::class, 'approvePayment'])->name('payments.approve');
+        Route::post('/payments/{payment}/reject', [PrincipalWaecController::class, 'rejectPayment'])->name('payments.reject');
+
+        // WAEC Remittance / Payment to WAEC
+        Route::get('/remittance', [WaecRemittanceController::class, 'index'])->name('remittance.index');
+        Route::get('/remittance/create', [WaecRemittanceController::class, 'create'])->name('remittance.create');
+        Route::post('/remittance', [WaecRemittanceController::class, 'store'])->name('remittance.store');
+        Route::get('/remittance/{id}', [WaecRemittanceController::class, 'show'])->name('remittance.show');
+    });
+
+    // Owner WAEC Routes
+    Route::prefix('owner/waec')->name('owner.waec.')->group(function () {
+        // Reports
+        Route::get('/reports', [OwnerWaecController::class, 'reports'])->name('reports');
+        Route::get('/reports/financial', [OwnerWaecController::class, 'financial'])->name('reports.financial');
+        Route::get('/reports/export', [OwnerWaecController::class, 'export'])->name('reports.export');
+
+        // Fee Configuration
+        Route::get('/fees/configuration', [OwnerWaecController::class, 'feeConfiguration'])->name('fees.configuration');
+        Route::post('/fees/configuration', [OwnerWaecController::class, 'updateFeeConfiguration'])->name('fees.update');
+
+        // Oversight
+        Route::get('/candidates', [OwnerWaecController::class, 'candidates'])->name('candidates');
+        Route::get('/payments', [OwnerWaecController::class, 'payments'])->name('payments');
+
+        // WAEC Remittance / Payment to WAEC
+        Route::get('/remittance', [WaecRemittanceController::class, 'index'])->name('remittance.index');
+        Route::get('/remittance/create', [WaecRemittanceController::class, 'create'])->name('remittance.create');
+        Route::post('/remittance', [WaecRemittanceController::class, 'store'])->name('remittance.store');
+        Route::get('/remittance/{id}', [WaecRemittanceController::class, 'show'])->name('remittance.show');
     });
 });
 

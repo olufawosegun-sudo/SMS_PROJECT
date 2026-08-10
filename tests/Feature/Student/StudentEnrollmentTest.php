@@ -2,26 +2,30 @@
 
 namespace Tests\Feature\Student;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Student;
+use App\Events\StudentRegistered;
+use App\Mail\StudentWelcomeMail;
 use App\Models\Role;
 use App\Models\School;
 use App\Models\SchoolClass;
-use App\Mail\StudentWelcomeMail;
-use App\Events\StudentRegistered;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 
 class StudentEnrollmentTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $school;
+
     protected $principalUser;
+
     protected $principalRole;
+
     protected $studentRole;
+
     protected $schoolClass;
 
     protected function setUp(): void
@@ -169,7 +173,7 @@ class StudentEnrollmentTest extends TestCase
             ->post(route('students.store'), $studentData);
 
         $student = Student::first();
-        
+
         $this->assertNotNull($student->admission_no);
         $this->assertMatchesRegularExpression('/^STU\d+/', $student->admission_no);
     }

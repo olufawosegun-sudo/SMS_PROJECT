@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class InventoryCategory extends Model {
+class InventoryCategory extends Model
+{
     protected $fillable = ['school_id', 'name', 'description'];
 }

@@ -19,7 +19,7 @@ class PaymentRepository extends BaseRepository
     {
         $query = $this->model->where('school_id', $schoolId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -33,7 +33,7 @@ class PaymentRepository extends BaseRepository
     {
         $query = $this->model->where('student_id', $studentId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -47,7 +47,7 @@ class PaymentRepository extends BaseRepository
     {
         $query = $this->model->where('invoice_id', $invoiceId);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -62,7 +62,7 @@ class PaymentRepository extends BaseRepository
         $query = $this->model->where('school_id', $schoolId)
             ->whereBetween('payment_date', [$startDate, $endDate]);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -100,7 +100,7 @@ class PaymentRepository extends BaseRepository
         $query = $this->model->where('school_id', $schoolId)
             ->where('payment_method', $method);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -115,7 +115,7 @@ class PaymentRepository extends BaseRepository
         $query = $this->model->where('school_id', $schoolId)
             ->where('status', $status);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -137,7 +137,7 @@ class PaymentRepository extends BaseRepository
     {
         $query = $this->model->where('reference', $reference);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 

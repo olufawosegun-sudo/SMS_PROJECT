@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Student;
+use App\Jobs\GenerateReportCardJob;
 use App\Models\AcademicSession;
 use App\Models\AcademicTerm;
-use App\Jobs\GenerateReportCardJob;
+use App\Models\Student;
 use Illuminate\Console\Command;
 
 class GenerateReportCardsCommand extends Command
@@ -50,13 +50,15 @@ class GenerateReportCardsCommand extends Command
             ->where('academic_session_id', $sessionId)
             ->first();
 
-        if (!$session) {
+        if (! $session) {
             $this->error("Academic session with ID {$sessionId} not found.");
+
             return 1;
         }
 
-        if (!$term) {
+        if (! $term) {
             $this->error("Academic term with ID {$termId} not found.");
+
             return 1;
         }
 
@@ -81,14 +83,16 @@ class GenerateReportCardsCommand extends Command
 
         if ($students->isEmpty()) {
             $this->warn('No students found matching the criteria.');
+
             return 0;
         }
 
         $this->info("Found {$students->count()} student(s) for report generation");
         $this->newLine();
 
-        if (!$this->confirm('Do you want to proceed?')) {
+        if (! $this->confirm('Do you want to proceed?')) {
             $this->info('Operation cancelled.');
+
             return 0;
         }
 
@@ -107,12 +111,12 @@ class GenerateReportCardsCommand extends Command
                     // Generate synchronously (for testing/small batches)
                     GenerateReportCardJob::dispatchSync($student->id, $sessionId, $termId);
                 }
-                
+
                 $generated++;
             } catch (\Exception $e) {
                 $failed++;
                 $this->newLine();
-                $this->error("Failed for student {$student->admission_no}: " . $e->getMessage());
+                $this->error("Failed for student {$student->admission_no}: ".$e->getMessage());
             }
 
             $progressBar->advance();
