@@ -2,15 +2,7 @@
 @section('title', 'WAEC Candidates')
 @section('body')
 @php
-    $currencySymbol = match(strtolower($school->country ?? '')) {
-        'nigeria' => '₦',
-        'ghana' => 'GH₵',
-        'kenya' => 'KSh',
-        'south africa' => 'R',
-        'united kingdom', 'uk' => '£',
-        'united states', 'us', 'usa' => '$',
-        default => '$',
-    };
+    $currencySymbol = $school->currency_symbol ?? Auth::user()->school->currency_symbol ?? '₦';
 @endphp
 <div class="flex min-h-screen bg-surface">
     @include('partials.sidebar', ['role' => 'guardian'])

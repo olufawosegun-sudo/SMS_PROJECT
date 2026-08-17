@@ -3,7 +3,7 @@
      ======================================== --}}
 
 {{-- Mobile Hamburger Button --}}
-<button onclick="toggleTeacherSidebar()" class="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-lg bg-primary shadow-lg flex items-center justify-center text-white">
+<button onclick="toggleTeacherSidebar()" class="fixed top-4 left-4 z-50 lg:hidden w-10 h-10 rounded-lg bg-primary shadow-lg flex items-center justify-center text-white" aria-label="Open sidebar">
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
     </svg>
@@ -28,7 +28,7 @@
                 </div>
             </a>
             {{-- Close button for mobile --}}
-            <button onclick="toggleTeacherSidebar()" class="lg:hidden w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+            <button onclick="toggleTeacherSidebar()" class="lg:hidden w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Close sidebar">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -37,12 +37,13 @@
     </div>
 
     {{-- Navigation --}}
-    <nav class="flex-1 px-4 py-6 overflow-y-auto">
+    <nav class="flex-1 px-4 py-6 overflow-y-auto" id="teacherSidebarNav">
         {{-- DASHBOARD --}}
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Dashboard</p>
         <ul class="space-y-1 mb-6">
             <li>
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('dashboard') ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                @php $isDash = request()->routeIs('dashboard'); @endphp
+                <a href="{{ route('dashboard') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isDash ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isDash) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                     </svg>
@@ -54,16 +55,18 @@
         {{-- MY CLASSES --}}
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Teaching</p>
         <ul class="space-y-1 mb-6">
+            @php $isAtt = request()->routeIs('attendance.*'); @endphp
             <li>
-                <a href="{{ route('attendance.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('attendance.*') ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                <a href="{{ route('attendance.index') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isAtt ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isAtt) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span>Attendance</span>
                 </a>
             </li>
+            @php $isTime = request()->routeIs('timetables.*'); @endphp
             <li>
-                <a href="{{ route('timetables.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('timetables.*') ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                <a href="{{ route('timetables.index') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isTime ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isTime) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
@@ -76,36 +79,37 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Assessments</p>
         <ul class="space-y-1 mb-6">
             {{-- Assessments Dropdown --}}
+            @php $isAssessments = request()->routeIs('continuous-assessments.*') || request()->routeIs('assessment-questions.*') || request()->routeIs('assessment-options.*') || request()->routeIs('assessment-answers.*'); @endphp
             <li>
-                <button onclick="toggleAssessmentSubmenu()" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <button onclick="toggleAssessmentSubmenu()" class="sidebar-ripple-btn w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isAssessments ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         <span>Assessments</span>
                     </div>
-                    <svg id="assessmentChevron" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg id="assessmentChevron" class="w-4 h-4 transition-transform duration-200 {{ $isAssessments ? 'rotate-90 text-accent' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
                 </button>
-                <ul id="assessmentSubmenu" class="hidden mt-1 ml-8 space-y-1">
+                <ul id="assessmentSubmenu" class="{{ $isAssessments ? '' : 'hidden' }} mt-1 ml-8 space-y-1">
                     <li>
-                        <a href="{{ route('continuous-assessments.index') }}" class="block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('continuous-assessments.*') ? 'text-white bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200">
+                        <a href="{{ route('continuous-assessments.index') }}" class="sidebar-ripple-btn block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('continuous-assessments.*') ? 'text-white bg-primary shadow-md is-active' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200" @if(request()->routeIs('continuous-assessments.*')) data-active="true" @endif>
                             Continuous Assessments
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('assessment-questions.index') }}" class="block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('assessment-questions.*') ? 'text-white bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200">
+                        <a href="{{ route('assessment-questions.index') }}" class="sidebar-ripple-btn block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('assessment-questions.*') ? 'text-white bg-primary shadow-md is-active' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200" @if(request()->routeIs('assessment-questions.*')) data-active="true" @endif>
                             Assessment Questions
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('assessment-options.index') }}" class="block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('assessment-options.*') ? 'text-white bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200">
+                        <a href="{{ route('assessment-options.index') }}" class="sidebar-ripple-btn block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('assessment-options.*') ? 'text-white bg-primary shadow-md is-active' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200" @if(request()->routeIs('assessment-options.*')) data-active="true" @endif>
                             Question Options
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('assessment-answers.index') }}" class="block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('assessment-answers.*') ? 'text-white bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200">
+                        <a href="{{ route('assessment-answers.index') }}" class="sidebar-ripple-btn block px-3 py-2 rounded-lg text-sm {{ request()->routeIs('assessment-answers.*') ? 'text-white bg-primary shadow-md is-active' : 'text-white/50 hover:text-white hover:bg-white/5' }} transition-all duration-200" @if(request()->routeIs('assessment-answers.*')) data-active="true" @endif>
                             Assessment Answers
                         </a>
                     </li>
@@ -113,16 +117,18 @@
             </li>
 
             {{-- Other Assessment Items --}}
+            @php $isResults = request()->routeIs('results.*'); @endphp
             <li>
-                <a href="{{ route('results.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('results.*') ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                <a href="{{ route('results.index') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isResults ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isResults) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                     <span>Grade Results</span>
                 </a>
             </li>
+            @php $isReports = request()->routeIs('report-cards.*'); @endphp
             <li>
-                <a href="{{ route('report-cards.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('report-cards.*') ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                <a href="{{ route('report-cards.index') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isReports ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isReports) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
@@ -134,8 +140,9 @@
         {{-- STUDENTS --}}
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Students</p>
         <ul class="space-y-1 mb-6">
+            @php $isStudents = request()->routeIs('students.*'); @endphp
             <li>
-                <a href="{{ route('students.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ request()->routeIs('students.*') ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
+                <a href="{{ route('students.index') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isStudents ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isStudents) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
@@ -167,7 +174,7 @@
     </div>
 </aside>
 
-{{-- Sidebar Toggle Script --}}
+{{-- Sidebar Toggle & Ripple Script --}}
 <script>
     function toggleTeacherSidebar() {
         const sidebar = document.getElementById('teacherSidebar');
@@ -182,4 +189,42 @@
         submenu.classList.toggle('hidden');
         chevron.classList.toggle('rotate-90');
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const nav = document.getElementById('teacherSidebarNav');
+        if (nav) {
+            const savedScroll = sessionStorage.getItem('sms_teacher_sidebar_scroll');
+            if (savedScroll !== null) nav.scrollTop = parseInt(savedScroll, 10);
+        }
+
+        const buttons = document.querySelectorAll('#teacherSidebar .sidebar-ripple-btn');
+        buttons.forEach(function (btn) {
+            // Gmail pressed state
+            btn.addEventListener('mousedown', function () {
+                btn.classList.add('is-pressed');
+            });
+            btn.addEventListener('mouseup', function () {
+                btn.classList.remove('is-pressed');
+            });
+            btn.addEventListener('mouseleave', function () {
+                btn.classList.remove('is-pressed');
+            });
+
+            // Click — save scroll & instant active switch
+            btn.addEventListener('click', function () {
+                if (nav) sessionStorage.setItem('sms_teacher_sidebar_scroll', nav.scrollTop);
+
+                if (btn.tagName.toLowerCase() === 'a' && btn.getAttribute('href') && btn.getAttribute('href') !== '#') {
+                    buttons.forEach(function (b) {
+                        b.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/30', 'is-active');
+                        b.removeAttribute('data-active');
+                        b.classList.add('text-white/60');
+                    });
+                    btn.classList.remove('text-white/60');
+                    btn.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/30', 'is-active');
+                    btn.setAttribute('data-active', 'true');
+                }
+            });
+        });
+    });
 </script>

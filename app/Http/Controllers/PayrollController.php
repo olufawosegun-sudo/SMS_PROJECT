@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\Payroll;
 use App\Models\Staff;
 use Illuminate\Http\Request;
@@ -50,7 +52,7 @@ class PayrollController extends Controller
         $deduction = $request->deduction ?? 0;
         $net = $request->basic_salary + $allowance - $deduction;
 
-        Payroll::create([
+        $payroll = Payroll::create([
             'school_id' => $school->id,
             'staff_id' => $request->staff_id,
             'month' => $request->month,
@@ -63,7 +65,26 @@ class PayrollController extends Controller
             'paid_at' => now(),
         ]);
 
-        return redirect()->back()->with('success', 'Payroll slip generated and paid successfully!');
+        // Auto-record in Expense ledger so all school activities & disbursements are tracked in Financial Reports
+        $staff = Staff::with('user')->find($request->staff_id);
+        $staffName = $staff && $staff->user ? ($staff->user->first_name.' '.$staff->user->last_name) : 'Staff #'.$request->staff_id;
+
+        $payrollCategory = ExpenseCategory::firstOrCreate([
+            'school_id' => $school->id,
+            'name' => 'Staff Salaries & Payroll',
+        ]);
+
+        Expense::create([
+            'school_id' => $school->id,
+            'expense_category_id' => $payrollCategory->id,
+            'title' => 'Payroll: '.$staffName.' ('.$request->month.' '.$request->year.')',
+            'amount' => $net,
+            'expense_date' => now(),
+            'description' => 'Disbursed salary to '.$staffName.' - Basic: '.$request->basic_salary.', Allowance: '.$allowance.', Deduction: '.$deduction,
+            'approved_by' => Auth::id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Payroll slip generated and recorded as an expense successfully!');
     }
 
     public function destroy($id)

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\WaecCandidate;
@@ -121,6 +123,22 @@ class WaecRemittanceService
                     'status' => 'exam_ready',
                 ]);
             }
+
+            // Auto-record in Expense ledger so exam fees are tracked in school Financial Reports
+            $remitCategory = ExpenseCategory::firstOrCreate([
+                'school_id' => $schoolId,
+                'name' => 'WAEC Examination Fees & Remittance',
+            ]);
+
+            Expense::create([
+                'school_id' => $schoolId,
+                'expense_category_id' => $remitCategory->id,
+                'title' => 'WAEC Remittance: '.$batchRef.' ('.$candidates->count().' candidates)',
+                'amount' => $data['total_amount'] ?? $calculatedAmount,
+                'expense_date' => $data['payment_date'] ?? now()->toDateString(),
+                'description' => 'Official remittance payment to WAEC for '.$candidates->count().' candidates. Ref: '.($data['waec_transaction_reference'] ?? $batchRef),
+                'approved_by' => $userId,
+            ]);
 
             // Notify Owner and Principal
             $this->notifyAdmins($remittance);

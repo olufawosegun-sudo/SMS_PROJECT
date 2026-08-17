@@ -12,7 +12,32 @@ class SchoolClass extends Model
 
     protected $table = 'classes';
 
-    protected $fillable = ['school_id', 'school_branch_id', 'name', 'level', 'description', 'status'];
+    protected $fillable = [
+        'school_id',
+        'school_branch_id',
+        'name',
+        'level',
+        'category',
+        'order_index',
+        'description',
+        'status',
+    ];
+
+    /**
+     * Scope ordered classes by sequence
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('order_index', 'asc')->orderBy('name', 'asc');
+    }
+
+    /**
+     * Scope by educational category/stage
+     */
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
 
     public function schoolBranch()
     {
@@ -27,5 +52,20 @@ class SchoolClass extends Model
     public function students()
     {
         return $this->hasMany(Student::class, 'class_id');
+    }
+
+    /**
+     * Human-friendly category badge label
+     */
+    public function getCategoryLabelAttribute(): string
+    {
+        return match ($this->category) {
+            'early_childhood' => 'Early Childhood / Pre-School',
+            'primary' => 'Primary / Elementary',
+            'junior_secondary' => 'Junior Secondary / Middle',
+            'senior_secondary' => 'Senior Secondary / High School',
+            'vocational' => 'Vocational & Technical',
+            default => 'General Level',
+        };
     }
 }

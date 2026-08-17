@@ -288,6 +288,75 @@
 }
 
 /* ========================================
+   Gmail-Style Sidebar State Layer System
+   ======================================== */
+
+.sidebar-ripple-btn {
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+    /* Gmail uses ~200ms for all state transitions */
+    transition: background-color 0.2s cubic-bezier(0.2, 0, 0, 1),
+                color 0.2s cubic-bezier(0.2, 0, 0, 1),
+                box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* State layer overlay — Gmail uses this instead of expanding ripple circles */
+.sidebar-ripple-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.2s cubic-bezier(0.2, 0, 0, 1);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Hover — very subtle white overlay (Gmail uses ~4-8% opacity) */
+.sidebar-ripple-btn:hover::before {
+    opacity: 0.08;
+}
+
+/* Pressed — slightly stronger overlay (Gmail uses ~12% opacity on press) */
+.sidebar-ripple-btn.is-pressed::before,
+.sidebar-ripple-btn:active::before {
+    opacity: 0.14;
+}
+
+/* Active/selected items should NOT show the hover overlay since they already have bg-primary */
+.sidebar-ripple-btn.is-active::before,
+.sidebar-ripple-btn[data-active="true"]::before {
+    background: white;
+    opacity: 0;
+}
+.sidebar-ripple-btn.is-active:hover::before,
+.sidebar-ripple-btn[data-active="true"]:hover::before {
+    opacity: 0.08;
+}
+.sidebar-ripple-btn.is-active.is-pressed::before,
+.sidebar-ripple-btn.is-active:active::before,
+.sidebar-ripple-btn[data-active="true"].is-pressed::before,
+.sidebar-ripple-btn[data-active="true"]:active::before {
+    opacity: 0.14;
+}
+
+/* Keep child content above the state layer */
+.sidebar-ripple-btn > * {
+    position: relative;
+    z-index: 1;
+}
+.sidebar-ripple-btn > span,
+.sidebar-ripple-btn > svg,
+.sidebar-ripple-btn > div {
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================================
    Scrollbar Styling
    ======================================== */
 

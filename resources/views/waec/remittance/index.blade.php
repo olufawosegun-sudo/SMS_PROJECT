@@ -4,15 +4,7 @@
 
 @section('body')
 @php
-    $currencySymbol = match(strtolower(Auth::user()->school->country ?? '')) {
-        'nigeria' => '₦',
-        'ghana' => 'GH₵',
-        'kenya' => 'KSh',
-        'south africa' => 'R',
-        'united kingdom', 'uk' => '£',
-        'united states', 'us', 'usa' => '$',
-        default => '₦',
-    };
+    $currencySymbol = Auth::user()->school->currency_symbol ?? $school->currency_symbol ?? '₦';
     $isOwner = Auth::user()->role->name === 'Owner';
     $createRoute = $isOwner ? route('owner.waec.remittance.create') : route('principal.waec.remittance.create');
 @endphp

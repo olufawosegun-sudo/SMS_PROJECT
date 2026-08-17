@@ -2,15 +2,7 @@
 @section('title', 'Financial Reports')
 @section('body')
 @php
-    $currencySymbol = match(strtolower($school->country ?? '')) {
-        'nigeria' => '₦',
-        'ghana' => 'GH₵',
-        'kenya' => 'KSh',
-        'south africa' => 'R',
-        'united kingdom', 'uk' => '£',
-        'united states', 'us', 'usa' => '$',
-        default => '$',
-    };
+    $currencySymbol = $school->currency_symbol ?? Auth::user()->school->currency_symbol ?? '₦';
 @endphp
 <div class="flex min-h-screen bg-surface">
     @include('partials.sidebar', ['role' => 'owner'])
@@ -20,6 +12,64 @@
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-dark mb-2">School Financial Statement</h1>
                 <p class="text-gray-500">Cumulative revenue, billing collections, outstanding receivables, and expense reports</p>
+            </div>
+
+            {{-- ===== PROFIT / LOSS HERO CARD ===== --}}
+            <div class="mb-8 bg-gradient-to-r {{ $netProfit >= 0 ? 'from-emerald-600 to-emerald-800' : 'from-red-600 to-red-800' }} rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-lg">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4"></div>
+                <div class="absolute bottom-0 left-10 w-32 h-32 bg-white/5 rounded-full translate-y-1/2"></div>
+                <div class="relative z-10">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <p class="text-white/70 text-xs font-bold uppercase tracking-widest mb-2">{{ $netProfit >= 0 ? '📈 Net Profit' : '📉 Net Loss' }}</p>
+                            <p class="text-4xl md:text-5xl font-extrabold text-white mb-2">
+                                {{ $netProfit >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($netProfit), 2) }}
+                            </p>
+                            <p class="text-white/60 text-sm">Revenue minus Expenses for the school</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="bg-white/10 backdrop-blur-md rounded-xl px-5 py-4 border border-white/20 text-center min-w-[120px]">
+                                <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Profit Margin</p>
+                                <p class="text-2xl font-extrabold text-white">{{ $profitMargin }}%</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md rounded-xl px-5 py-4 border border-white/20 text-center min-w-[120px]">
+                                <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Collection Rate</p>
+                                <p class="text-2xl font-extrabold text-white">{{ $collectionRate }}%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- P&L Breakdown --}}
+                    <div class="mt-6 pt-5 border-t border-white/15 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/50 text-[10px] font-bold uppercase">Total Revenue</p>
+                                <p class="text-lg font-bold text-white">{{ $currencySymbol }}{{ number_format($totalRevenue, 2) }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/50 text-[10px] font-bold uppercase">Total Expenses</p>
+                                <p class="text-lg font-bold text-white">{{ $currencySymbol }}{{ number_format($totalExpenses, 2) }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/50 text-[10px] font-bold uppercase">= Net {{ $netProfit >= 0 ? 'Profit' : 'Loss' }}</p>
+                                <p class="text-lg font-bold text-white">{{ $netProfit >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($netProfit), 2) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {{-- Summary Cards --}}
@@ -63,7 +113,7 @@
                         <div class="flex-1 text-center">
                             <span class="text-xs text-gray-400 font-semibold uppercase block">Net Balance</span>
                             <span class="text-2xl font-bold {{ $surplus >= 0 ? 'text-primary' : 'text-danger' }} block mt-1">
-                                {{ $currencySymbol }}{{ number_format($surplus, 2) }}
+                                {{ $surplus >= 0 ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($surplus), 2) }}
                             </span>
                         </div>
                     </div>

@@ -159,10 +159,26 @@ class AuthController extends Controller
                 $ownerPhotoPath = $request->file('owner_profile_photo')->store('profile-photos', 'public');
             }
 
-            // 2. Create School
+            // Generate unique slug & subdomain
+            $baseSlug = Str::slug($validated['school_name']);
+            if (empty($baseSlug)) {
+                $baseSlug = 'school-'.strtolower(Str::random(6));
+            }
+            $slug = $baseSlug;
+            $counter = 1;
+            while (School::where('slug', $slug)->orWhere('subdomain', $slug)->exists()) {
+                $slug = $baseSlug.'-'.$counter;
+                $counter++;
+            }
+
+            // 2. Create School with country-derived currency
+            $currencyDefaults = School::getCurrencyForCountry($validated['school_country']);
+
             $school = School::create([
                 'uuid' => (string) Str::uuid(),
                 'name' => $validated['school_name'],
+                'slug' => $slug,
+                'subdomain' => $slug,
                 'school_code' => strtoupper($validated['school_code']),
                 'email' => $validated['school_email'],
                 'phone' => $validated['school_phone'],
@@ -171,8 +187,11 @@ class AuthController extends Controller
                 'city' => $validated['school_city'] ?? null,
                 'state' => $validated['school_state'] ?? null,
                 'country' => $validated['school_country'],
+                'currency' => $currencyDefaults['code'],
+                'currency_symbol' => $currencyDefaults['symbol'],
                 'motto' => $validated['school_motto'],
                 'logo' => $logoPath,
+                'admission_status' => 'open',
             ]);
 
             // 2. Create Default Roles for the school

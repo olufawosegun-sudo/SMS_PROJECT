@@ -30,8 +30,8 @@ class ClassController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:50',
-            'level' => 'required|string',
+            'name' => 'required|string|max:100',
+            'level' => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
             'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);
@@ -52,10 +52,14 @@ class ClassController extends Controller
 
     public function update(Request $request, $id)
     {
-        $class = SchoolClass::findOrFail($id);
+        $school = Auth::user()->school;
+        $class = SchoolClass::where('id', $id)
+            ->where('school_id', $school->id)
+            ->firstOrFail();
+
         $request->validate([
-            'name' => 'required|string|max:50',
-            'level' => 'required|string',
+            'name' => 'required|string|max:100',
+            'level' => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
             'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);
@@ -67,7 +71,16 @@ class ClassController extends Controller
 
     public function destroy($id)
     {
-        SchoolClass::findOrFail($id)->delete();
+        $school = Auth::user()->school;
+        $class = SchoolClass::where('id', $id)
+            ->where('school_id', $school->id)
+            ->firstOrFail();
+
+        if ($class->students()->count() > 0) {
+            return redirect()->back()->with('error', 'Cannot delete class with enrolled students!');
+        }
+
+        $class->delete();
 
         return redirect()->back()->with('success', 'Class deleted successfully!');
     }
@@ -104,8 +117,8 @@ class ClassController extends Controller
 
         $request->validate([
             'class_id' => 'required|exists:classes,id',
-            'name' => 'required|string|max:10',
-            'capacity' => 'required|integer|min:1|max:100',
+            'name' => 'required|string|max:50',
+            'capacity' => 'required|integer|min:1|max:200',
             'teacher_id' => 'nullable|exists:staff,id',
             'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);
@@ -136,8 +149,8 @@ class ClassController extends Controller
         $school = Auth::user()->school;
 
         $request->validate([
-            'name' => 'required|string|max:10',
-            'capacity' => 'required|integer|min:1|max:100',
+            'name' => 'required|string|max:50',
+            'capacity' => 'required|integer|min:1|max:200',
             'teacher_id' => 'nullable|exists:staff,id',
             'school_branch_id' => 'nullable|exists:school_branches,id',
         ]);

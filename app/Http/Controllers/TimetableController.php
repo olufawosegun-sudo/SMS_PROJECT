@@ -29,7 +29,8 @@ class TimetableController extends Controller
             $timetableQuery->where('class_id', $selectedClassId);
         }
 
-        $timetable = $timetableQuery->orderByRaw("FIELD(day, 'Monday','Tuesday','Wednesday','Thursday','Friday')")
+        $dayOrder = "CASE day WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 ELSE 6 END";
+        $timetable = $timetableQuery->orderByRaw($dayOrder)
             ->orderBy('start_time')
             ->get();
 

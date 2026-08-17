@@ -38,15 +38,7 @@
 </head>
 <body>
     @php
-        $currencySymbol = match(strtolower($payment->school->country ?? '')) {
-            'nigeria' => '₦',
-            'ghana' => 'GH₵',
-            'kenya' => 'KSh',
-            'south africa' => 'R',
-            'united kingdom', 'uk' => '£',
-            'united states', 'us', 'usa' => '$',
-            default => '$',
-        };
+        $currencySymbol = $payment->school->currency_symbol ?? '₦';
     @endphp
 
     <div class="receipt">

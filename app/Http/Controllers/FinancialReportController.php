@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 
 class FinancialReportController extends Controller
 {
+    /**
+     * Display the financial report with profit/loss summary.
+     */
     public function index()
     {
         $school = Auth::user()->school;
@@ -17,6 +20,11 @@ class FinancialReportController extends Controller
         $totalExpenses = Expense::where('school_id', $school->id)->sum('amount');
         $totalInvoiced = Invoice::where('school_id', $school->id)->sum('total_amount');
         $totalOutstanding = Invoice::where('school_id', $school->id)->whereIn('status', ['unpaid', 'partially_paid'])->sum('balance');
+
+        // Profit/Loss calculation
+        $netProfit = $totalRevenue - $totalExpenses;
+        $profitMargin = $totalRevenue > 0 ? round(($netProfit / $totalRevenue) * 100, 1) : 0;
+        $collectionRate = $totalInvoiced > 0 ? round(($totalRevenue / $totalInvoiced) * 100, 1) : 0;
 
         $monthlyRevenue = Payment::where('school_id', $school->id)
             ->where('paid_at', '>=', now()->startOfMonth())
@@ -45,6 +53,7 @@ class FinancialReportController extends Controller
 
         return view('financial-reports.index', compact(
             'totalRevenue', 'totalExpenses', 'totalInvoiced', 'totalOutstanding',
+            'netProfit', 'profitMargin', 'collectionRate',
             'monthlyRevenue', 'monthlyExpenses',
             'recentPayments', 'recentExpenses', 'expensesByCategory', 'school'
         ));

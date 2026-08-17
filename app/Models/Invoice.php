@@ -39,8 +39,18 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function school()
+    {
+        return $this->belongsTo(School::class);
+    }
+
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function getPaymentUrlAttribute(): string
+    {
+        return route('invoices.public.pay', $this->uuid);
     }
 }

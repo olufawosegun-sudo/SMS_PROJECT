@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicSession;
+use App\Models\AcademicTerm;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,6 +71,42 @@ class AcademicSessionController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Academic session updated successfully!');
+    }
+
+    /**
+     * Set an academic session as the current active session.
+     *
+     * @param  int  $id  The session ID to set as active
+     * @return JsonResponse|RedirectResponse
+     */
+    public function setActive(Request $request, $id)
+    {
+        $school = Auth::user()->school;
+        $session = AcademicSession::where('school_id', $school->id)->findOrFail($id);
+
+        // Unset all sessions for this school, then set the chosen one
+        AcademicSession::where('school_id', $school->id)->update(['is_current' => false]);
+        $session->update(['is_current' => true]);
+
+        // Optionally set a term as current too
+        if ($request->filled('term_id')) {
+            AcademicTerm::where('school_id', $school->id)->update(['is_current' => false]);
+            AcademicTerm::where('school_id', $school->id)
+                ->where('id', $request->term_id)
+                ->update(['is_current' => true]);
+        }
+
+        if ($request->wantsJson()) {
+            $currentTerm = AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first();
+
+            return response()->json([
+                'success' => true,
+                'session' => $session->name,
+                'term' => $currentTerm?->name ?? 'No term set',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Academic session "'.$session->name.'" is now the active session!');
     }
 
     public function destroy($id)

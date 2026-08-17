@@ -110,7 +110,8 @@ class DashboardController extends Controller
         $stats['total_expenses'] = 0; // Sum of expenses
 
         // Academic session and term
-        $currentSession = AcademicSession::where('school_id', $school->id)->where('is_current', true)->first();
+        $allSessions = AcademicSession::where('school_id', $school->id)->with('terms')->orderBy('start_date', 'desc')->get();
+        $currentSession = $allSessions->where('is_current', true)->first();
         $currentTerm = AcademicTerm::where('school_id', $school->id)->where('is_current', true)->first();
 
         // Weekly attendance trend (last 7 days)
@@ -140,8 +141,13 @@ class DashboardController extends Controller
         }
 
         // Student enrollment trend (last 6 months)
+        $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
+        $dateFormatSql = $isSqlite
+            ? "strftime('%Y-%m', admission_date) as month, COUNT(*) as count"
+            : 'DATE_FORMAT(admission_date, "%Y-%m") as month, COUNT(*) as count';
+
         $enrollmentTrend = Student::where('school_id', $school->id)
-            ->selectRaw('DATE_FORMAT(admission_date, "%Y-%m") as month, COUNT(*) as count')
+            ->selectRaw($dateFormatSql)
             ->where('admission_date', '>=', now()->subMonths(6))
             ->groupBy('month')
             ->orderBy('month', 'asc')
@@ -354,7 +360,8 @@ class DashboardController extends Controller
             'quickStats',
             'userActivityBreakdown',
             'documentStats',
-            'recentDocuments'
+            'recentDocuments',
+            'allSessions'
         ));
     }
 

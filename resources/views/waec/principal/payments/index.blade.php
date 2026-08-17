@@ -4,15 +4,7 @@
 
 @section('body')
 @php
-    $currencySymbol = match(strtolower(Auth::user()->school->country ?? '')) {
-        'nigeria' => '₦',
-        'ghana' => 'GH₵',
-        'kenya' => 'KSh',
-        'south africa' => 'R',
-        'united kingdom', 'uk' => '£',
-        'united states', 'us', 'usa' => '$',
-        default => '₦',
-    };
+    $currencySymbol = Auth::user()->school->currency_symbol ?? $school->currency_symbol ?? '₦';
 @endphp
 
 <div class="flex min-h-screen bg-surface">

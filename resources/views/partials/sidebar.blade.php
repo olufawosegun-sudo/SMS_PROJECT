@@ -33,7 +33,7 @@
                 </div>
             </a>
             {{-- Close button for mobile --}}
-            <button onclick="toggleSidebar()" class="lg:hidden w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+            <button onclick="toggleSidebar()" class="lg:hidden w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Close sidebar">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -42,12 +42,13 @@
     </div>
 
     {{-- Navigation --}}
-    <nav class="flex-1 px-4 py-6 overflow-y-auto">
+    <nav class="flex-1 px-4 py-6 overflow-y-auto" id="sidebarNav">
         {{-- DASHBOARD --}}
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Dashboard</p>
         <ul class="space-y-1 mb-6">
             <li>
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 bg-primary text-white shadow-lg shadow-primary/30">
+                @php $isDash = request()->routeIs('dashboard'); @endphp
+                <a href="{{ route('dashboard') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isDash ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isDash) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                     </svg>
@@ -60,17 +61,18 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Student Management</p>
         <ul class="space-y-1 mb-6">
             @foreach([
-                ['label' => 'All Students', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'students.index'],
-                ['label' => 'Add Student', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'students.create'],
-                ['label' => 'Student Documents', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'student-documents.all'],
-                ['label' => 'Admissions', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'admissions.index'],
-                ['label' => 'Promotions', 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'route' => 'promotions.index'],
-                ['label' => 'Transfers', 'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4', 'route' => 'transfers.index'],
-                ['label' => 'Alumni', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'alumni.index'],
-                ['label' => 'Student Attendance', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'route' => 'attendance.index'],
+                ['label' => 'All Students', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'students.index', 'active' => 'students.index'],
+                ['label' => 'Add Student', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'students.create', 'active' => 'students.create'],
+                ['label' => 'Student Documents', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'student-documents.all', 'active' => 'student-documents.*'],
+                ['label' => 'Admissions', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'admissions.index', 'active' => 'admissions.*'],
+                ['label' => 'Promotions', 'icon' => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6', 'route' => 'promotions.index', 'active' => 'promotions.*'],
+                ['label' => 'Transfers', 'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4', 'route' => 'transfers.index', 'active' => 'transfers.*'],
+                ['label' => 'Alumni', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'alumni.index', 'active' => 'alumni.*'],
+                ['label' => 'Student Attendance', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'route' => 'attendance.index', 'active' => 'attendance.*'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ $item['route'] !== '#' ? route($item['route']) : '#' }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ $item['route'] !== '#' ? route($item['route']) : '#' }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -84,15 +86,16 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Academic Management</p>
         <ul class="space-y-1 mb-6">
             @foreach([
-                ['label' => 'Sessions', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'route' => 'sessions.index'],
-                ['label' => 'Terms', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'terms.index'],
-                ['label' => 'Departments', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'route' => 'departments.index'],
-                ['label' => 'Classes', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'route' => 'classes.index'],
-                ['label' => 'Subjects', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', 'route' => 'subjects.index'],
-                ['label' => 'Timetables', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'route' => 'timetables.index'],
+                ['label' => 'Sessions', 'icon' => 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', 'route' => 'sessions.index', 'active' => 'sessions.*'],
+                ['label' => 'Terms', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'terms.index', 'active' => 'terms.*'],
+                ['label' => 'Departments', 'icon' => 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', 'route' => 'departments.index', 'active' => 'departments.*'],
+                ['label' => 'Classes', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'route' => 'classes.index', 'active' => 'classes.*'],
+                ['label' => 'Subjects', 'icon' => 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', 'route' => 'subjects.index', 'active' => 'subjects.*'],
+                ['label' => 'Timetables', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'route' => 'timetables.index', 'active' => 'timetables.*'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ $item['route'] !== '#' ? route($item['route']) : '#' }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ $item['route'] !== '#' ? route($item['route']) : '#' }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -106,12 +109,13 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Staff Management</p>
         <ul class="space-y-1 mb-6">
             @foreach([
-                ['label' => 'All Teachers', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'route' => 'teachers.index'],
-                ['label' => 'Add Teacher', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'teachers.create'],
-                ['label' => 'Staff Attendance', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', 'route' => 'staff-attendance.index'],
+                ['label' => 'All Teachers', 'icon' => 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'route' => 'teachers.index', 'active' => 'teachers.index'],
+                ['label' => 'Add Teacher', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'teachers.create', 'active' => 'teachers.create'],
+                ['label' => 'Staff Attendance', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'route' => 'staff-attendance.index', 'active' => 'staff-attendance.*'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -121,8 +125,9 @@
             @endforeach
             {{-- PAYROLL - Only for Owner --}}
             @if(Auth::user()->role->name === 'Owner')
+            @php $isPayroll = request()->routeIs('payroll.*'); @endphp
             <li>
-                <a href="{{ route('payroll.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route('payroll.index') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isPayroll ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isPayroll) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
@@ -136,11 +141,12 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Parent Management</p>
         <ul class="space-y-1 mb-6">
             @foreach([
-                ['label' => 'All Parents', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'guardians.index'],
-                ['label' => 'Add Parent', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'guardians.create'],
+                ['label' => 'All Parents', 'icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'guardians.index', 'active' => 'guardians.index'],
+                ['label' => 'Add Parent', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'guardians.create', 'active' => 'guardians.create'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -155,11 +161,12 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Principal Management</p>
         <ul class="space-y-1 mb-6">
             @foreach([
-                ['label' => 'All Principals', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'principals.index'],
-                ['label' => 'Add Principal', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'principals.create'],
+                ['label' => 'All Principals', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'principals.index', 'active' => 'principals.index'],
+                ['label' => 'Add Principal', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'principals.create', 'active' => 'principals.create'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -174,27 +181,31 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Examination</p>
         <ul class="space-y-1 mb-6">
             {{-- Assessments Dropdown --}}
+            @php 
+                $isAssessmentActive = request()->routeIs('continuous-assessments.*') || request()->routeIs('assessment-questions.*') || request()->routeIs('assessment-options.*') || request()->routeIs('assessment-answers.*');
+            @endphp
             <li>
-                <button onclick="toggleAssessmentSubmenu()" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <button onclick="toggleAssessmentSubmenu()" class="sidebar-ripple-btn w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isAssessmentActive ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white hover:bg-white/5' }}">
                     <div class="flex items-center gap-3">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         <span>Assessments</span>
                     </div>
-                    <svg id="assessmentChevron" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg id="assessmentChevron" class="w-4 h-4 transition-transform duration-200 {{ $isAssessmentActive ? 'rotate-90 text-accent' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                     </svg>
                 </button>
-                <ul id="assessmentSubmenu" class="hidden mt-1 ml-8 space-y-1">
+                <ul id="assessmentSubmenu" class="{{ $isAssessmentActive ? '' : 'hidden' }} mt-1 ml-8 space-y-1">
                     @foreach([
-                        ['label' => 'Continuous Assessments', 'route' => 'continuous-assessments.index'],
-                        ['label' => 'Assessment Questions', 'route' => 'assessment-questions.index'],
-                        ['label' => 'Question Options', 'route' => 'assessment-options.index'],
-                        ['label' => 'Assessment Answers', 'route' => 'assessment-answers.index'],
+                        ['label' => 'Continuous Assessments', 'route' => 'continuous-assessments.index', 'active' => 'continuous-assessments.*'],
+                        ['label' => 'Assessment Questions', 'route' => 'assessment-questions.index', 'active' => 'assessment-questions.*'],
+                        ['label' => 'Question Options', 'route' => 'assessment-options.index', 'active' => 'assessment-options.*'],
+                        ['label' => 'Assessment Answers', 'route' => 'assessment-answers.index', 'active' => 'assessment-answers.*'],
                     ] as $subItem)
+                    @php $isSubActive = request()->routeIs($subItem['active']); @endphp
                     <li>
-                        <a href="{{ route($subItem['route']) }}" class="block px-3 py-2 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200">
+                        <a href="{{ route($subItem['route']) }}" class="sidebar-ripple-btn block px-3 py-2 rounded-lg text-sm transition-all duration-200 {{ $isSubActive ? 'bg-primary text-white shadow-md is-active' : 'text-white/50 hover:text-white hover:bg-white/5' }}" @if($isSubActive) data-active="true" @endif>
                             {{ $subItem['label'] }}
                         </a>
                     </li>
@@ -204,12 +215,13 @@
 
             {{-- Other Examination Items --}}
             @foreach([
-                ['label' => 'CBT Exams', 'icon' => 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'route' => 'cbt-exams.index'],
-                ['label' => 'Results', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'results.index'],
-                ['label' => 'Report Cards', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'report-cards.index'],
+                ['label' => 'CBT Exams', 'icon' => 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'route' => 'cbt-exams.index', 'active' => 'cbt-exams.*'],
+                ['label' => 'Results', 'icon' => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'results.index', 'active' => 'results.*'],
+                ['label' => 'Report Cards', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'report-cards.index', 'active' => 'report-cards.*'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -224,14 +236,15 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Finance</p>
         <ul class="space-y-1 mb-6">
             @foreach([
-                ['label' => 'Fee Categories', 'icon' => 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z', 'route' => 'fee-categories.index'],
-                ['label' => 'Invoices', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'invoices.index'],
-                ['label' => 'Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'payments.index'],
-                ['label' => 'Expenses', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'route' => 'expenses.index'],
-                ['label' => 'Financial Reports', 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z', 'route' => 'financial-reports.index'],
+                ['label' => 'Fee Categories', 'icon' => 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z', 'route' => 'fee-categories.index', 'active' => 'fee-categories.*'],
+                ['label' => 'Invoices', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', 'route' => 'invoices.index', 'active' => 'invoices.*'],
+                ['label' => 'Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'payments.index', 'active' => 'payments.*'],
+                ['label' => 'Expenses', 'icon' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 'route' => 'expenses.index', 'active' => 'expenses.*'],
+                ['label' => 'Financial Reports', 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z', 'route' => 'financial-reports.index', 'active' => 'financial-reports.*'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -248,14 +261,15 @@
         <ul class="space-y-1 mb-6">
             @if(Auth::user()->role->name === 'Owner')
                 @foreach([
-                    ['label' => 'WAEC Candidates', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'owner.waec.candidates'],
-                    ['label' => 'Student Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'owner.waec.payments'],
-                    ['label' => 'WAEC Remittance', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'owner.waec.remittance.index'],
-                    ['label' => 'Fee Configuration', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'route' => 'owner.waec.fees.configuration'],
-                    ['label' => 'Financial Reports', 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z', 'route' => 'owner.waec.reports'],
+                    ['label' => 'WAEC Candidates', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'owner.waec.candidates', 'active' => 'owner.waec.candidates*'],
+                    ['label' => 'Student Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'owner.waec.payments', 'active' => 'owner.waec.payments*'],
+                    ['label' => 'WAEC Remittance', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'owner.waec.remittance.index', 'active' => 'owner.waec.remittance.*'],
+                    ['label' => 'Fee Configuration', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'route' => 'owner.waec.fees.configuration', 'active' => 'owner.waec.fees.*'],
+                    ['label' => 'Financial Reports', 'icon' => 'M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z', 'route' => 'owner.waec.reports', 'active' => 'owner.waec.reports*'],
                 ] as $item)
+                @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
                 <li>
-                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                    <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                         </svg>
@@ -265,14 +279,15 @@
                 @endforeach
             @else
                 @foreach([
-                    ['label' => 'WAEC Candidates', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'principal.waec.candidates'],
-                    ['label' => 'Register Candidate', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'principal.waec.candidates.create'],
-                    ['label' => 'Student Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'principal.waec.payments'],
-                    ['label' => 'Pending Payments', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'principal.waec.payments.pending'],
-                    ['label' => 'WAEC Remittance', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'principal.waec.remittance.index'],
+                    ['label' => 'WAEC Candidates', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'principal.waec.candidates', 'active' => 'principal.waec.candidates*'],
+                    ['label' => 'Register Candidate', 'icon' => 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', 'route' => 'principal.waec.candidates.create', 'active' => 'principal.waec.candidates.create'],
+                    ['label' => 'Student Payments', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'route' => 'principal.waec.payments', 'active' => 'principal.waec.payments*'],
+                    ['label' => 'Pending Payments', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'principal.waec.payments.pending', 'active' => 'principal.waec.payments.pending'],
+                    ['label' => 'WAEC Remittance', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'route' => 'principal.waec.remittance.index', 'active' => 'principal.waec.remittance.*'],
                 ] as $item)
+                @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
                 <li>
-                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                    <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                         </svg>
@@ -288,13 +303,14 @@
         <p class="text-[10px] uppercase tracking-widest text-white/30 font-semibold mb-4 px-3">Communication</p>
         <ul class="space-y-1 mb-6">
             @foreach([
-                ['label' => 'Announcements', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'route' => 'announcements.index'],
-                ['label' => 'Messages', 'icon' => 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', 'route' => 'messages.index'],
-                ['label' => 'SMS', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'route' => 'sms.index'],
-                ['label' => 'Email', 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'route' => 'email.index'],
+                ['label' => 'Announcements', 'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', 'route' => 'announcements.index', 'active' => 'announcements.*'],
+                ['label' => 'Messages', 'icon' => 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z', 'route' => 'messages.index', 'active' => 'messages.*'],
+                ['label' => 'SMS', 'icon' => 'M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z', 'route' => 'sms.index', 'active' => 'sms.*'],
+                ['label' => 'Email', 'icon' => 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', 'route' => 'email.index', 'active' => 'email.*'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -310,12 +326,13 @@
             {{-- Owner-only Settings --}}
             @if(Auth::user()->role->name === 'Owner')
             @foreach([
-                ['label' => 'School Profile', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'route' => 'school-profile.index'],
-                ['label' => 'Users & Roles', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'users-roles.index'],
-                ['label' => 'System Settings', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'route' => 'system-settings.index'],
+                ['label' => 'School Profile', 'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', 'route' => 'school-profile.index', 'active' => 'school-profile.*'],
+                ['label' => 'Users & Roles', 'icon' => 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', 'route' => 'users-roles.index', 'active' => 'users-roles.*'],
+                ['label' => 'System Settings', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', 'route' => 'system-settings.index', 'active' => 'system-settings.*'],
             ] as $item)
+            @php $isActive = request()->routeIs($item['active'] ?? $item['route']); @endphp
             <li>
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route($item['route']) }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isActive) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
@@ -324,8 +341,9 @@
             </li>
             @endforeach
             {{-- Database Backup - Owner Only --}}
+            @php $isBackup = request()->routeIs('database-backup.*'); @endphp
             <li>
-                <a href="{{ route('database-backup.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all duration-200">
+                <a href="{{ route('database-backup.index') }}" class="sidebar-ripple-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 {{ $isBackup ? 'bg-primary text-white shadow-lg shadow-primary/30 is-active' : 'text-white/60 hover:text-white hover:bg-white/5' }}" @if($isBackup) data-active="true" @endif>
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
@@ -358,7 +376,7 @@
     </div>
 </aside>
 
-{{-- Sidebar Toggle Script --}}
+{{-- Sidebar Toggle & Gmail Click Ripple Engine --}}
 <script>
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
@@ -373,4 +391,54 @@
         submenu.classList.toggle('hidden');
         chevron.classList.toggle('rotate-90');
     }
+
+    // Gmail-Style State Layer Interaction Engine
+    document.addEventListener('DOMContentLoaded', function () {
+        const nav = document.getElementById('sidebarNav');
+        
+        // Restore scroll position
+        if (nav) {
+            const savedScroll = sessionStorage.getItem('sms_sidebar_scroll');
+            if (savedScroll !== null) {
+                nav.scrollTop = parseInt(savedScroll, 10);
+            }
+        }
+
+        // Attach Gmail-style state layer to all sidebar buttons & links
+        const buttons = document.querySelectorAll('.sidebar-ripple-btn');
+        buttons.forEach(function (btn) {
+            // Pressed state on mousedown (Gmail darkens the state layer on press)
+            btn.addEventListener('mousedown', function () {
+                btn.classList.add('is-pressed');
+            });
+
+            // Release pressed state
+            btn.addEventListener('mouseup', function () {
+                btn.classList.remove('is-pressed');
+            });
+            btn.addEventListener('mouseleave', function () {
+                btn.classList.remove('is-pressed');
+            });
+
+            // Handle click — save scroll & instant active switch
+            btn.addEventListener('click', function () {
+                // Save scroll position before navigation
+                if (nav) {
+                    sessionStorage.setItem('sms_sidebar_scroll', nav.scrollTop);
+                }
+
+                // Instant active visual switch if navigating (like Gmail)
+                if (btn.tagName.toLowerCase() === 'a' && btn.getAttribute('href') && btn.getAttribute('href') !== '#') {
+                    buttons.forEach(function (b) {
+                        b.classList.remove('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/30', 'is-active');
+                        b.removeAttribute('data-active');
+                        b.classList.add('text-white/60');
+                    });
+                    btn.classList.remove('text-white/60');
+                    btn.classList.add('bg-primary', 'text-white', 'shadow-lg', 'shadow-primary/30', 'is-active');
+                    btn.setAttribute('data-active', 'true');
+                }
+            });
+        });
+    });
 </script>

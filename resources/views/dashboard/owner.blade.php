@@ -3,7 +3,7 @@
 @section('title', 'Owner Dashboard — ' . ($school->name ?? 'EduWest Africa'))
 
 @section('body')
-<div class="flex min-h-screen bg-surface">
+<div class="flex min-h-screen bg-surface overflow-x-hidden">
     {{-- ======================================== SIDEBAR ======================================== --}}
     @include('partials.sidebar', ['role' => 'owner'])
 
@@ -26,10 +26,16 @@
                             <p class="text-white/60 italic text-sm">"{{ $school->motto ?? 'Knowledge, Character, and Excellence' }}"</p>
                         </div>
                         <div class="hidden lg:flex items-center gap-3">
-                            <div class="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
-                                <p class="text-xs text-white/60 mb-1">Current Session</p>
+                            <button type="button" onclick="openDashboardSessionModal()" class="group bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20 text-left transition-all cursor-pointer">
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-xs text-white/60 mb-0.5">Current Session</p>
+                                    <span class="text-[10px] text-accent font-bold group-hover:underline flex items-center gap-0.5">
+                                        Change
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                    </span>
+                                </div>
                                 <p class="text-lg font-bold text-white">{{ $currentSession->name ?? date('Y').'/'.(date('Y')+1) }}</p>
-                            </div>
+                            </button>
                             <div class="bg-white/10 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
                                 <p class="text-xs text-white/60 mb-1">Current Term</p>
                                 <p class="text-lg font-bold text-white">{{ $currentTerm->name ?? 'First Term' }}</p>
@@ -46,8 +52,55 @@
                             Owner Access
                         </span>
                     </div>
+
+                    {{-- Portal Links — stacked inside the welcome banner --}}
+                    <div class="flex flex-col gap-2 mt-5 pt-4 border-t border-white/15">
+                        {{-- School Website --}}
+                        <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2.5 border border-white/15 min-w-0 overflow-hidden">
+                            <svg class="w-4 h-4 text-white/70 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/></svg>
+                            <div class="min-w-0 flex-1 overflow-hidden">
+                                <p class="text-[10px] text-white/50 font-semibold uppercase tracking-wider leading-none mb-0.5">School Website</p>
+                                <p class="text-xs text-white font-mono truncate">{{ $school->public_url }}</p>
+                            </div>
+                            <button type="button" id="copyWebsiteBtn" onclick="copyPortalLink('{{ $school->public_url }}', 'copyWebsiteBtn')" class="flex-shrink-0 px-2.5 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <span>Copy</span>
+                            </button>
+                            <a href="{{ $school->public_url }}" target="_blank" class="flex-shrink-0 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95">
+                                Visit ↗
+                            </a>
+                        </div>
+
+                        {{-- Careers Portal --}}
+                        <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2.5 border border-white/15 min-w-0 overflow-hidden">
+                            <svg class="w-4 h-4 text-white/70 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75"/></svg>
+                            <div class="min-w-0 flex-1 overflow-hidden">
+                                <p class="text-[10px] text-white/50 font-semibold uppercase tracking-wider leading-none mb-0.5">Careers Portal</p>
+                                <p class="text-xs text-white font-mono truncate">{{ $school->careers_url }}</p>
+                            </div>
+                            <button type="button" id="copyCareersBtn" onclick="copyPortalLink('{{ $school->careers_url }}', 'copyCareersBtn')" class="flex-shrink-0 px-2.5 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <span>Copy</span>
+                            </button>
+                            <a href="{{ $school->careers_url }}" target="_blank" class="flex-shrink-0 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95">
+                                Visit ↗
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {{-- Copy-to-clipboard micro-interaction --}}
+            <script>
+            function copyPortalLink(url, btnId) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const btn = document.getElementById(btnId);
+                    const original = btn.innerHTML;
+                    btn.innerHTML = `<svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span class="text-emerald-300">Copied!</span>`;
+                    setTimeout(() => { btn.innerHTML = original; }, 2000);
+                });
+            }
+            </script>
 
             {{-- Quick Action Buttons --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-6 md:mb-8">
@@ -533,8 +586,74 @@
     </main>
 </div>
 
+{{-- Set Academic Session Modal --}}
+<div id="dashboardSessionModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-100 transform transition-all">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-dark">Set Academic Session</h3>
+                    <p class="text-xs text-gray-400">Switch current active calendar session</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeDashboardSessionModal()" class="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <div class="space-y-3 mb-6 max-h-72 overflow-y-auto pr-1">
+            @forelse($allSessions ?? [] as $sess)
+            <form method="POST" action="{{ route('sessions.set-active', $sess->id) }}">
+                @csrf
+                <button type="submit" class="w-full p-4 rounded-2xl border transition-all text-left flex items-center justify-between {{ $sess->is_current ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-gray-200 hover:border-primary/30 hover:bg-gray-50' }}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl {{ $sess->is_current ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500' }} flex items-center justify-center font-bold text-sm">
+                            {{ substr($sess->name, 0, 4) }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold {{ $sess->is_current ? 'text-primary' : 'text-dark' }}">{{ $sess->name }}</p>
+                            <p class="text-xs text-gray-400">{{ $sess->start_date?->format('M Y') }} — {{ $sess->end_date?->format('M Y') }}</p>
+                        </div>
+                    </div>
+                    @if($sess->is_current)
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-primary text-white uppercase">Current</span>
+                    @else
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-gray-100 text-gray-600 uppercase hover:bg-primary hover:text-white transition-colors">Select</span>
+                    @endif
+                </button>
+            </form>
+            @empty
+            <div class="text-center py-6 text-gray-400">
+                <p class="text-sm">No academic sessions found.</p>
+                <a href="{{ route('sessions.index') }}" class="text-xs text-primary font-semibold hover:underline mt-1 inline-block">Create New Session</a>
+            </div>
+            @endforelse
+        </div>
+
+        <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+            <a href="{{ route('sessions.index') }}" class="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                Manage All Sessions
+            </a>
+            <button type="button" onclick="closeDashboardSessionModal()" class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold text-xs rounded-xl hover:bg-gray-200 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+function openDashboardSessionModal() {
+    document.getElementById('dashboardSessionModal').classList.remove('hidden');
+}
+function closeDashboardSessionModal() {
+    document.getElementById('dashboardSessionModal').classList.add('hidden');
+}
+
 function filterDashboardClasses(selectedValue) {
     const cards = document.querySelectorAll('.dashboard-class-card');
     cards.forEach(card => {

@@ -24,6 +24,7 @@ use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\GuardianWaecController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\OwnerWaecController;
 use App\Http\Controllers\PaymentController;
@@ -31,9 +32,11 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\PrincipalController;
 use App\Http\Controllers\PrincipalWaecController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\PublicInvoiceController;
 use App\Http\Controllers\ReportCardController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\SchoolProfileController;
+use App\Http\Controllers\SchoolWebsiteController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\StaffAttendanceController;
 use App\Http\Controllers\StudentController;
@@ -68,9 +71,23 @@ Route::get('/', function () {
 Route::get('/apply', [AdmissionApplicationController::class, 'showForm'])->name('apply');
 Route::post('/apply', [AdmissionApplicationController::class, 'submitForm']);
 
+// Individual School Public Website & Portals
+Route::prefix('school/{slug}')->name('school.')->group(function () {
+    Route::get('/', [SchoolWebsiteController::class, 'show'])->name('website');
+    Route::get('/apply', [SchoolWebsiteController::class, 'apply'])->name('apply');
+    Route::post('/apply', [SchoolWebsiteController::class, 'submitAdmission'])->name('apply.submit');
+    Route::get('/careers', [SchoolWebsiteController::class, 'careers'])->name('careers');
+    Route::post('/careers', [SchoolWebsiteController::class, 'submitJobApplication'])->name('careers.submit');
+});
+
 // Public Offer Acceptance/Decline
 Route::get('/accept-offer/{offerId}', [AdmissionApplicationController::class, 'showOfferAcceptance'])->name('offer.show');
 Route::post('/accept-offer/{offerId}', [AdmissionApplicationController::class, 'handleOfferResponse'])->name('offer.respond');
+
+// Public Invoice Payment & Instant Receipt
+Route::get('/invoices/pay/{uuid}', [PublicInvoiceController::class, 'show'])->name('invoices.public.pay');
+Route::post('/invoices/pay/{uuid}/process', [PublicInvoiceController::class, 'processPayment'])->name('invoices.public.process');
+Route::get('/invoices/pay/{uuid}/receipt', [PublicInvoiceController::class, 'receipt'])->name('invoices.public.receipt');
 
 // Authentication Routes
 Route::controller(AuthController::class)->group(function () {
@@ -155,6 +172,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('principals', PrincipalController::class);
     Route::resource('departments', DepartmentController::class);
 
+    // Staff Job Applications / Recruitment
+    Route::resource('job-applications', JobApplicationController::class);
+    Route::post('job-applications/{id}/status', [JobApplicationController::class, 'updateStatus'])->name('job-applications.status');
+    Route::get('job-applications/{id}/download-resume', [JobApplicationController::class, 'downloadResume'])->name('job-applications.download-resume');
+    Route::get('job-applications/{id}/download-certificates', [JobApplicationController::class, 'downloadCertificates'])->name('job-applications.download-certificates');
+
     // AJAX endpoint for class arms (standalone to avoid resource route conflict)
     Route::get('get-class-arms/{classId}', [AdmissionController::class, 'getArmsForEnroll'])->name('admissions.arms-for-enroll');
 
@@ -168,6 +191,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('alumni', AlumniController::class);
     Route::resource('attendance', AttendanceController::class);
     Route::resource('sessions', AcademicSessionController::class);
+    Route::post('sessions/{id}/set-active', [AcademicSessionController::class, 'setActive'])->name('sessions.set-active');
     Route::resource('terms', AcademicTermController::class);
     Route::resource('classes', ClassController::class);
     Route::get('classes/{class}/arms', [ClassController::class, 'getArms'])->name('classes.arms');

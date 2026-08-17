@@ -40,9 +40,6 @@
                             <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: line-sweep 2s ease-in-out infinite;"></div>
                         </a>
                     @else
-                        <a href="{{ route('apply') }}" class="px-5 py-2.5 text-sm font-semibold text-accent hover:text-white rounded-xl transition-all hover:bg-white/5">
-                            Apply for Admission
-                        </a>
                         <a href="{{ route('login') }}" class="px-5 py-2.5 text-sm font-medium text-white/80 hover:text-white rounded-xl transition-all diamond-border hover:bg-white/5">
                             Log In
                         </a>
@@ -77,7 +74,6 @@
                 @auth
                     <a href="{{ route('dashboard') }}" class="block w-full text-center px-5 py-3 font-semibold text-sm rounded-xl transition-all hover:shadow-[0_8px_30px_rgba(212,168,67,0.2)]" style="background: linear-gradient(135deg, #D4A843, #B8912E); color: #0a0a1a;">Dashboard</a>
                 @else
-                    <a href="{{ route('apply') }}" class="block w-full text-center px-5 py-3 text-sm font-semibold text-accent hover:text-white rounded-xl hover:bg-white/5 transition-all">Apply for Admission</a>
                     <a href="{{ route('login') }}" class="block w-full text-center px-5 py-3 text-sm font-medium text-white/80 diamond-border rounded-xl hover:bg-white/5 transition-all">Log In</a>
                     <a href="{{ route('register') }}" class="block w-full text-center px-5 py-3 font-semibold text-sm rounded-xl transition-all" style="background: linear-gradient(135deg, #D4A843, #B8912E); color: #0a0a1a;">Get Started</a>
                 @endauth

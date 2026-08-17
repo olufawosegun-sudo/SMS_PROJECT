@@ -3,7 +3,7 @@
 @section('title', 'Principal Dashboard — ' . ($school->name ?? 'EduWest Africa'))
 
 @section('body')
-<div class="flex min-h-screen bg-surface">
+<div class="flex min-h-screen bg-surface overflow-x-hidden">
     {{-- ======================================== SIDEBAR ======================================== --}}
     @include('partials.sidebar', ['role' => 'principal'])
 
@@ -85,8 +85,55 @@
                             Academic Management
                         </span>
                     </div>
+
+                    {{-- Portal Links — stacked inside the welcome banner --}}
+                    <div class="flex flex-col gap-2 mt-5 pt-4 border-t border-white/15">
+                        {{-- School Website --}}
+                        <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2.5 border border-white/15 min-w-0 overflow-hidden">
+                            <svg class="w-4 h-4 text-white/70 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/></svg>
+                            <div class="min-w-0 flex-1 overflow-hidden">
+                                <p class="text-[10px] text-white/50 font-semibold uppercase tracking-wider leading-none mb-0.5">School Website</p>
+                                <p class="text-xs text-white font-mono truncate">{{ $school->public_url }}</p>
+                            </div>
+                            <button type="button" id="copyWebsiteBtnPrincipal" onclick="copyPortalLinkPrincipal('{{ $school->public_url }}', 'copyWebsiteBtnPrincipal')" class="flex-shrink-0 px-2.5 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <span>Copy</span>
+                            </button>
+                            <a href="{{ $school->public_url }}" target="_blank" class="flex-shrink-0 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95">
+                                Visit ↗
+                            </a>
+                        </div>
+
+                        {{-- Careers Portal --}}
+                        <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-2.5 border border-white/15 min-w-0 overflow-hidden">
+                            <svg class="w-4 h-4 text-white/70 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75"/></svg>
+                            <div class="min-w-0 flex-1 overflow-hidden">
+                                <p class="text-[10px] text-white/50 font-semibold uppercase tracking-wider leading-none mb-0.5">Careers Portal</p>
+                                <p class="text-xs text-white font-mono truncate">{{ $school->careers_url }}</p>
+                            </div>
+                            <button type="button" id="copyCareersBtnPrincipal" onclick="copyPortalLinkPrincipal('{{ $school->careers_url }}', 'copyCareersBtnPrincipal')" class="flex-shrink-0 px-2.5 py-1.5 bg-white/15 hover:bg-white/25 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                <span>Copy</span>
+                            </button>
+                            <a href="{{ $school->careers_url }}" target="_blank" class="flex-shrink-0 px-2.5 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95">
+                                Visit ↗
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {{-- Copy-to-clipboard micro-interaction --}}
+            <script>
+            function copyPortalLinkPrincipal(url, btnId) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const btn = document.getElementById(btnId);
+                    const original = btn.innerHTML;
+                    btn.innerHTML = `<svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span class="text-emerald-300">Copied!</span>`;
+                    setTimeout(() => { btn.innerHTML = original; }, 2000);
+                });
+            }
+            </script>
 
             {{-- Quick Action Buttons (Academic Focused) --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">

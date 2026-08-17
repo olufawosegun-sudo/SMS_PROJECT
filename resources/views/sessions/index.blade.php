@@ -76,10 +76,20 @@
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600 font-medium">{{ $session->terms_count }} Terms</td>
                                     <td class="px-6 py-4 text-sm">
-                                        <form method="POST" action="{{ route('sessions.destroy', $session->id) }}" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this session?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-xs font-semibold text-danger hover:underline">Delete</button>
-                                        </form>
+                                        <div class="flex items-center gap-3">
+                                            @if(!$session->is_current)
+                                            <form method="POST" action="{{ route('sessions.set-active', $session->id) }}" class="inline-block">
+                                                @csrf
+                                                <button type="submit" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                                                    Set as Current
+                                                </button>
+                                            </form>
+                                            @endif
+                                            <form method="POST" action="{{ route('sessions.destroy', $session->id) }}" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this session?')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="text-xs font-semibold text-danger hover:underline">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
